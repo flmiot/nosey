@@ -6,14 +6,33 @@ from pyqtgraph.Qt import QtCore, QtGui, uic
 from nosey.rois import ROI
 
 class Monitor(QtGui.QMainWindow):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, image, *args, **kwargs):
         super(self.__class__, self).__init__(*args, **kwargs)
         dirname = os.path.dirname(__file__)
         uic.loadUi(os.path.join(dirname, 'ui/monitor.ui'), self)
 
         # Placeholder image
-        img = np.zeros((512,512))
-        self.imageView.setImage(img)
+        self.image = image
+
+        # Setup frame region slider
+        self.lr = pg.LinearRegionItem([1, self.image.shape[0]])
+        self.lr.sigRegionChanged.connect(self.frameSelectorChanged)
+        self.lr.sigRegionChangeFinished.connect(self.updateImage)
+        self.lr.setBrush([147, 245, 66, 0.5*255])
+        self.frameSelector.setXRange(1, self.image.shape[0], padding=0.1)
+        self.frameSelector.addItem(self.lr)
+        self.frameSelector.showAxis('left', show=False)
+        self.frameSelector.setMouseEnabled(x=False, y=False)
+
+        self.updateImage()
+
+
+    def updateImage(self):
+        x0, x1 = self.lr.getRegion()
+        x0 -= 1
+        x0, x1 = int(x0), int(x1)
+        print(x0, x1)
+        self.imageView.setImage(np.sum(self.image[x0:x1], axis = 0))
 
 
     @QtCore.pyqtSlot()
@@ -25,7 +44,8 @@ class Monitor(QtGui.QMainWindow):
         rows = self.tableWidget.rowCount()
         self.tableWidget.insertRow(rows)
 
-        r = ROI([250,250], [250,40], 'ROI {}'.format(rows))
+        size = [self.image.shape[-1], 40]
+        r = ROI([0,250], size, 'ROI {}'.format(rows))
         r.addToMonitor(self)
 
         # Button items
@@ -65,3 +85,13 @@ class Monitor(QtGui.QMainWindow):
             roi.name = 'ROI {}'.format(row)
             item.setText(roi.name)
             item.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
+
+
+    def frameSelectorChanged(self, *args, **kwargs):
+        self.lr.sigRegionChanged.disconnect(self.frameSelectorChanged)
+        self.lr.sigRegionChangeFinished.disconnect(self.updateImage)
+        x0, x1 = self.lr.getRegion()
+        x0, x1 = max(1, round(x0)), min(round(x1), self.image.shape[0])
+        self.lr.setRegion([x0, x1])
+        self.lr.sigRegionChanged.connect(self.frameSelectorChanged)
+        self.lr.sigRegionChangeFinished.connect(self.updateImage)
