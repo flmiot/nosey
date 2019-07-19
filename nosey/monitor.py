@@ -44,8 +44,8 @@ class Monitor(QtGui.QMainWindow):
         rows = self.tableWidget.rowCount()
         self.tableWidget.insertRow(rows)
 
-        size = [self.image.shape[-1], 40]
-        r = ROI([0,250], size, 'ROI {}'.format(rows))
+        size = [self.image.shape[-2], 40]
+        r = ROI([0,size[1] / 2], size, 'ROI {}'.format(rows))
         r.addToMonitor(self)
 
         # Button items
