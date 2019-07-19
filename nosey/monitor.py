@@ -36,7 +36,7 @@ class Monitor(QtGui.QMainWindow):
 
 
     @QtCore.pyqtSlot()
-    def on_actionAdd_ROI_triggered(self, *args, **kwargs):
+    def on_btn_addRoi_pressed(self, *args, **kwargs):
         self.addRoi()
 
 
