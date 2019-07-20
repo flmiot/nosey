@@ -1,6 +1,6 @@
 from pyqtgraph.Qt import QtCore, QtGui, uic
-from nosey.mdi import MainFrame
-from nosey.recipes import DELTARecipe
+
+from nosey.mainframe import MainFrame
 
 if __name__ == '__main__':
     app     = QtGui.QApplication([])

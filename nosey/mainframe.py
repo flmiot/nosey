@@ -11,25 +11,7 @@ class MainFrame(QtGui.QMainWindow):
     def __init__(self, *args, **kwargs):
         super(self.__class__, self).__init__(*args, **kwargs)
         dirname = os.path.dirname(__file__)
-        uic.loadUi(os.path.join(dirname, 'ui/mdi.ui'), self)
-
-        self.setupWindow = AnalysisSetup()
-        self.mdiArea.addSubWindow(self.setupWindow)
-        self.setupWindow.show()
-
-        self.plot = Plot()
-        self.mdiArea.addSubWindow(self.plot)
-        self.plot.show()
-
-
-
-        image = np.ones((4,128,128))
-        monitor = Monitor(image)
-        self.mdiArea.addSubWindow(monitor)
-        monitor.show()
-
-        self.mdiArea.tileSubWindows()
-
+        uic.loadUi(os.path.join(dirname, 'ui/main.ui'), self)
 
     @QtCore.pyqtSlot()
     def on_actionExit_triggered(self, *args, **kwargs):
