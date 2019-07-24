@@ -1,10 +1,16 @@
 import numpy as np
+import logging
 import pyqtgraph as pg
 from pyqtgraph import QtCore, QtGui
 
+Log = logging.getLogger(__name__)
+logging.basicConfig(level=logging.DEBUG)
+
 class ROI(object):
+
     def __init__(self, position, size, name):
-        self.active     = True
+        super().__init__()
+        self.active         = True
         self.objects        = []
         self.energyPoints   = []
         self.b1_distance    = 0
@@ -12,9 +18,8 @@ class ROI(object):
 
         # ROI Pens
         signal_pen = pg.mkPen(color='#e5ff00')
-        bg_pen = pg.mkPen(color='#696969', style=QtCore.Qt.DashLine)
+        bg_pen = pg.mkPen(color='#44c964', style=QtCore.Qt.DashLine)
         axis_pen = pg.mkPen(color='#2b573e', style=QtCore.Qt.DotLine)
-
 
         # Component ROI
         signal         = pg.ROI(position, size, pen = signal_pen)
@@ -35,13 +40,57 @@ class ROI(object):
         pos_b1, pos_b2 = self._calculateBackgroundPosition()
         background01.setPos(position[0], pos_b1)
         background02.setPos(position[0], pos_b2)
-
-        # Connect events
-        for object in self.objects:
-            object.sigRegionChanged.connect(self.regionChanged)
-
         self.changeName(name)
 
+        self.connectUpdateSlot(self.regionChanged)
+
+
+    def connectUpdateSlot(self, slot):
+        for obj in self.objects:
+            obj.sigRegionChanged.connect( slot )
+
+        for obj in self.energyPoints:
+            obj.sigRegionChanged.connect( slot )
+
+
+    def blockSignals(self, b):
+        for obj in self.objects:
+            obj.blockSignals( b )
+
+        for obj in self.energyPoints:
+            obj.blockSignals( b )
+
+
+    def getCoordinates(self, imageView):
+        if imageView.image is None:
+            return
+
+        image = imageView.getProcessedImage()
+
+        # Extract image data from ROI
+        axes = (imageView.axes['x'], imageView.axes['y'])
+
+        coordinates = []
+        for object in self.objects[:3]:
+            _, coords = object.getArrayRegion(image.view(np.ndarray),
+                imageView.imageItem, axes, returnMappedCoords=True)
+
+            if coords is None:
+                coordinates.append(None)
+                continue
+
+
+
+            # get bounding box
+            x,y = coords[0].flatten(), coords[1].flatten()
+
+            print(x, y)
+            x0, x1 = np.min(x), np.max(x)
+            y0, y1 = np.min(y), np.max(y)
+            bbox = list([int(i) for i in [x0,y0,x1,y1]])
+            coordinates.append(bbox)
+
+        return coordinates
 
 
     def toggle(self):
@@ -89,11 +138,8 @@ class ROI(object):
 
 
     def regionChanged(self, object):
-        for obj in self.objects:
-            obj.sigRegionChanged.disconnect(self.regionChanged)
 
-        for obj in self.energyPoints:
-            obj.sigRegionChanged.disconnect(self.regionChanged)
+        self.blockSignals(True)
 
         if object == self.objects[0]:
 
@@ -138,11 +184,7 @@ class ROI(object):
             ep_pos[1] = pos[1] + size[1] / 2 - 5
             object.setPos(ep_pos)
 
-        for obj in self.objects:
-            obj.sigRegionChanged.connect(self.regionChanged)
-
-        for obj in self.energyPoints:
-            obj.sigRegionChanged.connect(self.regionChanged)
+        self.blockSignals(False)
 
 
     def _calculateBackgroundDistance(self):

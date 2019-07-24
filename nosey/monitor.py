@@ -1,19 +1,25 @@
 import os
 import numpy as np
+import logging
 import pyqtgraph as pg
 from pyqtgraph.Qt import QtCore, QtGui, uic
 
-from nosey.rois import ROI
+from nosey.roi import ROI
+import nosey.guard
+from nosey.templates import HideButton, RemoveButton
 
-class Monitor(QtGui.QMainWindow):
-    def __init__(self, image, rois = None, *args, **kwargs):
-        super(self.__class__, self).__init__(*args, **kwargs)
-        dirname = os.path.dirname(__file__)
-        uic.loadUi(os.path.join(dirname, 'ui/monitor.ui'), self)
+Log = logging.getLogger(__name__)
+logging.basicConfig(level=logging.DEBUG)
 
-        self.image = image
+class Monitor(object):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.image = np.zeros((4, 128, 128))
         self.energyPoints = []
 
+
+    def setupMonitor(self):
         # Setup frame region slider
         self.lr = pg.LinearRegionItem([1, self.image.shape[0]])
         self.lr.sigRegionChanged.connect(self.frameSelectorChanged)
@@ -24,13 +30,26 @@ class Monitor(QtGui.QMainWindow):
         self.frameSelector.showAxis('left', show=False)
         self.frameSelector.setMouseEnabled(x=False, y=False)
 
+
+    def display(self, scan):
+        # Log.debug("Display scan {}. Summed: {}".format(scan, sum))
+        self.image = np.transpose(scan.images, axes = [0,2,1])
+        self.frameSelector.setXRange(1, self.image.shape[0], padding=0.1)
+        self.lr.setRegion([1, self.image.shape[0]])
         self.updateImage()
+
+
+    def updateImage(self):
+        x0, x1 = self.lr.getRegion()
+        x0 -= 1
+        x0, x1 = int(x0), int(x1)
+        self.imageView.setImage(np.sum(self.image[x0:x1], axis = 0))
 
 
     def getROI(self):
         rois = []
-        for row in range(self.tableWidget.rowCount()):
-            item = self.tableWidget.item(row, 2)
+        for row in range(self.tableRoi.rowCount()):
+            item = self.tableRoi.item(row, 2)
             roi = item.data(pg.QtCore.Qt.UserRole)
             rois.append(roi)
         return rois
@@ -41,43 +60,35 @@ class Monitor(QtGui.QMainWindow):
             self.addRoi(roi)
 
 
-    @QtCore.pyqtSlot()
-    def on_btn_addRoi_pressed(self, *args, **kwargs):
-        self.addRoi()
-
-
-    @QtCore.pyqtSlot()
-    def on_btn_addEnergyPoint_pressed(self, *args, **kwargs):
-        self.addEnergyPoint()
-
-
     def addRoi(self, roi = None):
-        rows = self.tableWidget.rowCount()
-        self.tableWidget.insertRow(rows)
+        rows = self.tableRoi.rowCount()
+        self.tableRoi.insertRow(rows)
 
         if roi == None:
             size = [self.image.shape[-2], 40]
             roi = ROI([0,size[1] / 2], size, 'ROI {}'.format(rows))
 
         roi.addToMonitor(self)
+        roi.connectUpdateSlot(self.updatePlot)
 
+
+        # proxy = pg.SignalProxy(roi.sigRegionChanged,
+        #     rateLimit=2, delay = 0.0, slot = self.update_analyzer)
 
         # Button items
-        btn_active = QtGui.QPushButton("Active")
+        btn_active = HideButton()
         btn_active.setCheckable(True)
         btn_active.toggle()
-        btn_active.setStyleSheet("QPushButton:checked { background-color: #a8fc97 }")
-        btn_remove = QtGui.QPushButton("Remove")
-        btn_remove.setStyleSheet("QPushButton { background-color: #ff7a69 }")
-        self.tableWidget.setCellWidget(rows, 0, btn_active)
-        self.tableWidget.setCellWidget(rows, 1, btn_remove)
+        btn_remove = RemoveButton()
+        self.tableRoi.setCellWidget(rows, 0, btn_active)
+        self.tableRoi.setCellWidget(rows, 1, btn_remove)
 
         # Remaining items
         item01 = QtGui.QTableWidgetItem()
         item01.setText(roi.name)
         item01.setData(pg.QtCore.Qt.UserRole, roi)
         item01.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
-        self.tableWidget.setItem(rows, 2, item01)
+        self.tableRoi.setItem(rows, 2, item01)
 
         # Connect button events
         btn_remove.clicked.connect(lambda : self.removeROI(item01))
@@ -85,8 +96,8 @@ class Monitor(QtGui.QMainWindow):
 
 
     def addEnergyPoint(self, energyPoint = None):
-            rows = self.tableWidget_2.rowCount()
-            self.tableWidget_2.insertRow(rows)
+            rows = self.tableEnergy.rowCount()
+            self.tableEnergy.insertRow(rows)
 
             if energyPoint == None:
                 positions = [0]
@@ -105,32 +116,30 @@ class Monitor(QtGui.QMainWindow):
                 self.energyPoints.append(energyPoint)
 
 
-
-
             # Button items
             btn_remove = QtGui.QPushButton("Remove")
             btn_remove.setStyleSheet("QPushButton { background-color: #ff7a69 }")
-            self.tableWidget_2.setCellWidget(rows, 0, btn_remove)
+            self.tableEnergy.setCellWidget(rows, 0, btn_remove)
 
             # Remaining items
             item01 = QtGui.QTableWidgetItem()
             item01.setText("0")
-            self.tableWidget_2.setItem(rows, 1, item01)
+            self.tableEnergy.setItem(rows, 1, item01)
 
             # Connect button events
             btn_remove.clicked.connect(lambda : self.removeEnergyPoint(item01))
 
 
     def removeROI(self, item):
-        row = self.tableWidget.row(item)
+        row = self.tableRoi.row(item)
         roi = item.data(pg.QtCore.Qt.UserRole)
         roi.removeFromMonitor(self)
-        self.tableWidget.removeRow(row)
+        self.tableRoi.removeRow(row)
 
 
         # Rename remaining ROI
-        for row in range(self.tableWidget.rowCount()):
-            item = self.tableWidget.item(row, 2)
+        for row in range(self.tableRoi.rowCount()):
+            item = self.tableRoi.item(row, 2)
             item.setFlags(QtCore.Qt.ItemIsEditable)
             roi = item.data(pg.QtCore.Qt.UserRole)
             roi.changeName('ROI {}'.format(row))
@@ -139,21 +148,13 @@ class Monitor(QtGui.QMainWindow):
 
 
     def removeEnergyPoint(self, item):
-        index = self.tableWidget_2.row(item)
+        index = self.tableEnergy.row(item)
         self.energyPoints.remove(self.energyPoints[index])
 
         for roi in self.getROI():
             roi.removeEnergyPoint(index, self)
 
-        self.tableWidget_2.removeRow(index)
-
-
-    def updateImage(self):
-        x0, x1 = self.lr.getRegion()
-        x0 -= 1
-        x0, x1 = int(x0), int(x1)
-        print(x0, x1)
-        self.imageView.setImage(np.sum(self.image[x0:x1], axis = 0))
+        self.tableEnergy.removeRow(index)
 
 
     def frameSelectorChanged(self, *args, **kwargs):

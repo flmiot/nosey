@@ -44,8 +44,8 @@ QPushButton:checked {
     </property>
     <property name="icon">
      <iconset>
-      <normaloff>../../../../Downloads/icons8-unsichtbar-90.png</normaloff>
-      <normalon>../../../../Downloads/icons8-unsichtbar-100.png</normalon>../../../../Downloads/icons8-unsichtbar-90.png</iconset>
+      <normaloff>../icons/icons8-unsichtbar-90.png</normaloff>
+      <normalon>../icons/icons8-unsichtbar-100.png</normalon>../icons/icons8-unsichtbar-90.png</iconset>
     </property>
     <property name="iconSize">
      <size>
