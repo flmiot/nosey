@@ -106,8 +106,6 @@ class Monitor(object):
                     positions.append((ind + 1) * step)
                 self.energyPoints.append(0)
 
-                print(positions)
-
                 for roi in self.getROI():
                     roi.clearEnergyPoints(self)
                     for pos in positions:

@@ -1,6 +1,5 @@
 import os
 import re
-import tifffile as tiff
 import time
 import numpy as np
 import logging

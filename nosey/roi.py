@@ -84,7 +84,6 @@ class ROI(object):
             # get bounding box
             x,y = coords[0].flatten(), coords[1].flatten()
 
-            print(x, y)
             x0, x1 = np.min(x), np.max(x)
             y0, y1 = np.min(y), np.max(y)
             bbox = list([int(i) for i in [x0,y0,x1,y1]])
