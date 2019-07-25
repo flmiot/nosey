@@ -136,6 +136,15 @@ class ROI(object):
             self.removeEnergyPoint(0, monitor)
 
 
+    def getEnergyPointPositions(self):
+        positions = []
+        for ep in self.energyPoints:
+            pos = ep.pos()[0]
+            positions.append(pos)
+
+        return positions
+
+
     def regionChanged(self, object):
 
         self.blockSignals(True)

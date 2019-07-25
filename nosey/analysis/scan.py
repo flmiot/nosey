@@ -14,7 +14,7 @@ class Scan(object):
         """ Specify *logfile* as namestring and list of *image_files*.
         Assumes that logfile holds energy for each image.
         """
-        self.name           = os.path.splitext(os.path.split(log_file)[1])[0]
+        self.name           = log_file
         self.log_file       = log_file
         self.files          = image_files
         self.images         = None
@@ -22,7 +22,6 @@ class Scan(object):
         self.monitor        = None
         self.active         = True
         # self.bg_model     = None
-        self.calibration    = None
         self.loaded         = False
         self.offset         = [0,0]
         self.range          = [0, len(image_files)]
@@ -110,11 +109,8 @@ class Scan(object):
 
         for ind, an in enumerate(analyzers):
             b, s, bg, fit = an.get_signal_series(images = self.images,
-                background_rois = background_rois,
-                calibration = self.calibration)
+                background_rois = background_rois)
 
-
-            print(s)
             out_e[ind] = b
             intensity[ind] = s
             background[ind] = bg

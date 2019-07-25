@@ -14,10 +14,14 @@
    <string>Nosey</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">QPushButton {
+   <string notr="true">QTableWidget {
+    border-radius: 15px;
+    border-color: beige;
+}
+
+QPushButton {
     border-radius: 5px;
     border-color: beige;
-    font: bold 14px;
     padding: 6px;
  	background-color: #cfcfcf;
 }
@@ -69,6 +73,9 @@ QPushButton:pressed {
   <widget class="QToolBar" name="toolBar">
    <property name="windowTitle">
     <string>toolBar</string>
+   </property>
+   <property name="styleSheet">
+    <string notr="true"/>
    </property>
    <attribute name="toolBarArea">
     <enum>LeftToolBarArea</enum>
@@ -1242,7 +1249,22 @@ QPushButton:pressed {
             <item>
              <widget class="QTableWidget" name="tableRoi">
               <property name="styleSheet">
-               <string notr="true"/>
+               <string notr="true">QTableWidget {
+    border-radius: 15px;
+    border-color: beige;
+}
+
+QPushButton {
+    border-radius: 5px;
+    border-color: beige;
+    font: bold 14px;
+    padding: 6px;
+ 	background-color: #cfcfcf;
+}
+
+QPushButton:pressed {
+    background-color: #8aeb97;
+}</string>
               </property>
               <property name="alternatingRowColors">
                <bool>false</bool>

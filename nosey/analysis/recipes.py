@@ -134,7 +134,6 @@ class SOLEILRecipe(Recipe):
         with h5py.File(filename, 'r') as file:
             path = '/entry/scan_data/{}image'
             path = path.format(os.path.split(filename)[1].split('00')[0])
-            print(path)
             images = file[path][:, y0:y1, x0:x1]
 
         if not indizes:

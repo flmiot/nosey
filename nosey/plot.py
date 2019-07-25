@@ -21,9 +21,9 @@ class Plot(object):
         self.plotWidget.getPlotItem().addLegend()
         self.plotWidget.setBackground('w')
         labelStyle = {'color': '#000', 'font-size': '10pt'}
-        self.plotWidget.getAxis('bottom').setLabel('Energy', units='eV', **labelStyle)
+        self.plotWidget.getAxis('bottom').setLabel('x', units='', **labelStyle)
         self.plotWidget.getAxis('bottom').enableAutoSIPrefix(False)
-        self.plotWidget.getAxis('left').setLabel('Intensity', units='a.u.', **labelStyle)
+        self.plotWidget.getAxis('left').setLabel('y', units='', **labelStyle)
         self.plotWidget.getAxis('left').enableAutoSIPrefix(False)
 
 
@@ -35,22 +35,25 @@ class Plot(object):
             experiment.scans    = self.getScans()
             analyzers   = []
 
+            # Regions of interest
             roi = self.getROI()
             for r in roi:
                 if not r.active:
                     continue
 
-                bb_signal, bb_bg01, bb_bg02 = r.getCoordinates(self.imageView)
-                a = Analyzer(r.name)
-                a.set_roi(bb_signal)
-                experiment.add_analyzer(a)
-                bg01 = Analyzer(r.name)
-                bg01.set_roi(bb_bg01)
-                bg02 = Analyzer(r.name)
-                bg02.set_roi(bb_bg02)
+                sig = Analyzer.make_signal_from_QtRoi(r, self.imageView, 0)
+                energies = self.getEnergies()
+                print(energies)
+                if len(energies) >= 2:
+                    positions = r.getEnergyPointPositions()
+                    sig.setEnergies(positions, energies)
+
+
+                bg01 = Analyzer.make_signal_from_QtRoi(r, self.imageView, 1)
+                bg02 = Analyzer.make_signal_from_QtRoi(r, self.imageView, 2)
+                experiment.add_analyzer(sig)
                 experiment.add_background_roi(bg01)
                 experiment.add_background_roi(bg02)
-
 
 
             self.clear_plot()
@@ -160,6 +163,12 @@ class Plot(object):
     def _get_background_pen(self, color):
         pen = pg.mkPen(color=color, style=QtCore.Qt.DashLine)
         return pen
+
+
+    def _normalize_curve(self, i):
+        """Return normalized curve and factor by which curve was scaled."""
+        factor = np.abs(1 / np.sum(i)) * 1000.
+        return i * factor, factor
 
 
     def clear_plot(self):

@@ -4,6 +4,8 @@ import numpy as np
 import logging
 import nosey
 
+from nosey.analysis.calibration import EnergyCalibration
+
 Log = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
 
@@ -15,20 +17,28 @@ class Analyzer(object):
         doing summed signal analysis.
         """
 
-        # self.calibration        = None
-        self.energy_offset      = 0.0
         self.roi                = None      # xmin,ymin,xmax,ymax e.g. [0,0,5,5]
         self.active             = True
         self.name               = name
         self.mask               = None
         self.poly_fit           = False
         self.poly_order         = 6
+        self.calibration        = None
 
         if roi is not None:
             self.set_roi(roi)
 
         if mask is not None:
             self.set_mask(mask)
+
+    @classmethod
+    def make_signal_from_QtRoi(cls, roi, imageView, type = 0):
+        """type can be 0,1 or 2 (signal, bg01 or bg02)"""
+        bb = roi.getCoordinates(imageView)[type]
+        a = cls(roi.name)
+        a.set_roi(bb)
+
+        return a
 
 
     def size(self, mask = None):
@@ -80,8 +90,8 @@ class Analyzer(object):
             raise Exception(fmt)
 
 
-    def set_calibration(self, calibration):
-        self.calibration = calibration.register(self)
+    def setEnergies(self, positions, energies):
+        self.calibration = EnergyCalibration(positions, energies)
 
 
     def get_signal(self, image, poly_fit = False, poly_order = 6):
@@ -104,8 +114,7 @@ class Analyzer(object):
         return ea, ii
 
 
-    def get_signal_series(self, images, background_rois = None,
-        calibration = None):
+    def get_signal_series(self, images, background_rois = None):
         """
 
         """
@@ -113,11 +122,11 @@ class Analyzer(object):
         start = time.time()
         x0, y0, x1, y1 = self.clip_roi(self.roi, images[0].shape)
 
-        if calibration is None:
+        if self.calibration is None:
             ea = np.arange(len(np.arange(x0, x1+1)))
             fit = None
         else:
-            ea, fit = calibration.get_energy_axis(self)
+            ea, fit = self.calibration.getAxis(np.arange(len(np.arange(x0, x1+1))))
 
         ii = np.empty(len(images), dtype = list)
         bg = np.zeros(len(images), dtype = list)

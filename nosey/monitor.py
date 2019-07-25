@@ -16,7 +16,6 @@ class Monitor(object):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.image = np.zeros((4, 128, 128))
-        self.energyPoints = []
 
 
     def setupMonitor(self):
@@ -93,39 +92,41 @@ class Monitor(object):
         # Connect button events
         btn_remove.clicked.connect(lambda : self.removeROI(item01))
         btn_active.toggled.connect(roi.toggle)
+        btn_active.toggled.connect(self.updatePlot)
 
 
-    def addEnergyPoint(self, energyPoint = None):
-            rows = self.tableEnergy.rowCount()
-            self.tableEnergy.insertRow(rows)
+    def addEnergyPoint(self):
+        energies = self.getEnergies()
+        rows = self.tableEnergy.rowCount()
+        positions = [0]
+        self.tableEnergy.insertRow(rows)
 
-            if energyPoint == None:
-                positions = [0]
-                step = self.image.shape[1] / max(1, len(self.energyPoints))
-                for ind in range(len(self.energyPoints)):
-                    positions.append((ind + 1) * step)
-                self.energyPoints.append(0)
+        step = self.image.shape[1] / max(1, len(energies))
+        for ind in range(len(energies)):
+            positions.append((ind + 1) * step)
 
-                for roi in self.getROI():
-                    roi.clearEnergyPoints(self)
-                    for pos in positions:
-                        roi.addEnergyPoint(pos, self)
-            else:
-                self.energyPoints.append(energyPoint)
+        for roi in self.getROI():
+            roi.clearEnergyPoints(self)
+            for pos in positions:
+                roi.addEnergyPoint(pos, self)
+
+            roi.connectUpdateSlot(self.updatePlot)
 
 
-            # Button items
-            btn_remove = QtGui.QPushButton("Remove")
-            btn_remove.setStyleSheet("QPushButton { background-color: #ff7a69 }")
-            self.tableEnergy.setCellWidget(rows, 0, btn_remove)
+        # Button items
+        btn_remove = QtGui.QPushButton("Remove")
+        btn_remove.setStyleSheet("QPushButton { background-color: #ff7a69 }")
+        self.tableEnergy.setCellWidget(rows, 0, btn_remove)
 
-            # Remaining items
-            item01 = QtGui.QTableWidgetItem()
-            item01.setText("0")
-            self.tableEnergy.setItem(rows, 1, item01)
+        # Remaining items
+        item01 = QtGui.QTableWidgetItem()
+        item01.setText("0")
+        self.tableEnergy.setItem(rows, 1, item01)
 
-            # Connect button events
-            btn_remove.clicked.connect(lambda : self.removeEnergyPoint(item01))
+        # Connect button events
+        btn_remove.clicked.connect(lambda : self.removeEnergyPoint(item01))
+
+
 
 
     def removeROI(self, item):
@@ -147,13 +148,21 @@ class Monitor(object):
 
     def removeEnergyPoint(self, item):
         index = self.tableEnergy.row(item)
-        self.energyPoints.remove(self.energyPoints[index])
 
         for roi in self.getROI():
             roi.removeEnergyPoint(index, self)
 
         self.tableEnergy.removeRow(index)
 
+
+    def getEnergies(self):
+        rows = self.tableEnergy.rowCount()
+        energies = []
+        for rowIndex in range(rows):
+            energy = float(self.tableEnergy.item(rowIndex, 1).text())
+            energies.append(energy)
+
+        return energies
 
     def frameSelectorChanged(self, *args, **kwargs):
         self.lr.sigRegionChanged.disconnect(self.frameSelectorChanged)

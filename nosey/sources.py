@@ -22,9 +22,9 @@ class Sources(object):
 
     def addSource(self):
         try:
-            log_path = str(QtGui.QFileDialog.getOpenFileName(self, 'Select logfile')[0])
+            #log_path = str(QtGui.QFileDialog.getOpenFileName(self, 'Select logfile')[0])
             img_path = str(QtGui.QFileDialog.getOpenFileName(self, 'Select images')[0])
-            scan = self._read_scan(img_path, log_path)
+            scan = self._read_scan(img_path, log_file = None)
 
         except Exception as e:
             nosey.Log.error(e)
@@ -60,8 +60,8 @@ class Sources(object):
         # file_names = [f for f in file_names if scan_no in f and "tif" in f]
         # files = sorted(list([os.path.join(img_path,f) for f in file_names]))
         # files = [f for f in files if scan_no in f]
-        nosey.Log.debug("Reading {} ...".format(log_file))
-        s = Scan(log_file = log_file, image_files = img_path)
+        nosey.Log.debug("Reading {} ...".format(scan_name))
+        s = Scan(log_file = scan_name, image_files = img_path)
         loader = QThread_Loader(s)
         self.threads.append(loader)
         loader.start()
@@ -72,6 +72,8 @@ class Sources(object):
         # Events
         btn_view.clicked.connect(lambda : self.display(s))
         btn_active.clicked.connect(s.toggle)
+        btn_active.clicked.connect(self.updatePlot)
+        btn_remove.clicked.connect(lambda : self.removeSource(item01))
 
         return s
 
@@ -86,6 +88,12 @@ class Sources(object):
         return scans
 
 
+    def removeSource(self, item):
+        row = self.tableSources.row(item)
+        self.tableSources.removeRow(row)
+        self.updatePlot()
+
+
 class QThread_Loader(QtCore.QThread):
     taskFinished = QtCore.pyqtSignal(int)
     imageLoaded = QtCore.pyqtSignal(int)
@@ -96,7 +104,7 @@ class QThread_Loader(QtCore.QThread):
 
     def run(self):
         nosey.Log.info("Loading scan {}, please wait...".format(self.scan.name))
-        self.scan.read_logfile(recipe = SOLEILRecipe())
+        #self.scan.read_logfile(recipe = SOLEILRecipe())
         self.scan.read_files(recipe = SOLEILRecipe())
         n = len(self.scan.images)
         self.taskFinished.emit(n)
