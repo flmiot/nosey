@@ -23,8 +23,12 @@ class Sources(object):
     def addSource(self):
         try:
             #log_path = str(QtGui.QFileDialog.getOpenFileName(self, 'Select logfile')[0])
-            img_path = str(QtGui.QFileDialog.getOpenFileName(self, 'Select images')[0])
-            scan = self._read_scan(img_path, log_file = None)
+            paths = QtGui.QFileDialog.getOpenFileNames(self, 'Select images')[0]
+            print(paths)
+
+            for file_path in paths:
+                print(file_path)
+                self._read_scan(file_path, log_file = None)
 
         except Exception as e:
             nosey.Log.error(e)
@@ -68,6 +72,7 @@ class Sources(object):
         nosey.Log.debug("Scan {} loaded.".format(s))
         item01.setData(pg.QtCore.Qt.UserRole, s)
         item01.setText(scan_name)
+        self.tableSources.resizeColumnsToContents()
 
         # Events
         btn_view.clicked.connect(lambda : self.display(s))
@@ -103,8 +108,11 @@ class QThread_Loader(QtCore.QThread):
         QtCore.QThread.__init__(self, *arg, **kwarg)
 
     def run(self):
-        nosey.Log.info("Loading scan {}, please wait...".format(self.scan.name))
-        #self.scan.read_logfile(recipe = SOLEILRecipe())
-        self.scan.read_files(recipe = SOLEILRecipe())
-        n = len(self.scan.images)
-        self.taskFinished.emit(n)
+        try:
+            nosey.Log.info("Loading scan {}, please wait...".format(self.scan.name))
+            #self.scan.read_logfile(recipe = SOLEILRecipe())
+            self.scan.read_files(recipe = SOLEILRecipe())
+            n = len(self.scan.images)
+            self.taskFinished.emit(n)
+        except Exception as e:
+            nosey.Log.error("Loader thread crashed: {}".format(e))

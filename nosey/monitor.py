@@ -64,7 +64,7 @@ class Monitor(object):
         self.tableRoi.insertRow(rows)
 
         if roi == None:
-            size = [self.image.shape[-2], 40]
+            size = [self.image.shape[-2], 10]
             roi = ROI([0,size[1] / 2], size, 'ROI {}'.format(rows))
 
         roi.addToMonitor(self)
@@ -88,6 +88,7 @@ class Monitor(object):
         item01.setData(pg.QtCore.Qt.UserRole, roi)
         item01.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
         self.tableRoi.setItem(rows, 2, item01)
+        self.tableRoi.resizeColumnsToContents()
 
         # Connect button events
         btn_remove.clicked.connect(lambda : self.removeROI(item01))
@@ -114,14 +115,14 @@ class Monitor(object):
 
 
         # Button items
-        btn_remove = QtGui.QPushButton("Remove")
-        btn_remove.setStyleSheet("QPushButton { background-color: #ff7a69 }")
+        btn_remove = RemoveButton()
         self.tableEnergy.setCellWidget(rows, 0, btn_remove)
 
         # Remaining items
         item01 = QtGui.QTableWidgetItem()
         item01.setText("0")
         self.tableEnergy.setItem(rows, 1, item01)
+        self.tableEnergy.resizeColumnsToContents()
 
         # Connect button events
         btn_remove.clicked.connect(lambda : self.removeEnergyPoint(item01))
@@ -163,6 +164,18 @@ class Monitor(object):
             energies.append(energy)
 
         return energies
+
+    def autoCalibration(self):
+        try:
+            for roi in self.getROI():
+                scans = self.getScans()
+                img = np.zeros(scans[0].images[0].shape)
+                for scan in scans:
+                    img += np.sum(scan.images, axis = 0)
+                roi.setEnergyPointsAuto(img, self.imageView)
+        except Exception as e:
+            nosey.Log.error("Automatic energy calibration failed: {}".format(e))
+
 
     def frameSelectorChanged(self, *args, **kwargs):
         self.lr.sigRegionChanged.disconnect(self.frameSelectorChanged)

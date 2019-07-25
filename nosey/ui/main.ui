@@ -156,6 +156,9 @@ QPushButton:pressed {
          <property name="styleSheet">
           <string notr="true"/>
          </property>
+         <property name="sizeAdjustPolicy">
+          <enum>QAbstractScrollArea::AdjustIgnored</enum>
+         </property>
          <property name="cornerButtonEnabled">
           <bool>false</bool>
          </property>
@@ -1200,7 +1203,7 @@ QPushButton:pressed {
          <enum>QTabWidget::Rounded</enum>
         </property>
         <property name="currentIndex">
-         <number>0</number>
+         <number>1</number>
         </property>
         <widget class="QWidget" name="tab">
          <attribute name="title">
@@ -1351,6 +1354,13 @@ QPushButton:pressed {
                   <string>Select energies manually</string>
                  </property>
                 </item>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="btn_autoCalibration">
+                <property name="text">
+                 <string>Auto</string>
+                </property>
                </widget>
               </item>
              </layout>

@@ -14,6 +14,7 @@ class MainFrame(QtGui.QMainWindow, Monitor, Sources, Plot):
         dirname = os.path.dirname(__file__)
         uic.loadUi(os.path.join(dirname, 'ui/main.ui'), self)
         self.setupUi()
+        self.actionUpdate_automatically.trigger()
 
     # ====================== SLOTS ====================== #
 
@@ -65,6 +66,12 @@ class MainFrame(QtGui.QMainWindow, Monitor, Sources, Plot):
     @QtCore.pyqtSlot()
     def on_actionScanningType_triggered(self, *args, **kwargs):
         self.updatePlot(manual = True)
+
+
+    @QtCore.pyqtSlot()
+    def on_btn_autoCalibration_clicked(self, *args, **kwargs):
+        images = np.empty(1)
+        self.autoCalibration()
 
     # =================================================== #
 

@@ -6,6 +6,9 @@ from pyqtgraph import QtCore, QtGui
 Log = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
 
+from nosey.analysis.analyzer import Analyzer
+import matplotlib.pyplot as plt
+
 class ROI(object):
 
     def __init__(self, position, size, name):
@@ -29,7 +32,7 @@ class ROI(object):
         signal.addScaleHandle([1, 0.5], [0, 0.5])
         pos = [position[0], position[1] + size[1] / 2]
         axis = pg.ROI(pos, [size[0], 0], pen = axis_pen)
-        size[1] = size[1] * 0.5
+        size[1] = size[1] * 0.25
         background01   = pg.ROI(position, size, pen = bg_pen)
         background01.addScaleHandle([0.5, 0], [0.5, 1])
         background02   = pg.ROI(position, size,  pen = bg_pen)
@@ -117,7 +120,8 @@ class ROI(object):
     def addEnergyPoint(self, x, monitor):
         ep_pen = pg.mkPen(color='#ff6666')
         y = self.objects[0].pos()[1] + self.objects[0].size()[1] / 2
-        c = EnergyPointROI([x-5, y-5], size = (10,10), pen = ep_pen)
+        name = '{} - Index: {}'.format(self.name, len(self.energyPoints))
+        c = EnergyPointROI([x-5, y-5], size = (10,10), name = name, pen = ep_pen)
         self.energyPoints.append(c)
         monitor.imageView.getView().addItem(c)
 
@@ -143,6 +147,26 @@ class ROI(object):
             positions.append(pos)
 
         return positions
+
+
+    def setEnergyPointsAuto(self, image, imageView):
+        a = Analyzer.make_signal_from_QtRoi(self, [195, 487], imageView, 0)
+        _, curve = a.get_signal(image)
+        no_of_peaks = len(self.energyPoints)
+        positions = self._find_peak_positions(curve, no_of_peaks)
+
+        print(positions)
+
+        self.blockSignals(True)
+        for ind in range(no_of_peaks):
+            object = self.energyPoints[ind]
+            position = positions[ind]
+            ep_pos = object.pos()
+            ep_pos[0] = position
+            object.setPos(ep_pos)
+        self.blockSignals(False)
+
+
 
 
     def regionChanged(self, object):
@@ -213,11 +237,25 @@ class ROI(object):
         return pos_b1, pos_b2
 
 
+    def _find_peak_positions(self, curve, no_of_peaks, peak_radius = 10):
+        ppos = []
+        print(curve)
+        c = np.ma.array(curve, mask = False)
+        for peak in range(no_of_peaks):
+            print(c)
+            pos = c.argmax()
+            ppos.append(pos)
+            c.mask[pos-peak_radius:pos+peak_radius] = True
+        return sorted(ppos)
+
+
+
 class EnergyPointROI(pg.ROI):
-    def __init__(self, pos, size, **args):
+    def __init__(self, pos, size, name, **args):
         self.path = None
         pg.ROI.__init__(self, pos, size, **args)
         self.sigRegionChanged.connect(self._clearPath)
+        self.setToolTip(name)
         #self._addHandles()
 
     def _addHandles(self):

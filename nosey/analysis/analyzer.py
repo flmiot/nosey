@@ -32,11 +32,12 @@ class Analyzer(object):
             self.set_mask(mask)
 
     @classmethod
-    def make_signal_from_QtRoi(cls, roi, imageView, type = 0):
+    def make_signal_from_QtRoi(cls, roi, mask, imageView, type = 0):
         """type can be 0,1 or 2 (signal, bg01 or bg02)"""
         bb = roi.getCoordinates(imageView)[type]
         a = cls(roi.name)
         a.set_roi(bb)
+        a.set_mask(mask)
 
         return a
 

@@ -41,7 +41,7 @@ class Plot(object):
                 if not r.active:
                     continue
 
-                sig = Analyzer.make_signal_from_QtRoi(r, self.imageView, 0)
+                sig = Analyzer.make_signal_from_QtRoi(r, [195, 487], self.imageView, 0)
                 energies = self.getEnergies()
                 print(energies)
                 if len(energies) >= 2:
@@ -49,8 +49,8 @@ class Plot(object):
                     sig.setEnergies(positions, energies)
 
 
-                bg01 = Analyzer.make_signal_from_QtRoi(r, self.imageView, 1)
-                bg02 = Analyzer.make_signal_from_QtRoi(r, self.imageView, 2)
+                bg01 = Analyzer.make_signal_from_QtRoi(r, [195, 487], self.imageView, 1)
+                bg02 = Analyzer.make_signal_from_QtRoi(r, [195, 487], self.imageView, 2)
                 experiment.add_analyzer(sig)
                 experiment.add_background_roi(bg01)
                 experiment.add_background_roi(bg02)
