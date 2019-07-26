@@ -6,6 +6,7 @@ from pyqtgraph import QtCore, QtGui
 Log = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
 
+import nosey
 from nosey.analysis.analyzer import Analyzer
 import matplotlib.pyplot as plt
 
@@ -130,9 +131,12 @@ class ROI(object):
 
 
     def removeEnergyPoint(self, index, monitor):
-        c = self.energyPoints[index]
-        monitor.imageView.getView().removeItem(c)
-        self.energyPoints.remove(c)
+        try:
+            c = self.energyPoints[index]
+            monitor.imageView.getView().removeItem(c)
+            self.energyPoints.remove(c)
+        except Exception as e:
+            nosey.Log.error("Energy point removal skipped for roi {}".format(self))
 
 
     def clearEnergyPoints(self, monitor):
@@ -258,9 +262,6 @@ class EnergyPointROI(pg.ROI):
         self.setToolTip(name)
         #self._addHandles()
 
-    def _addHandles(self):
-        self.addRotateHandle([1.0, 0.5], [0.5, 0.5])
-        self.addScaleHandle([0.5*2.**-0.5 + 0.5, 0.5*2.**-0.5 + 0.5], [0.5, 0.5])
 
     def _clearPath(self):
         self.path = None

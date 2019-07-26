@@ -20,11 +20,14 @@ class Plot(object):
     def setupPlot(self):
         self.plotWidget.getPlotItem().addLegend()
         self.plotWidget.setBackground('w')
-        labelStyle = {'color': '#000', 'font-size': '10pt'}
-        self.plotWidget.getAxis('bottom').setLabel('x', units='', **labelStyle)
-        self.plotWidget.getAxis('bottom').enableAutoSIPrefix(False)
-        self.plotWidget.getAxis('left').setLabel('y', units='', **labelStyle)
         self.plotWidget.getAxis('left').enableAutoSIPrefix(False)
+        self.plotWidget.getAxis('bottom').enableAutoSIPrefix(False)
+        self.plotWidget.getAxis('left').setStyle(tickTextWidth = 50)
+
+        self.plotWidget.getAxis('bottom').setStyle(tickTextOffset = 10)
+        self.plotWidget.getAxis('bottom')
+        self.plotWidget.getAxis('left').setPen(color = 'k')
+        self.plotWidget.getAxis('bottom').setPen(color = 'k')
 
 
     @nosey.guard.updateGuard
@@ -34,6 +37,8 @@ class Plot(object):
             experiment          = Experiment()
             experiment.scans    = self.getScans()
             analyzers   = []
+            polyFit     = self.analysis_checkBox_polyFit.isChecked()
+            polyorder   = int(self.analysis_spinBox_polyOrder.value())
 
             # Regions of interest
             roi = self.getROI()
@@ -43,7 +48,7 @@ class Plot(object):
 
                 sig = Analyzer.make_signal_from_QtRoi(r, [195, 487], self.imageView, 0)
                 energies = self.getEnergies()
-                print(energies)
+
                 if len(energies) >= 2:
                     positions = r.getEnergyPointPositions()
                     sig.setEnergies(positions, energies)
@@ -51,6 +56,11 @@ class Plot(object):
 
                 bg01 = Analyzer.make_signal_from_QtRoi(r, [195, 487], self.imageView, 1)
                 bg02 = Analyzer.make_signal_from_QtRoi(r, [195, 487], self.imageView, 2)
+                
+                if polyFit:
+                    bg01.poly_fit, bg02.poly_fit = True, True
+                    bg01.poly_order, bg02.poly_order = polyorder, polyorder
+
                 experiment.add_analyzer(sig)
                 experiment.add_background_roi(bg01)
                 experiment.add_background_roi(bg02)
@@ -63,6 +73,7 @@ class Plot(object):
             subtract_background = nosey.gui.actionSubtractBackground.isChecked()
             normalize = nosey.gui.actionNormalize.isChecked()
             scanning_type = nosey.gui.actionScanningType.isChecked()
+
 
             analysis_result = experiment.get_spectrum()
 
@@ -105,14 +116,14 @@ class Plot(object):
                     sub = single_i - single_b
 
                     if normalize:
-                        sub, _ = self._normalize_curve(sub)
+                        sub, _ = self._normalize_curve(single_e, sub)
 
                     self.plotWidget.plot(single_e, sub,
                         pen = pens[ind_s, ind_a], name = single_l)
                 else:
 
                     if normalize:
-                        single_i, fac = self._normalize_curve(single_i)
+                        single_i, fac = self._normalize_curve(single_e, single_i)
                     else:
                         fac = 1.0
 
@@ -121,6 +132,8 @@ class Plot(object):
 
                     self.plotWidget.plot(single_e, single_b * fac,
                         pen = pens_bg[ind_s, ind_a])
+
+            self.applySettings()
 
 
 
@@ -165,10 +178,25 @@ class Plot(object):
         return pen
 
 
-    def _normalize_curve(self, i):
+    def _normalize_curve(self, e, i, window = None):
         """Return normalized curve and factor by which curve was scaled."""
-        factor = np.abs(1 / np.sum(i)) * 1000.
-        return i * factor, factor
+        try:
+            if window is None:
+                w0 = float(self.analysis_lineEdit_window0.text())
+                w1 = float(self.analysis_lineEdit_window1.text())
+                ind0 = np.argmin(np.abs(e - w0))
+                ind1 = np.argmin(np.abs(e - w1))
+
+            if ind1 - ind0 < 1 or min(ind0, ind1) < 0:
+                raise Exception("Invalid normalization window")
+
+            weight = np.sum(i[ind0:ind1])
+            factor = np.abs(1 / weight) * 1000.
+            return i * factor, factor
+        except Exception as e:
+            nosey.Log.error("Normalization failed: {}".format(e))
+            return i, 1.0
+
 
 
     def clear_plot(self):
@@ -178,3 +206,11 @@ class Plot(object):
         for item in items:
             pi.legend.removeItem(item.name())
             pi.removeItem(item)
+
+
+    def updateCursorPlot(self, event):
+        pos = event[0]
+        x = self.plotWidget.getPlotItem().vb.mapSceneToView(pos).x()
+        y = self.plotWidget.getPlotItem().vb.mapSceneToView(pos).y()
+        fmt = 'x: {:.7f} | y: {:.7f}'.format(x,y)
+        self.statusBar.write(fmt)

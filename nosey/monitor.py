@@ -32,10 +32,11 @@ class Monitor(object):
 
     def display(self, scan):
         # Log.debug("Display scan {}. Summed: {}".format(scan, sum))
-        self.image = np.transpose(scan.images, axes = [0,2,1])
-        self.frameSelector.setXRange(1, self.image.shape[0], padding=0.1)
-        self.lr.setRegion([1, self.image.shape[0]])
-        self.updateImage()
+        if scan.loaded:
+            self.image = np.transpose(scan.images, axes = [0,2,1])
+            self.frameSelector.setXRange(1, self.image.shape[0], padding=0.1)
+            self.lr.setRegion([1, self.image.shape[0]])
+            self.updateImage()
 
 
     def updateImage(self):
@@ -69,6 +70,19 @@ class Monitor(object):
 
         roi.addToMonitor(self)
         roi.connectUpdateSlot(self.updatePlot)
+
+        energies = self.getEnergies()
+        positions = []
+
+        step = self.image.shape[1] / max(1, len(energies)-1)
+        for ind in range(0, len(energies)):
+            positions.append((ind) * step)
+
+
+        for pos in positions:
+            roi.addEnergyPoint(pos, self)
+
+
 
 
         # proxy = pg.SignalProxy(roi.sigRegionChanged,
@@ -185,3 +199,21 @@ class Monitor(object):
         self.lr.setRegion([x0, x1])
         self.lr.sigRegionChanged.connect(self.frameSelectorChanged)
         self.lr.sigRegionChangeFinished.connect(self.updateImage)
+
+
+    def updateCursorMonitor(self, event):
+        pos = event[0]
+        x = int(self.imageView.getView().mapSceneToView(pos).x())
+        y = int(self.imageView.getView().mapSceneToView(pos).y())
+
+        try:
+            if len(self.imageView.image.shape) == 3:
+                z = self.imageView.currentIndex
+                i = self.imageView.image[z,x,y]
+            else:
+                i = self.imageView.image[x,y]
+        except Exception as e:
+            i = 0
+        fmt = 'x: {:6d} | y: {:6d} | intensity: {:6.0f}'
+        fmt = fmt.format(x,y, i)
+        self.statusBar.write(fmt)
