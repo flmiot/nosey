@@ -1,9 +1,5 @@
 import numpy as np
-import logging
 import nosey
-
-Log = logging.getLogger(__name__)
-logging.basicConfig(level=logging.DEBUG)
 
 class Label(object):
     def __init__(self):

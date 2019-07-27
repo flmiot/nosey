@@ -1,10 +1,6 @@
 import numpy as np
-import logging
 import pyqtgraph as pg
 from pyqtgraph import QtCore, QtGui
-
-Log = logging.getLogger(__name__)
-logging.basicConfig(level=logging.DEBUG)
 
 import nosey
 from nosey.analysis.analyzer import Analyzer
@@ -19,6 +15,8 @@ class ROI(object):
         self.energyPoints   = []
         self.b1_distance    = 0
         self.b2_distance    = 0
+
+        self.proxies        = []
 
         # ROI Pens
         signal_pen = pg.mkPen(color='#e5ff00')
@@ -47,6 +45,20 @@ class ROI(object):
         self.changeName(name)
 
         self.connectUpdateSlot(self.regionChanged)
+
+
+    def connectUpdateSlotProxy(self, slot):
+        self.proxies.clear()
+
+        for obj in self.objects:
+            proxy = pg.SignalProxy(obj.sigRegionChanged,
+                delay=nosey.lastComputationTime, slot = slot)
+            self.proxies.append(proxy)
+
+        for obj in self.energyPoints:
+            proxy = pg.SignalProxy(obj.sigRegionChanged,
+                delay=nosey.lastComputationTime, slot = slot)
+            self.proxies.append(proxy)
 
 
     def connectUpdateSlot(self, slot):
@@ -158,8 +170,6 @@ class ROI(object):
         _, curve = a.get_signal(image)
         no_of_peaks = len(self.energyPoints)
         positions = self._find_peak_positions(curve, no_of_peaks)
-
-        print(positions)
 
         self.blockSignals(True)
         for ind in range(no_of_peaks):

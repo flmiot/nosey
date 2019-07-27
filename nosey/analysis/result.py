@@ -1,12 +1,10 @@
+"""Analysis result"""
+
 import numpy as np
-import logging
 import scipy.interpolate as interp
 import nosey
 
 from nosey.analysis.label import Label
-
-Log = logging.getLogger(__name__)
-logging.basicConfig(level=logging.DEBUG)
 
 class AnalysisResult(object):
     def __init__(self):
@@ -82,7 +80,7 @@ class AnalysisResult(object):
                         if i0 < 0:
                             i0 = 0
 
-                        Log.debug("Plotting slices from {} - {}".format(i0, i1))
+                        nosey.Log.debug("Plotting slices from {} - {}".format(i0, i1))
                         ii.append(np.sum(il[:, i0:i1], axis = 1))
                         bi.append(np.sum(bl[:, i0:i1], axis = 1))
                 else:

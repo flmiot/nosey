@@ -1,6 +1,6 @@
 import os
+import time
 import numpy as np
-import logging
 import pyqtgraph as pg
 from pyqtgraph.Qt import QtCore, QtGui
 import matplotlib.cm as cm
@@ -8,9 +8,6 @@ import matplotlib.cm as cm
 import nosey.guard
 from nosey.analysis.experiment import Experiment
 from nosey.analysis.analyzer import Analyzer
-
-Log = logging.getLogger(__name__)
-logging.basicConfig(level=logging.DEBUG)
 
 class Plot(object):
     def __init__(self, *args, **kwargs):
@@ -33,7 +30,7 @@ class Plot(object):
     @nosey.guard.updateGuard
     def updatePlot(self, *args, **kwargs):
         try:
-
+            start = time.time()
             experiment          = Experiment()
             experiment.scans    = self.getScans()
             analyzers   = []
@@ -56,7 +53,7 @@ class Plot(object):
 
                 bg01 = Analyzer.make_signal_from_QtRoi(r, [195, 487], self.imageView, 1)
                 bg02 = Analyzer.make_signal_from_QtRoi(r, [195, 487], self.imageView, 2)
-                
+
                 if polyFit:
                     bg01.poly_fit, bg02.poly_fit = True, True
                     bg01.poly_order, bg02.poly_order = polyorder, polyorder
@@ -85,10 +82,16 @@ class Plot(object):
                 scanning_type, subtract_background, normalize, single_image,
                 slices, False, False)
 
+            nosey.lastComputationTime = time.time() - start
+            fmt = "Last computation took {:.3f} s.".format(nosey.lastComputationTime)
+            self.analysis_labelComputation.setText(fmt)
+
+            for roi in self.getROI():
+                roi.connectUpdateSlotProxy(self.updatePlot)
 
         except Exception as e:
             fmt = 'Plot update failed: {}'.format(e)
-            Log.error(fmt)
+            nosey.Log.error(fmt)
 
 
     def _plot(self, analysis_result, single_analyzers = True, single_scans = True,

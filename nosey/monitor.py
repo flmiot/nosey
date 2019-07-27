@@ -1,15 +1,11 @@
 import os
 import numpy as np
-import logging
 import pyqtgraph as pg
 from pyqtgraph.Qt import QtCore, QtGui, uic
 
 from nosey.roi import ROI
 import nosey.guard
 from nosey.templates import HideButton, RemoveButton
-
-Log = logging.getLogger(__name__)
-logging.basicConfig(level=logging.DEBUG)
 
 class Monitor(object):
 
@@ -44,6 +40,8 @@ class Monitor(object):
         x0 -= 1
         x0, x1 = int(x0), int(x1)
         self.imageView.setImage(np.sum(self.image[x0:x1], axis = 0))
+        hmin, hmax = self.imageView.ui.histogram.getLevels()
+        self.imageView.ui.histogram.setLevels(hmin, hmax * 0.05)
 
 
     def getROI(self):
@@ -69,7 +67,7 @@ class Monitor(object):
             roi = ROI([0,size[1] / 2], size, 'ROI {}'.format(rows))
 
         roi.addToMonitor(self)
-        roi.connectUpdateSlot(self.updatePlot)
+        roi.connectUpdateSlotProxy(self.updatePlot)
 
         energies = self.getEnergies()
         positions = []
@@ -106,8 +104,7 @@ class Monitor(object):
 
         # Connect button events
         btn_remove.clicked.connect(lambda : self.removeROI(item01))
-        btn_active.toggled.connect(roi.toggle)
-        btn_active.toggled.connect(self.updatePlot)
+        btn_active.clicked.connect(lambda : self.showHideRoi(item01))
 
 
     def addEnergyPoint(self):
@@ -126,6 +123,7 @@ class Monitor(object):
                 roi.addEnergyPoint(pos, self)
 
             roi.connectUpdateSlot(self.updatePlot)
+
 
 
         # Button items
@@ -217,3 +215,20 @@ class Monitor(object):
         fmt = 'x: {:6d} | y: {:6d} | intensity: {:6.0f}'
         fmt = fmt.format(x,y, i)
         self.statusBar.write(fmt)
+
+
+    def showHideRoi(self, item):
+        selected_items = self.tableRoi.selectedItems()
+        if not item in selected_items:
+            r = item.data(pg.QtCore.Qt.UserRole)
+            r.toggle()
+        else:
+            for i in selected_items:
+                r = i.data(pg.QtCore.Qt.UserRole)
+                r.toggle()
+                if not i == item:
+                    row = self.tableRoi.row(i)
+                    button = self.tableRoi.cellWidget(row, 0)
+                    button.toggle()
+
+        self.updatePlot()

@@ -17,11 +17,12 @@ class MainFrame(QtGui.QMainWindow, Monitor, Sources, Plot):
 
         self.setupUi()
         self.actionUpdate_automatically.trigger()
+        self.proxies = []
 
-        self.proxyMon = pg.SignalProxy(self.imageView.getView().scene().sigMouseMoved,
-            rateLimit=60, slot = self.updateCursorMonitor)
-        self.proxyPlot = pg.SignalProxy(self.plotWidget.getPlotItem().scene().sigMouseMoved,
-            rateLimit=60, slot = self.updateCursorPlot)
+        self.proxies.append(pg.SignalProxy(self.imageView.getView().scene().sigMouseMoved,
+            rateLimit=60, slot = self.updateCursorMonitor))
+        self.proxies.append(pg.SignalProxy(self.plotWidget.getPlotItem().scene().sigMouseMoved,
+            rateLimit=60, slot = self.updateCursorPlot))
 
     # ====================== SLOTS ====================== #
 

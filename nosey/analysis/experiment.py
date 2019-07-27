@@ -1,12 +1,8 @@
 import time
 import numpy as np
-import logging
 import nosey
 
 from nosey.analysis.result import AnalysisResult
-
-Log = logging.getLogger(__name__)
-logging.basicConfig(level=logging.DEBUG)
 
 class Experiment(object):
     """An Experiment holds a set of analyzers for a number of scans. For each
@@ -70,13 +66,13 @@ class Experiment(object):
 
         end = time.time()
         fmt = "Single spectra obtained [Took {:2f} s]".format(end-start)
-        Log.debug(fmt)
+        nosey.Log.debug(fmt)
         start = end
 
 
         end = time.time()
         fmt = "Spectra summed [Took {:2f} s]".format(end-start)
-        Log.debug(fmt)
+        nosey.Log.debug(fmt)
 
 
 

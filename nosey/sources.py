@@ -76,8 +76,7 @@ class Sources(object):
 
         # Events
         btn_view.clicked.connect(lambda : self.display(s))
-        btn_active.clicked.connect(s.toggle)
-        btn_active.clicked.connect(self.updatePlot)
+        btn_active.clicked.connect(lambda : self.showHideScans(item01))
         btn_remove.clicked.connect(lambda : self.removeSource(item01))
 
         return s
@@ -96,6 +95,23 @@ class Sources(object):
     def removeSource(self, item):
         row = self.tableSources.row(item)
         self.tableSources.removeRow(row)
+        self.updatePlot()
+
+
+    def showHideScans(self, item):
+        selected_items = self.tableSources.selectedItems()
+        if not item in selected_items:
+            s = item.data(pg.QtCore.Qt.UserRole)
+            s.toggle()
+        else:
+            for i in selected_items:
+                s = i.data(pg.QtCore.Qt.UserRole)
+                s.toggle()
+                if not i == item:
+                    row = self.tableSources.row(i)
+                    button = self.tableSources.cellWidget(row, 0)
+                    button.toggle()
+
         self.updatePlot()
 
 

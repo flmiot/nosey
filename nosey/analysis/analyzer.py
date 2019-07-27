@@ -6,15 +6,11 @@ import nosey
 
 from nosey.analysis.calibration import EnergyCalibration
 
-Log = logging.getLogger(__name__)
-logging.basicConfig(level=logging.DEBUG)
-
 class Analyzer(object):
     def __init__(self, name, roi = None, mask = None):
         """
-        Analyzers have a
-        property called *active*, which can be used to include/exclude them when
-        doing summed signal analysis.
+        Analyzers have a property called *active*, which can be used to include/exclude them when
+        doing analysis.
         """
 
         self.roi                = None      # xmin,ymin,xmax,ymax e.g. [0,0,5,5]
@@ -141,7 +137,7 @@ class Analyzer(object):
 
         end = time.time()
         fmt = "Returned signal series [Took {:2f} s]".format(end-start)
-        Log.debug(fmt)
+        nosey.Log.debug(fmt)
 
         return ea, ii, bg, fit
 

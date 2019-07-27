@@ -1,13 +1,11 @@
+"""This module describes a data run ("scan")."""
+
 import os
 import re
 import time
 import numpy as np
-import logging
-import matplotlib.pyplot as plt # For debugging
 import nosey
 
-Log = logging.getLogger(__name__)
-logging.basicConfig(level=logging.DEBUG)
 
 class Scan(object):
     def __init__(self, log_file, image_files):
