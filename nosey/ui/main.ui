@@ -2500,7 +2500,6 @@ QMainWindow::separator:vertical {
    <addaction name="actionCOMShift"/>
    <addaction name="actionSingleAnalyzers"/>
    <addaction name="actionSingleScans"/>
-   <addaction name="actionScanningType"/>
   </widget>
   <widget class="QDockWidget" name="dockWidget">
    <property name="styleSheet">
@@ -2541,11 +2540,14 @@ QMainWindow::separator:vertical {
            <property name="focusPolicy">
             <enum>Qt::StrongFocus</enum>
            </property>
+           <property name="toolTip">
+            <string>Import data</string>
+           </property>
            <property name="styleSheet">
             <string notr="true"/>
            </property>
            <property name="text">
-            <string>Add source</string>
+            <string>Add run</string>
            </property>
            <property name="icon">
             <iconset>
@@ -2564,7 +2566,7 @@ QMainWindow::separator:vertical {
           <enum>QAbstractScrollArea::AdjustIgnored</enum>
          </property>
          <property name="dragDropMode">
-          <enum>QAbstractItemView::DragOnly</enum>
+          <enum>QAbstractItemView::NoDragDrop</enum>
          </property>
          <property name="selectionBehavior">
           <enum>QAbstractItemView::SelectItems</enum>

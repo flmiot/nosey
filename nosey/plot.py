@@ -27,6 +27,7 @@ class Plot(object):
         self.plotWidget.getAxis('left').setPen(color = 'k')
         self.plotWidget.getAxis('bottom').setPen(color = 'k')
 
+        self.plotWidgetDiff.getPlotItem().addLegend()
         self.plotWidgetDiff.setBackground('w')
         self.plotWidgetDiff.getAxis('left').enableAutoSIPrefix(False)
         self.plotWidgetDiff.getAxis('bottom').enableAutoSIPrefix(False)
@@ -111,7 +112,9 @@ class Plot(object):
                 result = experiment.get_spectrum()
 
                 if calcIAD and groupIndex != refIndex:
-                    iad = result.getIAD(refResult)
+                    w0 = float(self.analysis_lineEdit_COMwindow0.text())
+                    w1 = float(self.analysis_lineEdit_COMwindow1.text())
+                    iad = result.getIAD(refResult, [w0, w1])
                     valuesIAD.append(iad)
 
                 results.append( result )
@@ -127,36 +130,36 @@ class Plot(object):
                     nosey.Log.info(fmt)
                     groupIndex += 1
 
-            if len(results) == 0:
-                raise Exception("No active plotting group!")
+                if len(results) == 0:
+                    raise Exception("No active plotting group!")
 
 
 
-            # Plot data:
-            single_scans = nosey.gui.actionSingleScans.isChecked()
-            single_analyzers = nosey.gui.actionSingleAnalyzers.isChecked()
-            subtract_background = nosey.gui.actionSubtractBackground.isChecked()
-            normalize = nosey.gui.actionNormalize.isChecked()
-            scanning_type = nosey.gui.actionScanningType.isChecked()
-            slices = 1
-            single_image = None
+                # Plot data:
+                single_scans = nosey.gui.actionSingleScans.isChecked()
+                single_analyzers = nosey.gui.actionSingleAnalyzers.isChecked()
+                subtract_background = nosey.gui.actionSubtractBackground.isChecked()
+                normalize = nosey.gui.actionNormalize.isChecked()
+                scanning_type = nosey.gui.actionScanningType.isChecked()
+                slices = 1
+                single_image = None
 
-            self.clear_plot()
+                self.clear_plot()
 
 
-            if calcIAD:
-                self.plotWidgetIAD.plot(range(len(valuesIAD)), valuesIAD,  symbol='o', symbolPen='r')
+                if calcIAD:
+                    self.plotWidgetIAD.plot(range(len(valuesIAD)), valuesIAD,  symbol='o', symbolPen='r')
 
-            self._plot(results, single_analyzers, single_scans,
-                scanning_type, subtract_background, normalize, single_image,
-                slices, False, False)
+                self._plot(results, single_analyzers, single_scans,
+                    scanning_type, subtract_background, normalize, single_image,
+                    slices, False, False)
 
-            nosey.lastComputationTime = time.time() - start
-            fmt = "Last computation took {:.3f} s.".format(nosey.lastComputationTime)
-            self.analysis_labelComputation.setText(fmt)
+                nosey.lastComputationTime = time.time() - start
+                fmt = "Last computation took {:.3f} s.".format(nosey.lastComputationTime)
+                self.analysis_labelComputation.setText(fmt)
 
-            for roi in self.getROI():
-                roi.connectUpdateSlotProxy(self.updatePlot)
+                for roi in self.getROI():
+                    roi.connectUpdateSlotProxy(self.updatePlot)
 
         except Exception as e:
             fmt = 'Plot update failed: {}'.format(e)
@@ -169,11 +172,16 @@ class Plot(object):
         normalize_analyzers = False):
 
         groups = len(data)
+        # data[0] is reference
 
         for ind, d in enumerate(data):
             e, i, b, l = d.get_curves(
-                single_scans, single_analyzers, scanning_type, single_image, slices,
+                single_scans, single_analyzers,
+                scanning_type, single_image, slices,
                 normalize_scans, normalize_analyzers)
+
+            if ind == 0:
+                ref_e, ref_i, ref_b = e, i, b
 
             pens, pens_bg = self._get_pens(e, i, b, single_analyzers, single_scans, groups)
 
@@ -191,7 +199,6 @@ class Plot(object):
                         group_name = self.tableGroups.item(ind, 3).text()
                         single_l = '[{}]:  {}'.format(group_name, single_l)
 
-
                     if subtract_background:
 
                         sub = single_i - single_b
@@ -201,6 +208,8 @@ class Plot(object):
 
                         self.plotWidget.plot(single_e, sub,
                             pen = pens[ind_s, ind_a], name = single_l)
+
+
                     else:
 
                         if normalize:
@@ -213,6 +222,19 @@ class Plot(object):
 
                         self.plotWidget.plot(single_e, single_b * fac,
                             pen = pens_bg[ind_s, ind_a])
+
+                    if self.analysis_checkBox_doDifference.isChecked() and ind != 0:
+                        single_ref_e = ref_e[ind_s][ind_a]
+                        single_ref_i = ref_i[ind_s][ind_a]
+                        single_ref_b = ref_b[ind_s][ind_a]
+
+                        de, di, db = d._interpolate_and_sum(
+                            [single_e, single_ref_e],
+                            [single_i, -1 * single_ref_i],
+                            [single_b, -1 * single_ref_b], True)
+
+                        self.plotWidgetDiff.plot(de, di,
+                            pen = pens[ind_s, ind_a], name = single_l)
 
         self.applySettings()
 
@@ -301,6 +323,13 @@ class Plot(object):
 
     def clear_plot(self):
         pi = self.plotWidget.getPlotItem()
+        items = pi.listDataItems()
+
+        for item in items:
+            pi.legend.removeItem(item.name())
+            pi.removeItem(item)
+
+        pi = self.plotWidgetDiff.getPlotItem()
         items = pi.listDataItems()
 
         for item in items:
