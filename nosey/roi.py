@@ -165,22 +165,20 @@ class ROI(object):
         return positions
 
 
-    def setEnergyPointsAuto(self, image, imageView):
+    def setEnergyPointsAuto(self, images, imageView):
         a = Analyzer.make_signal_from_QtRoi(self, [195, 487], imageView, 0)
-        _, curve = a.get_signal(image)
-        no_of_peaks = len(self.energyPoints)
-        positions = self._find_peak_positions(curve, no_of_peaks)
-
+        no_of_peaks = images.shape[0]
+        positions = np.empty(no_of_peaks)
         self.blockSignals(True)
-        for ind in range(no_of_peaks):
+        for ind, image in enumerate(images):
             object = self.energyPoints[ind]
             position = positions[ind]
             ep_pos = object.pos()
+            _, curve = a.get_signal(image)
+            position = np.argmax(curve)
             ep_pos[0] = position
             object.setPos(ep_pos)
         self.blockSignals(False)
-
-
 
 
     def regionChanged(self, object):
@@ -249,18 +247,6 @@ class ROI(object):
         pos_b1 = position[1] - self.b1_distance - b1.size()[1]
         pos_b2 = position[1] + size[1] + self.b2_distance
         return pos_b1, pos_b2
-
-
-    def _find_peak_positions(self, curve, no_of_peaks, peak_radius = 10):
-        ppos = []
-        print(curve)
-        c = np.ma.array(curve, mask = False)
-        for peak in range(no_of_peaks):
-            print(c)
-            pos = c.argmax()
-            ppos.append(pos)
-            c.mask[pos-peak_radius:pos+peak_radius] = True
-        return sorted(ppos)
 
 
 

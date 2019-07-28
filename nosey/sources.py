@@ -7,7 +7,7 @@ from pyqtgraph.Qt import QtCore, QtGui
 import nosey
 from nosey.analysis.scan import Scan
 from nosey.analysis.recipes import SOLEILRecipe
-from nosey.templates import HideButton, RemoveButton, ViewButton
+from nosey.templates import HideButton, RemoveButton, ViewButton, PlotGroupComboBox
 
 class Sources(object):
     def __init__(self, *args, **kwargs):
@@ -41,19 +41,20 @@ class Sources(object):
 
         # Button items
         btn_active = HideButton()
-        btn_active.setCheckable(True)
         btn_active.toggle()
+        dd_plotGroup = PlotGroupComboBox()
 
         btn_remove = RemoveButton()
         btn_view = ViewButton("View")
         self.tableSources.setCellWidget(rows, 0, btn_active)
         self.tableSources.setCellWidget(rows, 1, btn_remove)
-        self.tableSources.setCellWidget(rows, 2, btn_view)
+        self.tableSources.setCellWidget(rows, 2, dd_plotGroup)
+        self.tableSources.setCellWidget(rows, 3, btn_view)
 
         # Remaining items
         item01 = QtGui.QTableWidgetItem()
 
-        self.tableSources.setItem(rows, 3, item01)
+        self.tableSources.setItem(rows, 4, item01)
 
         # matches = re.findall(r'.?\_(\d{5})\.FIO', os.path.split(path)[1])
         # scan_no = matches[0]
@@ -79,15 +80,20 @@ class Sources(object):
         btn_active.clicked.connect(lambda : self.showHideScans(item01))
         btn_remove.clicked.connect(lambda : self.removeSource(item01))
 
+        self.updateSourceComboBoxes()
+
         return s
 
 
-    def getScans(self):
+    def getScans(self, group = None):
         scans = []
         for row in range(self.tableSources.rowCount()):
-            item = self.tableSources.item(row, 3)
+            item = self.tableSources.item(row, 4)
             scan = item.data(pg.QtCore.Qt.UserRole)
-            if scan.active:
+            comboBox = self.tableSources.cellWidget(row, 2)
+            groupItem = comboBox.itemData(comboBox.currentIndex())
+            groupFilter = True if group is None else groupItem == group
+            if scan.active and groupFilter:
                 scans.append(scan)
         return scans
 
@@ -112,7 +118,7 @@ class Sources(object):
                     button = self.tableSources.cellWidget(row, 0)
                     button.toggle()
 
-        self.updatePlot()
+
 
 
 class QThread_Loader(QtCore.QThread):

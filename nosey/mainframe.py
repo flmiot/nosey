@@ -7,9 +7,10 @@ import nosey
 from nosey.monitor import Monitor
 from nosey.sources import Sources
 from nosey.plot import Plot
+from nosey.groups import Groups
 
 
-class MainFrame(QtGui.QMainWindow, Monitor, Sources, Plot):
+class MainFrame(QtGui.QMainWindow, Monitor, Sources, Plot, Groups):
     def __init__(self, *args, **kwargs):
         super(self.__class__, self).__init__(*args, **kwargs)
         dirname = os.path.dirname(__file__)
@@ -101,7 +102,7 @@ class MainFrame(QtGui.QMainWindow, Monitor, Sources, Plot):
         plotYLabelUnits = self.lineEdit_yLabelUnits.text()
 
         s = {'color': '#000'}
-        plotItem.setTitle(plotTitle, size = plotTitleSize, bold = True, **s)
+        plotItem.setTitle(plotTitle, size = plotTitleSize, **s)
         plotItem.getAxis('bottom').setLabel(plotXLabel,
             **{'font-size':plotXLabelSize}, units = plotXLabelUnits, **s)
         plotItem.getAxis('left').setLabel(plotYLabel,
@@ -121,6 +122,7 @@ class MainFrame(QtGui.QMainWindow, Monitor, Sources, Plot):
         self.setupMonitor()
         self.setupSources()
         self.setupPlot()
+        self.setupGroupsFrame()
 
 
 class EditDialog(QtGui.QDialog):

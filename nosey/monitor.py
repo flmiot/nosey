@@ -181,10 +181,10 @@ class Monitor(object):
         try:
             for roi in self.getROI():
                 scans = self.getScans()
-                img = np.zeros(scans[0].images[0].shape)
-                for scan in scans:
-                    img += np.sum(scan.images, axis = 0)
-                roi.setEnergyPointsAuto(img, self.imageView)
+                images = np.zeros((len(scans),) + scans[0].images[0].shape)
+                for ind, scan in enumerate(scans):
+                    images[ind] = np.sum(scan.images, axis = 0)
+                roi.setEnergyPointsAuto(images, self.imageView)
         except Exception as e:
             nosey.Log.error("Automatic energy calibration failed: {}".format(e))
 

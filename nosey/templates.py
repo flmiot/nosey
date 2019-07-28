@@ -13,6 +13,7 @@ class HideButton(QtGui.QPushButton):
         self.setStyleSheet("QPushButton:checked { background-color: #a8fc97 }")
         self.setToolTip("Hide/Show this item")
         self.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.setCheckable(True)
 
 
 class RemoveButton(QtGui.QPushButton):
@@ -38,3 +39,25 @@ class ViewButton(QtGui.QPushButton):
         self.setIconSize(QtCore.QSize(20, 20))
         self.setToolTip("View this item in monitor")
         self.setFocusPolicy(QtCore.Qt.NoFocus)
+
+class RefButton(QtGui.QPushButton):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        icon = QtGui.QIcon()
+        dirname = os.path.dirname(__file__)
+        icon.addPixmap(QtGui.QPixmap(os.path.join(dirname, 'icons/full.png')), QtGui.QIcon.Normal, QtGui.QIcon.On)
+        icon.addPixmap(QtGui.QPixmap(os.path.join(dirname, 'icons/empty.png')), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.setToolTip("Set this item as reference")
+        self.setIcon(icon)
+        self.setStyleSheet("QPushButton:checked { font-size:10pt; font-weight: bold; background-color: #ffce63 }")
+        self.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.setCheckable(True)
+
+
+
+class PlotGroupComboBox(QtGui.QComboBox):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.setIconSize(QtCore.QSize(20, 20))
+        self.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.setToolTip("Select the plotting group for this item")

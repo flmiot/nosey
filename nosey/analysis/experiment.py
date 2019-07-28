@@ -79,6 +79,7 @@ class Experiment(object):
         return result
 
 
+
     def add_analyzer(self, analyzer):
         """Add an analyzer object to this experiment. Raise an exception if
         analyzer already exists.

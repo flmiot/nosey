@@ -6,6 +6,8 @@ import nosey
 
 from nosey.analysis.label import Label
 
+import matplotlib.pyplot as plt
+
 class AnalysisResult(object):
     def __init__(self):
         self.in_e           = []
@@ -26,7 +28,9 @@ class AnalysisResult(object):
 
 
     def get_curves(
-        self, single_scans, single_analyzers,
+        self,
+        single_scans, single_analyzers,
+        referenceResult = None,
         scanning_type = False,
         single_image = None,
         slices = 1,
@@ -34,9 +38,7 @@ class AnalysisResult(object):
         normalize_analyzers_before_sum = False
         ):
         """
-        S           Number of scans
-        A           Number of analyzers
-        P_IN        Number of points along e_in axis
+        Specify *referenceResult* if difference should be calculated.
         """
 
         in_e, out_e = self.in_e, self.out_e
@@ -96,7 +98,23 @@ class AnalysisResult(object):
         if not single_scans:
             ei, ii, bi = self.sum_scans(ei, ii, bi, normalize_scans_before_sum)
 
-        return ei, ii, bi, l
+        return ei, ii, bi, diff, l
+
+
+    def getIAD(self, r):
+        er, ir, br, _ = r.get_curves(False, False, False, None, 1, False, False)
+        e, i, b, _ = self.get_curves(False, False, False, None, 1, False, False)
+        er, ir, br      = er[0,0], ir[0,0], br[0,0]
+        e, i, b         = e[0,0], i[0,0], b[0,0]
+        i,_             = self._normalize(i, b)
+        ir,_            = self._normalize(ir, br)
+        com_shift       = self._calculateCOM(er, ir) - self._calculateCOM(e, i)
+        e              += com_shift
+        e, i, b         = self._interpolate_and_sum([er, e], [-1 * ir, i], [i, i])
+        iad             = np.sum(np.abs(i))
+        return iad
+
+
 
 
     def sum_analyzers(self, energies, intensities, backgrounds, normalize_before_sum = False):
@@ -193,3 +211,9 @@ class AnalysisResult(object):
     def _normalize(self, i, b, area = 1000):
         factor = 1 / np.sum(np.abs(i - b)) * area
         return i * factor, factor
+
+
+    def _calculateCOM(self, e, i):
+        cumsum = np.cumsum(i)
+        f = interp.interp1d(cumsum, e)
+        return float(f(0.5*np.max(cumsum)))

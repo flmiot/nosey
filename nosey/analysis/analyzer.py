@@ -1,7 +1,5 @@
 import time
-import logging
 import numpy as np
-import logging
 import nosey
 
 from nosey.analysis.calibration import EnergyCalibration
