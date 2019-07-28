@@ -25,6 +25,8 @@ class MainFrame(QtGui.QMainWindow, Monitor, Sources, Plot, Groups):
         self.proxies.append(pg.SignalProxy(self.plotWidget.getPlotItem().scene().sigMouseMoved,
             rateLimit=60, slot = self.updateCursorPlot))
 
+
+
     # ====================== SLOTS ====================== #
 
     @QtCore.pyqtSlot()
@@ -123,6 +125,7 @@ class MainFrame(QtGui.QMainWindow, Monitor, Sources, Plot, Groups):
         self.setupSources()
         self.setupPlot()
         self.setupGroupsFrame()
+        self.splitter_2.setStretchFactor(0, 3)
 
 
 class EditDialog(QtGui.QDialog):
