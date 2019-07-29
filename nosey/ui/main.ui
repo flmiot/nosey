@@ -411,8 +411,14 @@ QMainWindow::separator:vertical {
       <layout class="QVBoxLayout" name="verticalLayout_15">
        <item>
         <widget class="QSplitter" name="splitter_2">
+         <property name="frameShadow">
+          <enum>QFrame::Plain</enum>
+         </property>
          <property name="orientation">
           <enum>Qt::Vertical</enum>
+         </property>
+         <property name="childrenCollapsible">
+          <bool>true</bool>
          </property>
          <widget class="QTabWidget" name="tabWidget">
           <property name="currentIndex">
@@ -3933,7 +3939,7 @@ QMainWindow::separator:vertical {
             <item>
              <layout class="QGridLayout" name="gridLayout_20">
               <item row="0" column="1">
-               <widget class="QLineEdit" name="analysis_lineEdit_window0_2">
+               <widget class="QLineEdit" name="analysis_lineEdit_COMwindow0">
                 <property name="toolTip">
                  <string>In units of X</string>
                 </property>
@@ -3950,7 +3956,7 @@ QMainWindow::separator:vertical {
                </widget>
               </item>
               <item row="0" column="3">
-               <widget class="QLineEdit" name="analysis_lineEdit_window1_2">
+               <widget class="QLineEdit" name="analysis_lineEdit_COMwindow1">
                 <property name="toolTip">
                  <string>In units of X</string>
                 </property>
@@ -4405,8 +4411,8 @@ QMainWindow::separator:vertical {
    <slot>applySettings()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1204</x>
-     <y>260</y>
+     <x>926</x>
+     <y>242</y>
     </hint>
     <hint type="destinationlabel">
      <x>489</x>
@@ -4421,8 +4427,8 @@ QMainWindow::separator:vertical {
    <slot>applySettings()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1032</x>
-     <y>287</y>
+     <x>997</x>
+     <y>283</y>
     </hint>
     <hint type="destinationlabel">
      <x>403</x>
@@ -4438,7 +4444,7 @@ QMainWindow::separator:vertical {
    <hints>
     <hint type="sourcelabel">
      <x>1270</x>
-     <y>259</y>
+     <y>255</y>
     </hint>
     <hint type="destinationlabel">
      <x>606</x>
@@ -4454,7 +4460,7 @@ QMainWindow::separator:vertical {
    <hints>
     <hint type="sourcelabel">
      <x>1270</x>
-     <y>286</y>
+     <y>282</y>
     </hint>
     <hint type="destinationlabel">
      <x>309</x>
@@ -4470,7 +4476,7 @@ QMainWindow::separator:vertical {
    <hints>
     <hint type="sourcelabel">
      <x>1270</x>
-     <y>314</y>
+     <y>310</y>
     </hint>
     <hint type="destinationlabel">
      <x>294</x>
@@ -4485,8 +4491,8 @@ QMainWindow::separator:vertical {
    <slot>applySettings()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1032</x>
-     <y>315</y>
+     <x>997</x>
+     <y>311</y>
     </hint>
     <hint type="destinationlabel">
      <x>376</x>
@@ -4501,8 +4507,8 @@ QMainWindow::separator:vertical {
    <slot>applySettings()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1203</x>
-     <y>287</y>
+     <x>1168</x>
+     <y>283</y>
     </hint>
     <hint type="destinationlabel">
      <x>375</x>
@@ -4517,8 +4523,8 @@ QMainWindow::separator:vertical {
    <slot>applySettings()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1203</x>
-     <y>315</y>
+     <x>1168</x>
+     <y>311</y>
     </hint>
     <hint type="destinationlabel">
      <x>375</x>
@@ -4533,8 +4539,8 @@ QMainWindow::separator:vertical {
    <slot>applySettings()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1270</x>
-     <y>375</y>
+     <x>998</x>
+     <y>371</y>
     </hint>
     <hint type="destinationlabel">
      <x>372</x>
@@ -4550,7 +4556,7 @@ QMainWindow::separator:vertical {
    <hints>
     <hint type="sourcelabel">
      <x>1100</x>
-     <y>260</y>
+     <y>256</y>
     </hint>
     <hint type="destinationlabel">
      <x>291</x>
@@ -4566,7 +4572,7 @@ QMainWindow::separator:vertical {
    <hints>
     <hint type="sourcelabel">
      <x>1270</x>
-     <y>260</y>
+     <y>256</y>
     </hint>
     <hint type="destinationlabel">
      <x>292</x>
@@ -4582,7 +4588,7 @@ QMainWindow::separator:vertical {
    <hints>
     <hint type="sourcelabel">
      <x>1049</x>
-     <y>319</y>
+     <y>315</y>
     </hint>
     <hint type="destinationlabel">
      <x>287</x>
@@ -4597,12 +4603,92 @@ QMainWindow::separator:vertical {
    <slot>addPlottingGroup()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>586</x>
-     <y>530</y>
+     <x>765</x>
+     <y>294</y>
     </hint>
     <hint type="destinationlabel">
      <x>288</x>
      <y>438</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>analysis_checkBox_doDifference</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>updatePlot()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>898</x>
+     <y>371</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>300</x>
+     <y>390</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>analysis_checkBox_doIAD</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>updatePlot()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>899</x>
+     <y>421</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>296</x>
+     <y>491</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>analysis_lineEdit_COMwindow0</sender>
+   <signal>textChanged(QString)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>updatePlot()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1028</x>
+     <y>449</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>305</x>
+     <y>567</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>analysis_lineEdit_COMwindow1</sender>
+   <signal>textChanged(QString)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>updatePlot()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1154</x>
+     <y>455</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>297</x>
+     <y>272</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>analysis_spinBox_polyOrder</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>updatePlot()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1075</x>
+     <y>302</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>294</x>
+     <y>625</y>
     </hint>
    </hints>
   </connection>

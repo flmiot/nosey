@@ -8,6 +8,7 @@ import matplotlib.cm as cm
 import nosey.guard
 from nosey.analysis.experiment import Experiment
 from nosey.analysis.analyzer import Analyzer
+from nosey.analysis.math import normalize_curve
 
 import matplotlib.pyplot as plt
 
@@ -172,7 +173,8 @@ class Plot(object):
         normalize_analyzers = False):
 
         groups = len(data)
-        # data[0] is reference
+        w0   = float(self.analysis_lineEdit_window0.text())
+        w1   = float(self.analysis_lineEdit_window1.text())
 
         for ind, d in enumerate(data):
             e, i, b, l = d.get_curves(
@@ -204,7 +206,7 @@ class Plot(object):
                         sub = single_i - single_b
 
                         if normalize:
-                            sub, _ = self._normalize_curve(single_e, sub)
+                            sub, _ = normalize_curve(single_e, sub, [w0, w1])
 
                         self.plotWidget.plot(single_e, sub,
                             pen = pens[ind_s, ind_a], name = single_l)
@@ -213,7 +215,7 @@ class Plot(object):
                     else:
 
                         if normalize:
-                            single_i, fac = self._normalize_curve(single_e, single_i)
+                            single_i, fac = normalize_curve(single_e, single_i, [w0, w1])
                         else:
                             fac = 1.0
 
@@ -228,10 +230,15 @@ class Plot(object):
                         single_ref_i = ref_i[ind_s][ind_a]
                         single_ref_b = ref_b[ind_s][ind_a]
 
+                        i_test      = single_i - single_b
+                        i_test_ref  = single_ref_i - single_ref_b
+                        i_test,_      = normalize_curve(single_e, i_test, [w0, w1])
+                        i_test_ref,_  = normalize_curve(single_ref_e, i_test_ref, [w0, w1])
+
                         de, di, db = d._interpolate_and_sum(
                             [single_e, single_ref_e],
                             [single_i, -1 * single_ref_i],
-                            [single_b, -1 * single_ref_b], True)
+                            [single_b, -1 * single_ref_b], True, [w0, w1])
 
                         self.plotWidgetDiff.plot(de, di,
                             pen = pens[ind_s, ind_a], name = single_l)
@@ -298,27 +305,6 @@ class Plot(object):
     def _get_background_pen(self, color):
         pen = pg.mkPen(color=color, style=QtCore.Qt.DashLine)
         return pen
-
-
-    def _normalize_curve(self, e, i, window = None):
-        """Return normalized curve and factor by which curve was scaled."""
-        try:
-            if window is None:
-                w0 = float(self.analysis_lineEdit_window0.text())
-                w1 = float(self.analysis_lineEdit_window1.text())
-                ind0 = np.argmin(np.abs(e - w0))
-                ind1 = np.argmin(np.abs(e - w1))
-
-            if ind1 - ind0 < 1 or min(ind0, ind1) < 0:
-                raise Exception("Invalid normalization window")
-
-            weight = np.sum(i[ind0:ind1])
-            factor = np.abs(1 / weight) * 1000.
-            return i * factor, factor
-        except Exception as e:
-            nosey.Log.error("Normalization failed: {}".format(e))
-            return i, 1.0
-
 
 
     def clear_plot(self):

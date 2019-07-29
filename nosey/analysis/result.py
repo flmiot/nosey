@@ -5,6 +5,7 @@ import scipy.interpolate as interp
 import nosey
 
 from nosey.analysis.label import Label
+from nosey.analysis.math import normalize_curve
 
 import matplotlib.pyplot as plt
 
@@ -105,12 +106,13 @@ class AnalysisResult(object):
 
 
     def getIAD(self, r, window = None):
+
         er, ir, br, _       = r.get_curves(False, False)
         e, i, b, _          = self.get_curves(False, False)
         er, ir, br          = er[0,0], ir[0,0], br[0,0]
         e, i, b             = e[0,0], i[0,0], b[0,0]
-        i,_                 = self._normalize(i, b)
-        ir,_                = self._normalize(ir, br)
+        i,_                 = normalize_curve(i, b, window)
+        ir,_                = normalize_curve(ir, br, window)
         com_shift           = self._calculateCOM(er, ir) - self._calculateCOM(e, i)
         e                  += com_shift
         e, i, b             = self._interpolate_and_sum([er, e], [-1 * ir, i], [i, i])
@@ -188,7 +190,7 @@ class AnalysisResult(object):
         return energies_summed, intensities_summed, backgrounds_summed
 
 
-    def _interpolate_and_sum(self, energy, intensity, background, normalize_before_sum = False):
+    def _interpolate_and_sum(self, energy, intensity, background, normalize_before_sum = False, window = None):
 
         min_energy = np.max(list(np.min(e) for e in energy))
         max_energy = np.min(list(np.max(e) for e in energy))
@@ -204,22 +206,21 @@ class AnalysisResult(object):
             fi = interp.interp1d(e, i)
             fb = interp.interp1d(e, b)
             if normalize_before_sum:
-                b       = fb(ce)
-                i, factor = self._normalize(fi(ce), b)
-                b       *= factor
+                b           = fb(ce)
+                i, factor   = normalize_curve(ce, fi(ce) - b, window)
+                b          *= factor
             else:
-                b       = fb(ce)
-                i       = fi(ce)
+                b           = fb(ce)
+                i           = fi(ce)
             ii += i
             bg += b
 
         return ce, ii, bg
 
-
-
-    def _normalize(self, i, b, area = 1000):
-        factor = 1 / np.sum(np.abs(i - b)) * area
-        return i * factor, factor
+    #
+    # def _normalize(self, i, b, area = 1000):
+    #     factor = 1 / np.sum(np.abs(i - b)) * area
+    #     return i * factor, factor
 
 
     def _calculateCOM(self, e, i):
