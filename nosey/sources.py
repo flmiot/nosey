@@ -26,8 +26,8 @@ class Sources(object):
             paths = QtGui.QFileDialog.getOpenFileNames(self, 'Select images')[0]
             print(paths)
 
-            for file_path in paths:
-                print(file_path)
+            for ind, file_path in enumerate(paths):
+                self.statusBar.setProgressBarFraction((ind+1) / len(paths))
                 self._read_scan(file_path, log_file = None)
 
         except Exception as e:
@@ -65,7 +65,9 @@ class Sources(object):
         # file_names = [f for f in file_names if scan_no in f and "tif" in f]
         # files = sorted(list([os.path.join(img_path,f) for f in file_names]))
         # files = [f for f in files if scan_no in f]
+
         nosey.Log.debug("Reading {} ...".format(scan_name))
+
         s = Scan(log_file = scan_name, image_files = img_path)
         loader = QThread_Loader(s)
         self.threads.append(loader)
@@ -79,8 +81,15 @@ class Sources(object):
         btn_view.clicked.connect(lambda : self.display(s))
         btn_active.clicked.connect(lambda : self.showHideScans(item01))
         btn_remove.clicked.connect(lambda : self.removeSource(item01))
+        dd_plotGroup.currentIndexChanged.connect(lambda : self.changeGroup(item01))
 
         self.updateSourceComboBoxes()
+
+        # Convenience task: Set ComboBox to currently selected group
+        selectedGroups = self.tableGroups.selectedItems()
+        if len(selectedGroups):
+            r = self.tableGroups.row(selectedGroups[0])
+            dd_plotGroup.setCurrentIndex(r)
 
         return s
 
@@ -119,6 +128,17 @@ class Sources(object):
                     button.toggle()
 
 
+    def changeGroup(self, item):
+        """If item is selected, change group also for all other selected items"""
+        selected_items = self.tableSources.selectedItems()
+        if item in selected_items:
+            row                 = self.tableSources.row(item)
+            comboBox            = self.tableSources.cellWidget(row, 2)
+            selectedItemIndex   = comboBox.currentIndex()
+            for i in selected_items:
+                r = self.tableSources.row(i)
+                comboBox = self.tableSources.cellWidget(r, 2)
+                comboBox.setCurrentIndex(selectedItemIndex)
 
 
 class QThread_Loader(QtCore.QThread):
@@ -131,10 +151,11 @@ class QThread_Loader(QtCore.QThread):
 
     def run(self):
         try:
-            nosey.Log.info("Loading scan {}, please wait...".format(self.scan.name))
+            nosey.Log.info("Loading file '{}', please wait...".format(self.scan.name))
             #self.scan.read_logfile(recipe = SOLEILRecipe())
             self.scan.read_files(recipe = SOLEILRecipe())
             n = len(self.scan.images)
             self.taskFinished.emit(n)
+            nosey.Log.info("File '{}' successfully imported.".format(self.scan.name))
         except Exception as e:
             nosey.Log.error("Loader thread crashed: {}".format(e))

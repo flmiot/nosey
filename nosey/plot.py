@@ -50,125 +50,134 @@ class Plot(object):
 
     @nosey.guard.updateGuard
     def updatePlot(self, *args, **kwargs):
-        # try:
-        start = time.time()
-        analyzers   = []
-        polyFit     = self.analysis_checkBox_polyFit.isChecked()
-        polyorder   = int(self.analysis_spinBox_polyOrder.value())
-        calcIAD     = self.analysis_checkBox_doIAD.isChecked()
-        w0   = float(self.analysis_lineEdit_window0.text())
-        w1   = float(self.analysis_lineEdit_window1.text())
+        try:
+            start = time.time()
+            analyzers   = []
+            polyFit     = self.analysis_checkBox_polyFit.isChecked()
+            polyorder   = int(self.analysis_spinBox_polyOrder.value())
+            calcIAD     = self.analysis_checkBox_doIAD.isChecked()
+            w0   = float(self.analysis_lineEdit_window0.text())
+            w1   = float(self.analysis_lineEdit_window1.text())
 
+            results     = []
+            valuesIAD   = []
 
+            refIndex        = self.getReferenceGroupIndex()
+            refResult       = None
 
-        results     = []
-        valuesIAD   = []
+            groupIndex  = 0
+            run         = 0
+            groups      = self.tableGroups.rowCount()
+            while groupIndex < groups:
 
-        refIndex        = self.getReferenceGroupIndex()
-        refResult       = None
-
-        groupIndex = 0
-        while groupIndex < self.tableGroups.rowCount():
-            # Calculate and plot reference first
-            if refResult is None and groupIndex != refIndex:
-                groupIndex += 1
-                continue
-
-            if refResult is not None and groupIndex == refIndex:
-                groupIndex += 1
-                continue
-
-            group               = self.tableGroups.item(groupIndex, 3)
-            experiment          = Experiment()
-            experiment.scans    = self.getScans(group = group)
-
-            # Skip this group if hidden
-            if not self.tableGroups.cellWidget(groupIndex, 0).isChecked():
-                continue
-
-            # Skip this group if no scans are assigned
-            if len(experiment.scans) < 1:
-                groupIndex += 1
-                continue
-
-            roi = self.getROI()
-            for r in roi:
-                if not r.active:
+                # Calculate and plot reference first
+                if refResult is None and groupIndex != refIndex:
+                    groupIndex += 1
                     continue
 
-                sig = Analyzer.make_signal_from_QtRoi(r, [195, 487], self.imageView, 0)
-                energies = self.getEnergies()
+                if refResult is not None and groupIndex == refIndex:
+                    groupIndex += 1
+                    continue
 
-                if len(energies) >= 2:
-                    positions = r.getEnergyPointPositions()
-                    sig.setEnergies(positions, energies)
+                # Skip this group if hidden
+                if not self.tableGroups.cellWidget(groupIndex, 0).isChecked():
+                    if groupIndex == refIndex:
+                        raise Exception("Reference group is hidden!")
+                    groupIndex += 1
+                    continue
 
-                bg01 = Analyzer.make_signal_from_QtRoi(r, [195, 487], self.imageView, 1)
-                bg02 = Analyzer.make_signal_from_QtRoi(r, [195, 487], self.imageView, 2)
+                self.statusBar.setProgressBarFraction((run + 1) / groups)
 
-                if polyFit:
-                    bg01.poly_fit, bg02.poly_fit = True, True
-                    bg01.poly_order, bg02.poly_order = polyorder, polyorder
+                group               = self.tableGroups.item(groupIndex, 3)
+                experiment          = Experiment()
+                experiment.scans    = self.getScans(group = group)
 
-                experiment.add_analyzer(sig)
-                experiment.add_background_roi(bg01)
-                experiment.add_background_roi(bg02)
+                # Skip this group if no scans are assigned
+                if len(experiment.scans) < 1:
+                    if groupIndex == refIndex:
+                        raise Exception("Reference group has no scans!")
+                    groupIndex += 1
+                    continue
 
-            result = experiment.get_spectrum()
+                roi = self.getROI()
+                for r in roi:
+                    if not r.active:
+                        continue
 
-            if calcIAD and groupIndex != refIndex:
-                w0COM = float(self.analysis_lineEdit_COMwindow0.text())
-                w1COM = float(self.analysis_lineEdit_COMwindow1.text())
-                iad = result.getIAD(refResult, windowNorm = [w0, w1], windowCOM = [w0COM, w1COM])
-                valuesIAD.append(iad)
+                    sig = Analyzer.make_signal_from_QtRoi(r, [195, 487], self.imageView, 0)
+                    energies = self.getEnergies()
 
-            results.append( result )
+                    if len(energies) >= 2:
+                        positions = r.getEnergyPointPositions()
+                        sig.setEnergies(positions, energies)
 
-            groupName = self.tableGroups.item(groupIndex, 3).text()
-            if refResult is None:
-                fmt = "Reference group '{}' calculated".format(groupName)
-                nosey.Log.info(fmt)
-                refResult = result
-                groupIndex = 0
-            else:
-                fmt = "Non-reference group '{}' calculated".format(groupName)
-                nosey.Log.info(fmt)
-                groupIndex += 1
+                    bg01 = Analyzer.make_signal_from_QtRoi(r, [195, 487], self.imageView, 1)
+                    bg02 = Analyzer.make_signal_from_QtRoi(r, [195, 487], self.imageView, 2)
 
-            if len(results) == 0:
-                raise Exception("No active plotting group!")
+                    if polyFit:
+                        bg01.poly_fit, bg02.poly_fit = True, True
+                        bg01.poly_order, bg02.poly_order = polyorder, polyorder
+
+                    experiment.add_analyzer(sig)
+                    experiment.add_background_roi(bg01)
+                    experiment.add_background_roi(bg02)
+
+                result = experiment.get_spectrum()
+
+                if calcIAD and groupIndex != refIndex:
+                    w0COM = float(self.analysis_lineEdit_COMwindow0.text())
+                    w1COM = float(self.analysis_lineEdit_COMwindow1.text())
+                    iad = result.getIAD(refResult, windowNorm = [w0, w1], windowCOM = [w0COM, w1COM])
+                    valuesIAD.append(iad)
+
+                results.append( result )
+
+                groupName = self.tableGroups.item(groupIndex, 3).text()
+                if refResult is None:
+                    fmt = "Reference group '{}' calculated".format(groupName)
+                    nosey.Log.info(fmt)
+                    refResult = result
+                    groupIndex = 0
+                else:
+                    fmt = "Non-reference group '{}' calculated".format(groupName)
+                    nosey.Log.info(fmt)
+                    groupIndex += 1
+
+                if len(results) == 0:
+                    raise Exception("No active plotting group!")
+
+                run += 1
 
 
+                # Plot data:
+                single_scans = nosey.gui.actionSingleScans.isChecked()
+                single_analyzers = nosey.gui.actionSingleAnalyzers.isChecked()
+                subtract_background = nosey.gui.actionSubtractBackground.isChecked()
+                normalize = nosey.gui.actionNormalize.isChecked()
+                scanning_type = nosey.gui.actionScanningType.isChecked()
+                slices = 1
+                single_image = None
 
-            # Plot data:
-            single_scans = nosey.gui.actionSingleScans.isChecked()
-            single_analyzers = nosey.gui.actionSingleAnalyzers.isChecked()
-            subtract_background = nosey.gui.actionSubtractBackground.isChecked()
-            normalize = nosey.gui.actionNormalize.isChecked()
-            scanning_type = nosey.gui.actionScanningType.isChecked()
-            slices = 1
-            single_image = None
-
-            self.clear_plot()
+                self.clear_plot()
 
 
-            if calcIAD:
-                self.plotWidgetIAD.plot(range(len(valuesIAD)), valuesIAD,  symbol='o', symbolPen='r')
+                if calcIAD:
+                    self.plotWidgetIAD.plot(range(len(valuesIAD)), valuesIAD,  symbol='o', symbolPen='r')
 
-            self._plot(results, single_analyzers, single_scans,
-                scanning_type, subtract_background, normalize, single_image,
-                slices, False, False)
+                self._plot(results, single_analyzers, single_scans,
+                    scanning_type, subtract_background, normalize, single_image,
+                    slices, False, False)
 
-            nosey.lastComputationTime = time.time() - start
-            fmt = "Last computation took {:.3f} s.".format(nosey.lastComputationTime)
-            self.analysis_labelComputation.setText(fmt)
+                nosey.lastComputationTime = time.time() - start
+                fmt = "Last computation took {:.3f} s.".format(nosey.lastComputationTime)
+                self.analysis_labelComputation.setText(fmt)
 
-            for roi in self.getROI():
-                roi.connectUpdateSlotProxy(self.updatePlot)
+                for roi in self.getROI():
+                    roi.connectUpdateSlotProxy(self.updatePlot)
 
-        # except Exception as e:
-        #     fmt = 'Plot update failed: {}'.format(e)
-        #     nosey.Log.error(fmt)
+        except Exception as e:
+            fmt = 'Plot update failed: {}'.format(e)
+            nosey.Log.error(fmt)
 
 
     def _plot(self, data, single_analyzers = True, single_scans = True,
@@ -338,4 +347,4 @@ class Plot(object):
         x = self.plotWidget.getPlotItem().vb.mapSceneToView(pos).x()
         y = self.plotWidget.getPlotItem().vb.mapSceneToView(pos).y()
         fmt = 'x: {:.7f} | y: {:.7f}'.format(x,y)
-        self.statusBar.write(fmt)
+        self.statusBar.writeCursorPosition(fmt)

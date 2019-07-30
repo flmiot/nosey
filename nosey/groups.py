@@ -45,7 +45,6 @@ class Groups(object):
         btn_reference.clicked.connect(lambda : self.setRefGroup(item01))
 
 
-
     def updateSourceComboBoxes(self):
         for srow in range(self.tableSources.rowCount()):
             comboBox = self.tableSources.cellWidget(srow, 2)
@@ -83,6 +82,7 @@ class Groups(object):
                     continue
                 else:
                     self.tableGroups.cellWidget(grow, 2).setChecked(False)
+        self.updatePlot()
 
 
     def getReferenceGroupIndex(self):

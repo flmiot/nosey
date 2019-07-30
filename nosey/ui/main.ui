@@ -25,6 +25,21 @@ QPushButton {
  	background-color:#dedede;
 }
 
+QProgressBar {
+  background-color:#9c9c9c;;
+	height: 3px;
+  border-radius: 2px;
+  text-align: center;
+	font-size : 1pt;
+}
+
+
+QProgressBar::chunk {
+  background-color:  #787878;
+  border-radius: 2px;
+}
+
+
 QComboBox {
     border-radius: 5px;
     padding: 6px;
@@ -2770,6 +2785,24 @@ QMainWindow::separator:vertical {
                </color>
               </brush>
              </colorrole>
+             <colorrole role="Highlight">
+              <brush brushstyle="SolidPattern">
+               <color alpha="255">
+                <red>193</red>
+                <green>213</green>
+                <blue>219</blue>
+               </color>
+              </brush>
+             </colorrole>
+             <colorrole role="HighlightedText">
+              <brush brushstyle="SolidPattern">
+               <color alpha="255">
+                <red>0</red>
+                <green>0</green>
+                <blue>0</blue>
+               </color>
+              </brush>
+             </colorrole>
              <colorrole role="AlternateBase">
               <brush brushstyle="SolidPattern">
                <color alpha="255">
@@ -2907,6 +2940,24 @@ QMainWindow::separator:vertical {
                </color>
               </brush>
              </colorrole>
+             <colorrole role="Highlight">
+              <brush brushstyle="SolidPattern">
+               <color alpha="255">
+                <red>193</red>
+                <green>213</green>
+                <blue>219</blue>
+               </color>
+              </brush>
+             </colorrole>
+             <colorrole role="HighlightedText">
+              <brush brushstyle="SolidPattern">
+               <color alpha="255">
+                <red>0</red>
+                <green>0</green>
+                <blue>0</blue>
+               </color>
+              </brush>
+             </colorrole>
              <colorrole role="AlternateBase">
               <brush brushstyle="SolidPattern">
                <color alpha="255">
@@ -3036,6 +3087,24 @@ QMainWindow::separator:vertical {
               </brush>
              </colorrole>
              <colorrole role="Shadow">
+              <brush brushstyle="SolidPattern">
+               <color alpha="255">
+                <red>0</red>
+                <green>0</green>
+                <blue>0</blue>
+               </color>
+              </brush>
+             </colorrole>
+             <colorrole role="Highlight">
+              <brush brushstyle="SolidPattern">
+               <color alpha="255">
+                <red>193</red>
+                <green>213</green>
+                <blue>219</blue>
+               </color>
+              </brush>
+             </colorrole>
+             <colorrole role="HighlightedText">
               <brush brushstyle="SolidPattern">
                <color alpha="255">
                 <red>0</red>
@@ -4578,6 +4647,9 @@ QMainWindow::separator:vertical {
               </item>
               <item row="0" column="1">
                <widget class="QLineEdit" name="lineEdit_plotTitle">
+                <property name="toolTip">
+                 <string>Enter a plot title (HTML syntax allowed)</string>
+                </property>
                 <property name="text">
                  <string>&lt;b&gt;&lt;font color=blue&gt;Unnamed plot&lt;/font&gt;&lt;/b&gt;</string>
                 </property>

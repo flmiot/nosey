@@ -27,6 +27,7 @@ class MainFrame(QtGui.QMainWindow, Monitor, Sources, Plot, Groups):
 
 
 
+
     # ====================== SLOTS ====================== #
 
     @QtCore.pyqtSlot()

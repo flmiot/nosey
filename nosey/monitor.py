@@ -11,7 +11,7 @@ class Monitor(object):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.image = np.zeros((4, 128, 128))
+        self.image = np.zeros((4, 487, 195))
 
 
     def setupMonitor(self):
@@ -215,7 +215,7 @@ class Monitor(object):
             i = 0
         fmt = 'x: {:6d} | y: {:6d} | intensity: {:6.0f}'
         fmt = fmt.format(x,y, i)
-        self.statusBar.write(fmt)
+        self.statusBar.writeCursorPosition(fmt)
 
 
     def showHideRoi(self, item):
