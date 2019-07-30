@@ -4651,7 +4651,7 @@ QMainWindow::separator:vertical {
                  <string>Enter a plot title (HTML syntax allowed)</string>
                 </property>
                 <property name="text">
-                 <string>&lt;b&gt;&lt;font color=blue&gt;Unnamed plot&lt;/font&gt;&lt;/b&gt;</string>
+                 <string>&lt;b&gt;&lt;font color=black&gt;Unnamed plot&lt;/font&gt;&lt;/b&gt;</string>
                 </property>
                </widget>
               </item>

@@ -175,6 +175,8 @@ class Plot(object):
                 for roi in self.getROI():
                     roi.connectUpdateSlotProxy(self.updatePlot)
 
+            self.statusBar.setProgressBarFraction(1)
+
         except Exception as e:
             fmt = 'Plot update failed: {}'.format(e)
             nosey.Log.error(fmt)
@@ -237,6 +239,11 @@ class Plot(object):
 
                         self.plotWidget.plot(single_e, single_b * fac,
                             pen = pens_bg[ind_s, ind_a])
+
+                    pi = self.plotWidget.getPlotItem()
+                    items = pi.listDataItems()
+                    for item in items:
+                        
 
                     if self.analysis_checkBox_doDifference.isChecked() and ind != 0:
                         single_ref_e = ref_e[ind_s][ind_a]

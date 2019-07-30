@@ -32,7 +32,7 @@ class Logbar(QtGui.QStatusBar):
     def writeLog(self, message, level):
         if message != '\n':
             if level == logging.ERROR:
-                self.setLogColor('#ff9369')
+                self.setLogColor('#ff8652')
             else:
                 self.setLogColor('#f7f7f7')
             self.messageLabel.setText(message)
@@ -49,9 +49,9 @@ class Logbar(QtGui.QStatusBar):
 
     def setProgressBarFraction(self, value):
         if value >= 1:
-            fmt = 'QProgressBar::chunk {background-color:  #adf056;border-radius: 2px;}'
+            fmt = 'QProgressBar::chunk {background-color:#adf056;border-radius: 2px;}'
         else:
-            fmt = 'QProgressBar::chunk {background-color:  #787878;border-radius: 2px;}'
+            fmt = 'QProgressBar::chunk {background-color:#787878;border-radius: 2px;}'
 
         self.progressBar.setStyleSheet(fmt)
         self.progressBar.setValue(value * 100)

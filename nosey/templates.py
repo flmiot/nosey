@@ -49,7 +49,7 @@ class RefButton(QtGui.QPushButton):
         icon.addPixmap(QtGui.QPixmap(os.path.join(dirname, 'icons/empty.png')), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.setToolTip("Set this item as reference")
         self.setIcon(icon)
-        self.setStyleSheet("QPushButton:checked { font-size:10pt; font-weight: bold; background-color: #ffce63 }")
+        self.setStyleSheet("QPushButton:checked { font-size:10pt; font-weight: bold; background-color: #81c2eb }")
         self.setFocusPolicy(QtCore.Qt.NoFocus)
         self.setCheckable(True)
 

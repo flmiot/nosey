@@ -111,15 +111,16 @@ class AnalysisResult(object):
         e, i, b, _          = self.get_curves(False, False)
         er, ir, br          = er[0,0], ir[0,0], br[0,0]
         e, i, b             = e[0,0], i[0,0], b[0,0]
-        com_shift           = nmath.calculateCOM(er, ir) - nmath.calculateCOM(e, i)
+        com_shift           = nmath.calculateCOM(er, ir-br) - nmath.calculateCOM(e, i-b)
         e                  += com_shift
-        e, i, b             = nmath.interpolate_and_sum([er, e], [-1 * ir, i], [i,i], windowNorm)
+        e, i, b             = nmath.interpolate_and_sum([e, er], [i, -1 * ir], [b, br], True, windowNorm)
+
         if windowCOM is None:
-            iad                 = np.sum(np.abs(i))
+            iad             = np.sum(np.abs(i))
         else:
-            ind0                = np.argmin(np.abs(e - windowCOM[0]))
-            ind1                = np.argmin(np.abs(e - windowCOM[1]))
-            iad                 = np.sum(np.abs(i[ind0:ind1]))
+            ind0            = np.argmin(np.abs(e - windowCOM[0]))
+            ind1            = np.argmin(np.abs(e - windowCOM[1]))
+            iad             = np.sum(np.abs(i[ind0:ind1]))
         return iad
 
 

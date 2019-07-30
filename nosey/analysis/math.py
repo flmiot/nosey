@@ -34,8 +34,7 @@ def interpolate_and_sum(energy, intensity, background, normalize_before_sum = Fa
         fi = interp.interp1d(e, i)
         fb = interp.interp1d(e, b)
         if normalize_before_sum:
-            b           = fb(ce)
-            i, factor   = normalize_curve(ce, fi(ce) - b, window)
+            i, factor   = normalize_curve(ce, fi(ce) - fb(ce), window)
             b          *= factor
         else:
             b           = fb(ce)
