@@ -1,5 +1,4 @@
-# X-ray emission & HERFD data analysis tool (Win / Linux / macOS)
-X-ray emisson spectroscopy (XES) data analysis package
+# X-ray emission data analysis tool (Win / Linux / macOS)
 
 ## Prerequisites
 -	Python 3.5 or higher
