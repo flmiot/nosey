@@ -5,7 +5,7 @@ import scipy.interpolate as interp
 import nosey
 
 from nosey.analysis.label import Label
-from nosey.analysis.math import normalize_curve
+import nosey.analysis.math as nmath
 
 import matplotlib.pyplot as plt
 
@@ -105,22 +105,20 @@ class AnalysisResult(object):
         return ei, ii, bi, l
 
 
-    def getIAD(self, r, window = None):
+    def getIAD(self, r, windowNorm = None, windowCOM = None):
 
         er, ir, br, _       = r.get_curves(False, False)
         e, i, b, _          = self.get_curves(False, False)
         er, ir, br          = er[0,0], ir[0,0], br[0,0]
         e, i, b             = e[0,0], i[0,0], b[0,0]
-        i,_                 = normalize_curve(i, b, window)
-        ir,_                = normalize_curve(ir, br, window)
-        com_shift           = self._calculateCOM(er, ir) - self._calculateCOM(e, i)
+        com_shift           = nmath.calculateCOM(er, ir) - nmath.calculateCOM(e, i)
         e                  += com_shift
-        e, i, b             = self._interpolate_and_sum([er, e], [-1 * ir, i], [i, i])
-        if window is None:
+        e, i, b             = nmath.interpolate_and_sum([er, e], [-1 * ir, i], [i,i], windowNorm)
+        if windowCOM is None:
             iad                 = np.sum(np.abs(i))
         else:
-            ind0                = np.argmin(np.abs(e - window[0]))
-            ind1                = np.argmin(np.abs(e - window[1]))
+            ind0                = np.argmin(np.abs(e - windowCOM[0]))
+            ind1                = np.argmin(np.abs(e - windowCOM[1]))
             iad                 = np.sum(np.abs(i[ind0:ind1]))
         return iad
 
@@ -150,7 +148,7 @@ class AnalysisResult(object):
         z = zip(range(len(energies)), energies, intensities, backgrounds)
         for ind, energy, intensity, background in z:
 
-            ce, ii, b = self._interpolate_and_sum(energy, intensity, background, normalize_before_sum)
+            ce, ii, b = nmath.interpolate_and_sum(energy, intensity, background, normalize_before_sum)
 
             energies_summed[ind] = [ce]
             intensities_summed[ind] = [ii]
@@ -181,7 +179,7 @@ class AnalysisResult(object):
         # Iterate over analyzers
         z = zip(range(n_analyzers), energies.T, intensities.T, backgrounds.T)
         for ind, energy, intensity, background in z:
-            ce, ii, b = self._interpolate_and_sum(energy, intensity, background, normalize_before_sum)
+            ce, ii, b = nmath.interpolate_and_sum(energy, intensity, background, normalize_before_sum)
 
             energies_summed.T[ind]      = [ce]
             intensities_summed.T[ind]   = [ii]
@@ -190,40 +188,40 @@ class AnalysisResult(object):
         return energies_summed, intensities_summed, backgrounds_summed
 
 
-    def _interpolate_and_sum(self, energy, intensity, background, normalize_before_sum = False, window = None):
-
-        min_energy = np.max(list(np.min(e) for e in energy))
-        max_energy = np.min(list(np.max(e) for e in energy))
-        # print("min_energy", min_energy, "max_energy", max_energy)
-
-        points = np.max(list([len(i) for i in intensity]))
-        ii = np.zeros(points, dtype = np.float)
-        bg = np.zeros(points, dtype = np.float)
-        ce = np.linspace(min_energy, max_energy, points)
-
-        for e, i, b in zip(energy, intensity, background):
-
-            fi = interp.interp1d(e, i)
-            fb = interp.interp1d(e, b)
-            if normalize_before_sum:
-                b           = fb(ce)
-                i, factor   = normalize_curve(ce, fi(ce) - b, window)
-                b          *= factor
-            else:
-                b           = fb(ce)
-                i           = fi(ce)
-            ii += i
-            bg += b
-
-        return ce, ii, bg
+    # def _interpolate_and_sum(self, energy, intensity, background, normalize_before_sum = False, window = None):
+    #
+    #     min_energy = np.max(list(np.min(e) for e in energy))
+    #     max_energy = np.min(list(np.max(e) for e in energy))
+    #     # print("min_energy", min_energy, "max_energy", max_energy)
+    #
+    #     points = np.max(list([len(i) for i in intensity]))
+    #     ii = np.zeros(points, dtype = np.float)
+    #     bg = np.zeros(points, dtype = np.float)
+    #     ce = np.linspace(min_energy, max_energy, points)
+    #
+    #     for e, i, b in zip(energy, intensity, background):
+    #
+    #         fi = interp.interp1d(e, i)
+    #         fb = interp.interp1d(e, b)
+    #         if normalize_before_sum:
+    #             b           = fb(ce)
+    #             i, factor   = normalize_curve(ce, fi(ce) - b, window)
+    #             b          *= factor
+    #         else:
+    #             b           = fb(ce)
+    #             i           = fi(ce)
+    #         ii += i
+    #         bg += b
+    #
+    #     return ce, ii, bg
 
     #
     # def _normalize(self, i, b, area = 1000):
     #     factor = 1 / np.sum(np.abs(i - b)) * area
     #     return i * factor, factor
 
-
-    def _calculateCOM(self, e, i):
-        cumsum = np.cumsum(i)
-        f = interp.interp1d(cumsum, e)
-        return float(f(0.5*np.max(cumsum)))
+    #
+    # def _calculateCOM(self, e, i):
+    #     cumsum = np.cumsum(i)
+    #     f = interp.interp1d(cumsum, e)
+    #     return float(f(0.5*np.max(cumsum)))

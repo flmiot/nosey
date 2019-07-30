@@ -33,6 +33,7 @@ class Monitor(object):
             self.frameSelector.setXRange(1, self.image.shape[0], padding=0.1)
             self.lr.setRegion([1, self.image.shape[0]])
             self.updateImage()
+            self.label_scanName.setText(scan.name)
 
 
     def updateImage(self):

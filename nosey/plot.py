@@ -8,7 +8,7 @@ import matplotlib.cm as cm
 import nosey.guard
 from nosey.analysis.experiment import Experiment
 from nosey.analysis.analyzer import Analyzer
-from nosey.analysis.math import normalize_curve
+import nosey.analysis.math as nmath
 
 import matplotlib.pyplot as plt
 
@@ -50,121 +50,125 @@ class Plot(object):
 
     @nosey.guard.updateGuard
     def updatePlot(self, *args, **kwargs):
-        try:
-            start = time.time()
-            analyzers   = []
-            polyFit     = self.analysis_checkBox_polyFit.isChecked()
-            polyorder   = int(self.analysis_spinBox_polyOrder.value())
-            calcIAD     = self.analysis_checkBox_doIAD.isChecked()
+        # try:
+        start = time.time()
+        analyzers   = []
+        polyFit     = self.analysis_checkBox_polyFit.isChecked()
+        polyorder   = int(self.analysis_spinBox_polyOrder.value())
+        calcIAD     = self.analysis_checkBox_doIAD.isChecked()
+        w0   = float(self.analysis_lineEdit_window0.text())
+        w1   = float(self.analysis_lineEdit_window1.text())
 
-            results     = []
-            valuesIAD   = []
 
-            refIndex        = self.getReferenceGroupIndex()
-            refResult       = None
 
-            groupIndex = 0
-            while groupIndex < self.tableGroups.rowCount():
-                # Calculate and plot reference first
-                if refResult is None and groupIndex != refIndex:
-                    groupIndex += 1
+        results     = []
+        valuesIAD   = []
+
+        refIndex        = self.getReferenceGroupIndex()
+        refResult       = None
+
+        groupIndex = 0
+        while groupIndex < self.tableGroups.rowCount():
+            # Calculate and plot reference first
+            if refResult is None and groupIndex != refIndex:
+                groupIndex += 1
+                continue
+
+            if refResult is not None and groupIndex == refIndex:
+                groupIndex += 1
+                continue
+
+            group               = self.tableGroups.item(groupIndex, 3)
+            experiment          = Experiment()
+            experiment.scans    = self.getScans(group = group)
+
+            # Skip this group if hidden
+            if not self.tableGroups.cellWidget(groupIndex, 0).isChecked():
+                continue
+
+            # Skip this group if no scans are assigned
+            if len(experiment.scans) < 1:
+                groupIndex += 1
+                continue
+
+            roi = self.getROI()
+            for r in roi:
+                if not r.active:
                     continue
 
-                if refResult is not None and groupIndex == refIndex:
-                    groupIndex += 1
-                    continue
+                sig = Analyzer.make_signal_from_QtRoi(r, [195, 487], self.imageView, 0)
+                energies = self.getEnergies()
 
-                group               = self.tableGroups.item(groupIndex, 3)
-                experiment          = Experiment()
-                experiment.scans    = self.getScans(group = group)
+                if len(energies) >= 2:
+                    positions = r.getEnergyPointPositions()
+                    sig.setEnergies(positions, energies)
 
-                # Skip this group if hidden
-                if not self.tableGroups.cellWidget(groupIndex, 0).isChecked():
-                    continue
+                bg01 = Analyzer.make_signal_from_QtRoi(r, [195, 487], self.imageView, 1)
+                bg02 = Analyzer.make_signal_from_QtRoi(r, [195, 487], self.imageView, 2)
 
-                # Skip this group if no scans are assigned
-                if len(experiment.scans) < 1:
-                    groupIndex += 1
-                    continue
+                if polyFit:
+                    bg01.poly_fit, bg02.poly_fit = True, True
+                    bg01.poly_order, bg02.poly_order = polyorder, polyorder
 
-                roi = self.getROI()
-                for r in roi:
-                    if not r.active:
-                        continue
+                experiment.add_analyzer(sig)
+                experiment.add_background_roi(bg01)
+                experiment.add_background_roi(bg02)
 
-                    sig = Analyzer.make_signal_from_QtRoi(r, [195, 487], self.imageView, 0)
-                    energies = self.getEnergies()
+            result = experiment.get_spectrum()
 
-                    if len(energies) >= 2:
-                        positions = r.getEnergyPointPositions()
-                        sig.setEnergies(positions, energies)
+            if calcIAD and groupIndex != refIndex:
+                w0COM = float(self.analysis_lineEdit_COMwindow0.text())
+                w1COM = float(self.analysis_lineEdit_COMwindow1.text())
+                iad = result.getIAD(refResult, windowNorm = [w0, w1], windowCOM = [w0COM, w1COM])
+                valuesIAD.append(iad)
 
-                    bg01 = Analyzer.make_signal_from_QtRoi(r, [195, 487], self.imageView, 1)
-                    bg02 = Analyzer.make_signal_from_QtRoi(r, [195, 487], self.imageView, 2)
+            results.append( result )
 
-                    if polyFit:
-                        bg01.poly_fit, bg02.poly_fit = True, True
-                        bg01.poly_order, bg02.poly_order = polyorder, polyorder
+            groupName = self.tableGroups.item(groupIndex, 3).text()
+            if refResult is None:
+                fmt = "Reference group '{}' calculated".format(groupName)
+                nosey.Log.info(fmt)
+                refResult = result
+                groupIndex = 0
+            else:
+                fmt = "Non-reference group '{}' calculated".format(groupName)
+                nosey.Log.info(fmt)
+                groupIndex += 1
 
-                    experiment.add_analyzer(sig)
-                    experiment.add_background_roi(bg01)
-                    experiment.add_background_roi(bg02)
-
-                result = experiment.get_spectrum()
-
-                if calcIAD and groupIndex != refIndex:
-                    w0 = float(self.analysis_lineEdit_COMwindow0.text())
-                    w1 = float(self.analysis_lineEdit_COMwindow1.text())
-                    iad = result.getIAD(refResult, [w0, w1])
-                    valuesIAD.append(iad)
-
-                results.append( result )
-
-                groupName = self.tableGroups.item(groupIndex, 3).text()
-                if refResult is None:
-                    fmt = "Reference group '{}' calculated".format(groupName)
-                    nosey.Log.info(fmt)
-                    refResult = result
-                    groupIndex = 0
-                else:
-                    fmt = "Non-reference group '{}' calculated".format(groupName)
-                    nosey.Log.info(fmt)
-                    groupIndex += 1
-
-                if len(results) == 0:
-                    raise Exception("No active plotting group!")
+            if len(results) == 0:
+                raise Exception("No active plotting group!")
 
 
 
-                # Plot data:
-                single_scans = nosey.gui.actionSingleScans.isChecked()
-                single_analyzers = nosey.gui.actionSingleAnalyzers.isChecked()
-                subtract_background = nosey.gui.actionSubtractBackground.isChecked()
-                normalize = nosey.gui.actionNormalize.isChecked()
-                scanning_type = nosey.gui.actionScanningType.isChecked()
-                slices = 1
-                single_image = None
+            # Plot data:
+            single_scans = nosey.gui.actionSingleScans.isChecked()
+            single_analyzers = nosey.gui.actionSingleAnalyzers.isChecked()
+            subtract_background = nosey.gui.actionSubtractBackground.isChecked()
+            normalize = nosey.gui.actionNormalize.isChecked()
+            scanning_type = nosey.gui.actionScanningType.isChecked()
+            slices = 1
+            single_image = None
 
-                self.clear_plot()
+            self.clear_plot()
 
 
-                if calcIAD:
-                    self.plotWidgetIAD.plot(range(len(valuesIAD)), valuesIAD,  symbol='o', symbolPen='r')
+            if calcIAD:
+                self.plotWidgetIAD.plot(range(len(valuesIAD)), valuesIAD,  symbol='o', symbolPen='r')
 
-                self._plot(results, single_analyzers, single_scans,
-                    scanning_type, subtract_background, normalize, single_image,
-                    slices, False, False)
+            self._plot(results, single_analyzers, single_scans,
+                scanning_type, subtract_background, normalize, single_image,
+                slices, False, False)
 
-                nosey.lastComputationTime = time.time() - start
-                fmt = "Last computation took {:.3f} s.".format(nosey.lastComputationTime)
-                self.analysis_labelComputation.setText(fmt)
+            nosey.lastComputationTime = time.time() - start
+            fmt = "Last computation took {:.3f} s.".format(nosey.lastComputationTime)
+            self.analysis_labelComputation.setText(fmt)
 
-                for roi in self.getROI():
-                    roi.connectUpdateSlotProxy(self.updatePlot)
+            for roi in self.getROI():
+                roi.connectUpdateSlotProxy(self.updatePlot)
 
-        except Exception as e:
-            fmt = 'Plot update failed: {}'.format(e)
-            nosey.Log.error(fmt)
+        # except Exception as e:
+        #     fmt = 'Plot update failed: {}'.format(e)
+        #     nosey.Log.error(fmt)
 
 
     def _plot(self, data, single_analyzers = True, single_scans = True,
@@ -206,7 +210,7 @@ class Plot(object):
                         sub = single_i - single_b
 
                         if normalize:
-                            sub, _ = normalize_curve(single_e, sub, [w0, w1])
+                            sub, _ = nmath.normalize_curve(single_e, sub, [w0, w1])
 
                         self.plotWidget.plot(single_e, sub,
                             pen = pens[ind_s, ind_a], name = single_l)
@@ -215,7 +219,7 @@ class Plot(object):
                     else:
 
                         if normalize:
-                            single_i, fac = normalize_curve(single_e, single_i, [w0, w1])
+                            single_i, fac = nmath.normalize_curve(single_e, single_i, [w0, w1])
                         else:
                             fac = 1.0
 
@@ -232,10 +236,10 @@ class Plot(object):
 
                         i_test      = single_i - single_b
                         i_test_ref  = single_ref_i - single_ref_b
-                        i_test,_      = normalize_curve(single_e, i_test, [w0, w1])
-                        i_test_ref,_  = normalize_curve(single_ref_e, i_test_ref, [w0, w1])
+                        i_test,_      = nmath.normalize_curve(single_e, i_test, [w0, w1])
+                        i_test_ref,_  = nmath.normalize_curve(single_ref_e, i_test_ref, [w0, w1])
 
-                        de, di, db = d._interpolate_and_sum(
+                        de, di, db = nmath.interpolate_and_sum(
                             [single_e, single_ref_e],
                             [single_i, -1 * single_ref_i],
                             [single_b, -1 * single_ref_b], True, [w0, w1])
