@@ -60,6 +60,11 @@ class MainFrame(QtGui.QMainWindow, Monitor, Sources, Plot, Groups):
 
 
     @QtCore.pyqtSlot()
+    def on_actionCOMShift_triggered(self, *args, **kwargs):
+        self.updatePlot(manual = True)
+
+
+    @QtCore.pyqtSlot()
     def on_actionSingleAnalyzers_triggered(self, *args, **kwargs):
         self.updatePlot(manual = True)
 

@@ -52,10 +52,18 @@ def interpolate_and_sum(energy, intensity, background, normalize_before_sum = Fa
     return ce, ii, bg
 
 
-def calculateCOM(e, i):
+def calculateCOM(e, i, window = None):
+
+    if window is not None:
+        e0, e1  = window
+        i0, i1  = np.argmin(np.abs(e-e0)), np.argmin(np.abs(e-e1))
+        i, e    = i[i0:i1], e[i0:i1]
+    else:
+        e0 = 0
+
     cumsum = np.cumsum(i)
     f = interp.interp1d(cumsum, e)
-    return float(f(0.5*np.max(cumsum)))
+    return float(f(0.5*np.max(cumsum))) + e0
 
 
 def integratedAbsoluteDifference(e0, i0, e1, i1, windowNorm, windowCOM):

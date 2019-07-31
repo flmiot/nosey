@@ -164,7 +164,7 @@ class Plot(object):
 
                 self._plot(results, single_analyzers, single_scans,
                     scanning_type, subtract_background, normalize, single_image,
-                    slices, False, False, poly_order)
+                    slices, False, False, poly_order, com_shift)
 
                 nosey.lastComputationTime = time.time() - start
                 fmt = "Last computation took {:.3f} s.".format(nosey.lastComputationTime)
@@ -183,7 +183,7 @@ class Plot(object):
     def _plot(self, data, single_analyzers = True, single_scans = True,
         scanning_type = False, subtract_background = True, normalize = False,
         single_image = None, slices = 1, normalize_scans = False,
-        normalize_analyzers = False, poly_order = None):
+        normalize_analyzers = False, poly_order = None, com_shift = False):
 
         groups = len(data)
         w0   = float(self.analysis_lineEdit_window0.text())
@@ -222,6 +222,14 @@ class Plot(object):
                         if normalize:
                             sub, _ = nmath.normalize_curve(single_e, sub, [w0, w1])
 
+                        if com_shift:
+                            if sum([ind, ind_s, ind_a]) == 0:
+                                com = nmath.calculateCOM(single_e, sub)
+                            else:
+                                shift     = nmath.calculateCOM(single_e, sub) - com
+                                single_e -= shift
+
+
                         self.plotWidget.plot(single_e, sub,
                             pen = pens[ind_s, ind_a], name = single_l)
 
@@ -231,6 +239,13 @@ class Plot(object):
                             single_i, fac = nmath.normalize_curve(single_e, single_i, [w0, w1])
                         else:
                             fac = 1.0
+
+                        if com_shift:
+                            if sum([ind, ind_s, ind_a]) == 0:
+                                com = nmath.calculateCOM(single_e, single_i)
+                            else:
+                                shift = nmath.calculateCOM(single_e, single_i) - com
+                                single_e -= shift
 
                         self.plotWidget.plot(single_e, single_i, name = single_l,
                             pen = pens[ind_s, ind_a])
