@@ -24,7 +24,6 @@ class Sources(object):
         try:
             #log_path = str(QtGui.QFileDialog.getOpenFileName(self, 'Select logfile')[0])
             paths = QtGui.QFileDialog.getOpenFileNames(self, 'Select images')[0]
-            print(paths)
 
             for ind, file_path in enumerate(paths):
                 self.statusBar.setProgressBarFraction((ind+1) / len(paths))
@@ -68,8 +67,10 @@ class Sources(object):
 
         nosey.Log.debug("Reading {} ...".format(scan_name))
 
+        recipe = self.comboBox_analysis_recipes.currentData()
+
         s = Scan(log_file = scan_name, image_files = img_path)
-        loader = QThread_Loader(s)
+        loader = QThread_Loader(s, recipe())
         self.threads.append(loader)
         loader.start()
         nosey.Log.debug("Scan {} loaded.".format(s))
@@ -145,15 +146,16 @@ class QThread_Loader(QtCore.QThread):
     taskFinished = QtCore.pyqtSignal(int)
     imageLoaded = QtCore.pyqtSignal(int)
 
-    def __init__(self, scan, *arg, **kwarg):
-        self.scan = scan
+    def __init__(self, scan, recipe, *arg, **kwarg):
+        self.scan       = scan
+        self.recipe     = recipe
         QtCore.QThread.__init__(self, *arg, **kwarg)
 
     def run(self):
         try:
             nosey.Log.info("Loading file '{}', please wait...".format(self.scan.name))
             #self.scan.read_logfile(recipe = SOLEILRecipe())
-            self.scan.read_files(recipe = SOLEILRecipe())
+            self.scan.read_files(recipe = self.recipe)
             n = len(self.scan.images)
             self.taskFinished.emit(n)
             nosey.Log.info("File '{}' successfully imported.".format(self.scan.name))

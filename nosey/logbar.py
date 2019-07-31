@@ -27,8 +27,6 @@ class Logbar(QtGui.QStatusBar):
             self.addPermanentWidget(self.messageLabel)
             self.addPermanentWidget(self.progressBar)
 
-
-
     def writeLog(self, message, level):
         if message != '\n':
             if level == logging.ERROR:

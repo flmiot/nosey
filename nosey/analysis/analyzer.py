@@ -15,8 +15,6 @@ class Analyzer(object):
         self.active             = True
         self.name               = name
         self.mask               = None
-        self.poly_fit           = False
-        self.poly_order         = 6
         self.calibration        = None
 
         if roi is not None:
@@ -89,7 +87,7 @@ class Analyzer(object):
         self.calibration = EnergyCalibration(positions, energies)
 
 
-    def get_signal(self, image, poly_fit = False, poly_order = 6):
+    def get_signal(self, image):
         """
         """
 
@@ -101,17 +99,11 @@ class Analyzer(object):
         ii = np.sum(image[y0:y1+1,x0:x1+1], axis = 0)
         ea = np.arange(len(ii))
 
-        if poly_fit:
-            p = np.polyfit(ea, ii, poly_order)
-            poly = np.poly1d(p)
-            ii = poly(ea)
-
         return ea, ii
 
 
-    def get_signal_series(self, images, background_rois = None):
+    def get_signal_series(self, images, upper_bg, lower_bg):
         """
-
         """
 
         start = time.time()
@@ -129,7 +121,7 @@ class Analyzer(object):
 
         for ind, image in enumerate(images):
             _, ii[ind] = self.get_signal(image)
-            bg[ind] = self.get_background(image, background_rois)
+            bg[ind] = self.get_background(image, upper_bg, lower_bg)
 
 
 
@@ -154,55 +146,50 @@ class Analyzer(object):
         return [x0,y0,x1,y1]
 
 
-    def get_background(self, image, background_rois):
+    def get_background(self, image, upper, lower):
 
         bg = np.zeros(image.shape[1])
 
-        upper = None
-        lower = None
+        # # Find nearest background ROIs
+        # for bg_roi in background_rois:
+        #     if bg_roi.pos()[0] > self.pos()[0]:
+        #         if upper is None:
+        #             upper = bg_roi
+        #         else:
+        #             dis_self_roi = np.linalg.norm(self.pos() - bg_roi.pos())
+        #             dis_self_upper = np.linalg.norm(self.pos() - upper.pos())
+        #             if dis_self_roi < dis_self_upper:
+        #                 upper = bg_roi
+        #     else:
+        #         if lower is None:
+        #             lower = bg_roi
+        #         else:
+        #             dis_self_roi = np.linalg.norm(self.pos() - bg_roi.pos())
+        #             dis_self_lower = np.linalg.norm(self.pos() - lower.pos())
+        #             if dis_self_roi < dis_self_lower:
+        #                 lower = bg_roi
+        #
+        # if not upper is None:
+        #     #x0, y0, x1, y1 = self.clip_roi(upper.roi, image.shape)
+        #     #bg_upper = np.sum(image[y0:y1+1, x0:x1+1], axis = 0)
+        _, bg_upper = upper.get_signal(image)
+        size = upper.size(mask = image.shape)
+        if size > 0:
+            x0, _, x1, _ = upper.clip_roi(upper.roi, image.shape)
+            bg[x0:x1+1] += bg_upper * self.size(mask = image.shape) / size
+        else:
+            upper = None
 
-        # Find nearest background ROIs
-        for bg_roi in background_rois:
-            if bg_roi.pos()[0] > self.pos()[0]:
-                if upper is None:
-                    upper = bg_roi
-                else:
-                    dis_self_roi = np.linalg.norm(self.pos() - bg_roi.pos())
-                    dis_self_upper = np.linalg.norm(self.pos() - upper.pos())
-                    if dis_self_roi < dis_self_upper:
-                        upper = bg_roi
-            else:
-                if lower is None:
-                    lower = bg_roi
-                else:
-                    dis_self_roi = np.linalg.norm(self.pos() - bg_roi.pos())
-                    dis_self_lower = np.linalg.norm(self.pos() - lower.pos())
-                    if dis_self_roi < dis_self_lower:
-                        lower = bg_roi
-
-        if not upper is None:
-            #x0, y0, x1, y1 = self.clip_roi(upper.roi, image.shape)
-            #bg_upper = np.sum(image[y0:y1+1, x0:x1+1], axis = 0)
-            _, bg_upper = upper.get_signal(image, poly_fit = upper.poly_fit,
-                poly_order = upper.poly_order)
-            size = upper.size(mask = image.shape)
-            if size > 0:
-                x0, _, x1, _ = upper.clip_roi(upper.roi, image.shape)
-                bg[x0:x1+1] += bg_upper * self.size(mask = image.shape) / size
-            else:
-                upper = None
-
-        if not lower is None:
+        # if not lower is None:
             #x0, y0, x1, y1 = self.clip_roi(lower.roi, image.shape)
             #bg_lower = np.sum(image[y0:y1+1, x0:x1+1], axis = 0)
-            _, bg_lower = lower.get_signal(image, poly_fit = lower.poly_fit,
-                poly_order = lower.poly_order)
-            size = lower.size(mask = image.shape)
-            if size > 0:
-                x0, _, x1, _ = lower.clip_roi(lower.roi, image.shape)
-                bg[x0:x1+1] += bg_lower * self.size(mask = image.shape) / size
-            else:
-                lower = None
+        _, bg_lower = lower.get_signal(image)
+        size = lower.size(mask = image.shape)
+        if size > 0:
+            x0, _, x1, _ = lower.clip_roi(lower.roi, image.shape)
+            bg[x0:x1+1] += bg_lower * self.size(mask = image.shape) / size
+        else:
+            lower = None
 
         if not lower is None and not upper is None:
             bg /= 2

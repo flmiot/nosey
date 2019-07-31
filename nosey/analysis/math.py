@@ -20,6 +20,13 @@ def normalize_curve(e, i, window = None):
     return i * factor, factor
 
 
+def fit_curve(i, order = 3):
+    x   = np.arange(len(i))
+    p   = np.polyfit(x, i, order)
+    poly = np.poly1d(p)
+    return poly(x)
+
+
 def interpolate_and_sum(energy, intensity, background, normalize_before_sum = False, window = None):
     min_energy = np.max(list(np.min(e) for e in energy))
     max_energy = np.min(list(np.max(e) for e in energy))

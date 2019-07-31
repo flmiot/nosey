@@ -53,11 +53,13 @@ class Plot(object):
         try:
             start = time.time()
             analyzers   = []
-            polyFit     = self.analysis_checkBox_polyFit.isChecked()
-            polyorder   = int(self.analysis_spinBox_polyOrder.value())
             calcIAD     = self.analysis_checkBox_doIAD.isChecked()
             w0   = float(self.analysis_lineEdit_window0.text())
             w1   = float(self.analysis_lineEdit_window1.text())
+            if self.analysis_checkBox_polyFit.isChecked():
+                poly_order  = int(self.analysis_spinBox_polyOrder.value())
+            else:
+                poly_order  = None
 
             results     = []
             valuesIAD   = []
@@ -114,13 +116,8 @@ class Plot(object):
                     bg01 = Analyzer.make_signal_from_QtRoi(r, [195, 487], self.imageView, 1)
                     bg02 = Analyzer.make_signal_from_QtRoi(r, [195, 487], self.imageView, 2)
 
-                    if polyFit:
-                        bg01.poly_fit, bg02.poly_fit = True, True
-                        bg01.poly_order, bg02.poly_order = polyorder, polyorder
-
-                    experiment.add_analyzer(sig)
-                    experiment.add_background_roi(bg01)
-                    experiment.add_background_roi(bg02)
+                    experiment.analyzers.append(sig)
+                    experiment.bg_roi.append( (bg01, bg02) )
 
                 result = experiment.get_spectrum()
 
@@ -150,13 +147,14 @@ class Plot(object):
 
 
                 # Plot data:
-                single_scans = nosey.gui.actionSingleScans.isChecked()
+                single_scans    = nosey.gui.actionSingleScans.isChecked()
                 single_analyzers = nosey.gui.actionSingleAnalyzers.isChecked()
                 subtract_background = nosey.gui.actionSubtractBackground.isChecked()
-                normalize = nosey.gui.actionNormalize.isChecked()
-                scanning_type = nosey.gui.actionScanningType.isChecked()
-                slices = 1
-                single_image = None
+                normalize       = nosey.gui.actionNormalize.isChecked()
+                scanning_type   = nosey.gui.actionScanningType.isChecked()
+                com_shift       = nosey.gui.actionCOMShift.isChecked()
+                slices          = 1
+                single_image    = None
 
                 self.clear_plot()
 
@@ -166,7 +164,7 @@ class Plot(object):
 
                 self._plot(results, single_analyzers, single_scans,
                     scanning_type, subtract_background, normalize, single_image,
-                    slices, False, False)
+                    slices, False, False, poly_order)
 
                 nosey.lastComputationTime = time.time() - start
                 fmt = "Last computation took {:.3f} s.".format(nosey.lastComputationTime)
@@ -185,17 +183,18 @@ class Plot(object):
     def _plot(self, data, single_analyzers = True, single_scans = True,
         scanning_type = False, subtract_background = True, normalize = False,
         single_image = None, slices = 1, normalize_scans = False,
-        normalize_analyzers = False):
+        normalize_analyzers = False, poly_order = None):
 
         groups = len(data)
         w0   = float(self.analysis_lineEdit_window0.text())
         w1   = float(self.analysis_lineEdit_window1.text())
 
         for ind, d in enumerate(data):
+
             e, i, b, l = d.get_curves(
                 single_scans, single_analyzers,
                 scanning_type, single_image, slices,
-                normalize_scans, normalize_analyzers)
+                normalize_scans, normalize_analyzers, poly_order)
 
             if ind == 0:
                 ref_e, ref_i, ref_b = e, i, b
@@ -226,7 +225,6 @@ class Plot(object):
                         self.plotWidget.plot(single_e, sub,
                             pen = pens[ind_s, ind_a], name = single_l)
 
-
                     else:
 
                         if normalize:
@@ -240,10 +238,7 @@ class Plot(object):
                         self.plotWidget.plot(single_e, single_b * fac,
                             pen = pens_bg[ind_s, ind_a])
 
-                    pi = self.plotWidget.getPlotItem()
-                    items = pi.listDataItems()
-                    for item in items:
-                        
+
 
                     if self.analysis_checkBox_doDifference.isChecked() and ind != 0:
                         single_ref_e = ref_e[ind_s][ind_a]
@@ -349,9 +344,9 @@ class Plot(object):
             pi.removeItem(item)
 
 
-    def updateCursorPlot(self, event):
+    def updateCursorPlot(self, plotWidget, event):
         pos = event[0]
-        x = self.plotWidget.getPlotItem().vb.mapSceneToView(pos).x()
-        y = self.plotWidget.getPlotItem().vb.mapSceneToView(pos).y()
+        x = plotWidget.getPlotItem().vb.mapSceneToView(pos).x()
+        y = plotWidget.getPlotItem().vb.mapSceneToView(pos).y()
         fmt = 'x: {:.7f} | y: {:.7f}'.format(x,y)
         self.statusBar.writeCursorPosition(fmt)

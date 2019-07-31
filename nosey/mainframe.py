@@ -16,15 +16,9 @@ class MainFrame(QtGui.QMainWindow, Monitor, Sources, Plot, Groups):
         dirname = os.path.dirname(__file__)
         uic.loadUi(os.path.join(dirname, 'ui/main.ui'), self)
 
+
         self.setupUi()
         self.actionUpdate_automatically.trigger()
-        self.proxies = []
-
-        self.proxies.append(pg.SignalProxy(self.imageView.getView().scene().sigMouseMoved,
-            rateLimit=60, slot = self.updateCursorMonitor))
-        self.proxies.append(pg.SignalProxy(self.plotWidget.getPlotItem().scene().sigMouseMoved,
-            rateLimit=60, slot = self.updateCursorPlot))
-
 
 
 
@@ -127,6 +121,22 @@ class MainFrame(QtGui.QMainWindow, Monitor, Sources, Plot, Groups):
         self.setupPlot()
         self.setupGroupsFrame()
         self.splitter_2.setStretchFactor(0, 3)
+
+        for recipe in nosey.recipes:
+            self.comboBox_analysis_recipes.addItem(recipe.__doc__, recipe)
+
+        # Events
+        self.proxies = []
+        self.proxies.append(pg.SignalProxy(self.imageView.getView().scene().sigMouseMoved,
+            rateLimit=20, slot = self.updateCursorMonitor))
+
+        self.proxies.append(pg.SignalProxy(self.plotWidget.getPlotItem().scene().sigMouseMoved,
+            rateLimit=20, slot = lambda e : self.updateCursorPlot(self.plotWidget, e)))
+        self.proxies.append(pg.SignalProxy(self.plotWidgetDiff.getPlotItem().scene().sigMouseMoved,
+            rateLimit=20, slot = lambda e : self.updateCursorPlot(self.plotWidgetDiff, e)))
+        self.proxies.append(pg.SignalProxy(self.plotWidgetIAD.getPlotItem().scene().sigMouseMoved,
+            rateLimit=20, slot = lambda e : self.updateCursorPlot(self.plotWidgetIAD, e)))
+
 
 
 class EditDialog(QtGui.QDialog):

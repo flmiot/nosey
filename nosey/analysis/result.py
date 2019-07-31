@@ -35,7 +35,8 @@ class AnalysisResult(object):
         single_image = None,
         slices = 1,
         normalize_scans_before_sum = False,
-        normalize_analyzers_before_sum = False
+        normalize_analyzers_before_sum = False,
+        poly_order = None
         ):
         """
         Specify *referenceResult* if difference should be calculated.
@@ -101,6 +102,12 @@ class AnalysisResult(object):
 
         if not single_scans:
             ei, ii, bi = self.sum_scans(ei, ii, bi, normalize_scans_before_sum)
+
+        if poly_order is not None:
+            for scan_index in range(bi.shape[0]):
+                for analyzer_index in range(bi[scan_index].shape[0]):
+                    curve = bi[scan_index, analyzer_index]
+                    bi[scan_index, analyzer_index] = nmath.fit_curve(curve, poly_order)
 
         return ei, ii, bi, l
 

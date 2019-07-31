@@ -6,7 +6,6 @@ import time
 import numpy as np
 import nosey
 
-
 class Scan(object):
     def __init__(self, log_file, image_files):
         """ Specify *logfile* as namestring and list of *image_files*.
@@ -97,7 +96,7 @@ class Scan(object):
                 pixel_wise = pixel_wise)
 
 
-    def get_energy_spectrum(self, analyzers, background_rois):
+    def get_energy_spectrum(self, analyzers, bg_roi):
 
         in_e = np.arange(self.images.shape[0])
         out_e = np.empty((len(analyzers)), dtype = list)
@@ -106,8 +105,7 @@ class Scan(object):
         fits = np.empty((len(analyzers)), dtype = list)
 
         for ind, an in enumerate(analyzers):
-            b, s, bg, fit = an.get_signal_series(images = self.images,
-                background_rois = background_rois)
+            b, s, bg, fit = an.get_signal_series(self.images, *bg_roi[ind])
 
             out_e[ind] = b
             intensity[ind] = s
