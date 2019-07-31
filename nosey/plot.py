@@ -166,14 +166,13 @@ class Plot(object):
                     scanning_type, subtract_background, normalize, single_image,
                     slices, False, False, poly_order, com_shift)
 
-                nosey.lastComputationTime = time.time() - start
-                fmt = "Last computation took {:.3f} s.".format(nosey.lastComputationTime)
-                self.analysis_labelComputation.setText(fmt)
-
                 for roi in self.getROI():
                     roi.connectUpdateSlotProxy(self.updatePlot)
 
             self.statusBar.setProgressBarFraction(1)
+            nosey.lastComputationTime = time.time() - start
+            fmt = "Last computation took {:.3f} s.".format(nosey.lastComputationTime)
+            self.analysis_labelComputation.setText(fmt)
 
         except Exception as e:
             fmt = 'Plot update failed: {}'.format(e)
