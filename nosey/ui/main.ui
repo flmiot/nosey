@@ -6,12 +6,16 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1280</width>
+    <width>879</width>
     <height>800</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>NoseyXES</string>
+  </property>
+  <property name="windowIcon">
+   <iconset>
+    <normaloff>../icons/appIcon.png</normaloff>../icons/appIcon.png</iconset>
   </property>
   <property name="styleSheet">
    <string notr="true">QWidget {
@@ -4387,8 +4391,8 @@ QMainWindow::separator:vertical {
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>473</width>
-              <height>548</height>
+              <width>459</width>
+              <height>564</height>
              </rect>
             </property>
             <property name="palette">
