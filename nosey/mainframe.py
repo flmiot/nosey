@@ -8,9 +8,10 @@ from nosey.monitor import Monitor
 from nosey.sources import Sources
 from nosey.plot import Plot
 from nosey.groups import Groups
+from nosey.settings import Settings
 
 
-class MainFrame(QtGui.QMainWindow, Monitor, Sources, Plot, Groups):
+class MainFrame(QtGui.QMainWindow, Monitor, Sources, Plot, Groups, Settings):
     def __init__(self, *args, **kwargs):
         super(self.__class__, self).__init__(*args, **kwargs)
         dirname = os.path.dirname(__file__)
@@ -86,49 +87,13 @@ class MainFrame(QtGui.QMainWindow, Monitor, Sources, Plot, Groups):
 
 
 
-
-    def applySettings(self, *args, **kwargs):
-
-        ###################### Plotting ######################
-        plotItem = self.plotWidget.getPlotItem()
-
-        # Plot title and labels
-        plotTitleSize   = '{}pt'.format(self.spinBox_plotTitleSize.value())
-        plotXLabelSize  = '{}pt'.format(self.spinBox_plotXLabelSize.value())
-        plotYLabelSize  = '{}pt'.format(self.spinBox_plotYLabelSize.value())
-
-        plotTitle = self.lineEdit_plotTitle.text()
-        plotXLabel = self.lineEdit_xLabel.text()
-        plotYLabel = self.lineEdit_yLabel.text()
-        plotXLabelUnits = self.lineEdit_xLabelUnits.text()
-        plotYLabelUnits = self.lineEdit_yLabelUnits.text()
-
-        s = {'color': '#000'}
-        plotItem.setTitle(plotTitle, size = plotTitleSize, **s)
-        plotItem.getAxis('bottom').setLabel(plotXLabel,
-            **{'font-size':plotXLabelSize}, units = plotXLabelUnits, **s)
-        plotItem.getAxis('left').setLabel(plotYLabel,
-            **{'font-size':plotYLabelSize}, units = plotYLabelUnits, **s)
-
-        plotLineWidth = int(self.spinBox_plotLineWidth.value())
-
-        for item in plotItem.listDataItems():
-            pen = item.opts['pen']
-            pen.setWidth(plotLineWidth)
-            item.setPen(pen)
-
-    # =================================================== #
-
-
     def setupUi(self):
         self.setupMonitor()
         self.setupSources()
         self.setupPlot()
         self.setupGroupsFrame()
+        self.setupSettingTree()
         self.splitter_2.setStretchFactor(0, 3)
-
-        for recipe in nosey.recipes:
-            self.comboBox_analysis_recipes.addItem(recipe.__doc__, recipe)
 
         # Events
         self.proxies = []

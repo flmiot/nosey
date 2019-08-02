@@ -53,11 +53,11 @@ class Plot(object):
         try:
             start = time.time()
             analyzers   = []
-            calcIAD     = self.analysis_checkBox_doIAD.isChecked()
-            w0   = float(self.analysis_lineEdit_window0.text())
-            w1   = float(self.analysis_lineEdit_window1.text())
-            if self.analysis_checkBox_polyFit.isChecked():
-                poly_order  = int(self.analysis_spinBox_polyOrder.value())
+            calcIAD     = self.getSetting(['IAD analysis', 'Enabled'])
+            w0   = float(self.getSetting(['Normalization', 'Window', 'Start']))
+            w1   = float(self.getSetting(['Normalization', 'Window', 'End']))
+            if self.getSetting(['Background subtraction', 'Polynomial fitting', 'Enabled']):
+                poly_order  = int(self.getSetting(['Background subtraction', 'Polynomial fitting', 'Order']))
             else:
                 poly_order  = None
 
@@ -122,8 +122,9 @@ class Plot(object):
                 result = experiment.get_spectrum()
 
                 if calcIAD and groupIndex != refIndex:
-                    w0COM = float(self.analysis_lineEdit_COMwindow0.text())
-                    w1COM = float(self.analysis_lineEdit_COMwindow1.text())
+
+                    w0COM = float(self.getSetting(['Center-of-mass shift', 'Window', 'Start']))
+                    w1COM = float(self.getSetting(['Center-of-mass shift', 'Window', 'End']))
                     iad = result.getIAD(refResult, windowNorm = [w0, w1], windowCOM = [w0COM, w1COM])
                     valuesIAD.append(iad)
 
@@ -185,8 +186,8 @@ class Plot(object):
         normalize_analyzers = False, poly_order = None, com_shift = False):
 
         groups = len(data)
-        w0   = float(self.analysis_lineEdit_window0.text())
-        w1   = float(self.analysis_lineEdit_window1.text())
+        w0   = float(self.getSetting(['Normalization', 'Window', 'Start']))
+        w1   = float(self.getSetting(['Normalization', 'Window', 'End']))
 
         for ind, d in enumerate(data):
 
@@ -252,9 +253,7 @@ class Plot(object):
                         self.plotWidget.plot(single_e, single_b * fac,
                             pen = pens_bg[ind_s, ind_a])
 
-
-
-                    if self.analysis_checkBox_doDifference.isChecked() and ind != 0:
+                    if self.getSetting(['Difference', 'Enabled']) and ind != 0:
                         single_ref_e = ref_e[ind_s][ind_a]
                         single_ref_i = ref_i[ind_s][ind_a]
                         single_ref_b = ref_b[ind_s][ind_a]

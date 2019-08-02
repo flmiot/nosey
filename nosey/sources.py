@@ -66,8 +66,7 @@ class Sources(object):
         # files = [f for f in files if scan_no in f]
 
         nosey.Log.debug("Reading {} ...".format(scan_name))
-
-        recipe = self.comboBox_analysis_recipes.currentData()
+        recipe = self.getSetting(['Data import', 'Module'])
 
         s = Scan(log_file = scan_name, image_files = img_path)
         loader = QThread_Loader(s, recipe())
