@@ -21,3 +21,5 @@ python __main__.py
 # Quickstart guide
 
 ![File input demo](documentation/demonstration/load_files.gif)
+
+![File input demo](documentation/demonstration/analyzer.gif)
