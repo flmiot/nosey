@@ -18,5 +18,6 @@ python __main__.py
 - Manage numerous scans and analyzer (ROIs) at the same time. View them separately, overlayed or summed (via linear interpolation) 
 - Enable the automatic plotting-update to view and access changes quickly (e.g ROI size) 
 
-# Select files easily
+# Quickstart guide
+
 ![File input demo](documentation/demonstration/load_files.gif)
