@@ -127,6 +127,8 @@ class Sources(object):
                     button = self.tableSources.cellWidget(row, 0)
                     button.toggle()
 
+        self.updatePlot()
+
 
     def changeGroup(self, item):
         """If item is selected, change group also for all other selected items"""

@@ -51,6 +51,10 @@ class Plot(object):
     @nosey.guard.updateGuard
     def updatePlot(self, *args, **kwargs):
         try:
+
+            self.clear_plot()
+            self.plotExternalReferences()
+
             start = time.time()
             analyzers   = []
             calcIAD     = self.getSetting(['IAD analysis', 'Enabled'])
@@ -60,6 +64,7 @@ class Plot(object):
                 poly_order  = int(self.getSetting(['Background subtraction', 'Polynomial fitting', 'Order']))
             else:
                 poly_order  = None
+            fraction_fit = self.getSetting(['Fraction fitting', 'Enabled'])
 
             results     = []
             valuesIAD   = []
@@ -157,7 +162,7 @@ class Plot(object):
                 slices          = 1
                 single_image    = None
 
-                self.clear_plot()
+
 
 
                 if calcIAD:
@@ -165,15 +170,14 @@ class Plot(object):
 
                 self._plot(results, single_analyzers, single_scans,
                     scanning_type, subtract_background, normalize, single_image,
-                    slices, False, False, poly_order, com_shift)
+                    slices, False, False, poly_order, com_shift, fraction_fit)
 
                 for roi in self.getROI():
                     roi.connectUpdateSlotProxy(self.updatePlot)
 
             self.statusBar.setProgressBarFraction(1)
             nosey.lastComputationTime = time.time() - start
-            fmt = "Last computation took {:.3f} s.".format(nosey.lastComputationTime)
-            self.analysis_labelComputation.setText(fmt)
+            self.statusBar.setTimerValue(nosey.lastComputationTime)
 
         except Exception as e:
             fmt = 'Plot update failed: {}'.format(e)
@@ -183,11 +187,22 @@ class Plot(object):
     def _plot(self, data, single_analyzers = True, single_scans = True,
         scanning_type = False, subtract_background = True, normalize = False,
         single_image = None, slices = 1, normalize_scans = False,
-        normalize_analyzers = False, poly_order = None, com_shift = False):
+        normalize_analyzers = False, poly_order = None, com_shift = False,
+        fraction_fit = False):
 
         groups = len(data)
         w0   = float(self.getSetting(['Normalization', 'Window', 'Start']))
         w1   = float(self.getSetting(['Normalization', 'Window', 'End']))
+
+        if fraction_fit:
+            try:
+                reference_a = self.getSelectedExternalReferenceData(refID = 1)
+                reference_b = self.getSelectedExternalReferenceData(refID = 2)
+            except Exception as e:
+                nosey.Log.error("Fraction fitting failed: {}".format(e))
+                fraction_fit = False
+
+
 
         for ind, d in enumerate(data):
 
@@ -233,6 +248,15 @@ class Plot(object):
                         self.plotWidget.plot(single_e, sub,
                             pen = pens[ind_s, ind_a], name = single_l)
 
+                        if fraction_fit:
+                            f, ce, fit = nmath.fractionFit([single_e, sub], reference_a, reference_b)
+
+                            fracLabel = 'Fitted fraction {:.2f}*R1 + {:.2f}*R2'
+                            fracLabel = fracLabel.format(f, 1-f)
+                            self.plotWidget.plot(ce, fit(ce),
+                                pen = pens[ind_s, ind_a], name = fracLabel)
+
+
                     else:
 
                         if normalize:
@@ -252,6 +276,14 @@ class Plot(object):
 
                         self.plotWidget.plot(single_e, single_b * fac,
                             pen = pens_bg[ind_s, ind_a])
+
+                        if fraction_fit:
+                            f, ce, fit = nmath.fractionFit([single_e, single_i], reference_a, reference_b)
+                            fracLabel = 'Fitted fraction {:.2f}*R1 + {:.2f}*R2'
+                            fracLabel = fracLabel.format(f, 1-f)
+                            self.plotWidget.plot(ce, fit(ce),
+                                pen = pens[ind_s, ind_a], name = fracLabel)
+
 
                     if self.getSetting(['Difference', 'Enabled']) and ind != 0:
                         single_ref_e = ref_e[ind_s][ind_a]
@@ -282,8 +314,11 @@ class Plot(object):
         pens    = []
         pens_bg = []
 
+        min_map_value = 0
+        max_map_value = 0.85
+
         if groups > 1:
-            shades = cm.brg(np.linspace(0,1.0, groups))
+            shades = cm.brg(np.linspace(min_map_value,max_map_value, groups))
 
             pen     = []
             pen_bg  = []
@@ -300,16 +335,16 @@ class Plot(object):
         else:
 
             if single_analyzers and single_scans:
-                shades = cm.brg(np.linspace(0,1.0, no_scans))
+                shades = cm.brg(np.linspace(min_map_value,max_map_value, no_scans))
                 colors = np.tile(shades, (no_analyzers, 1, 1))
                 colors = np.transpose(colors, (1,0,2))
 
             elif single_analyzers and not single_scans:
-                shades = cm.brg(np.linspace(0, 1.0, no_analyzers))
+                shades = cm.brg(np.linspace(min_map_value, max_map_value, no_analyzers))
                 colors = np.tile(shades, (1,1,1))
 
             elif not single_analyzers and single_scans:
-                shades = cm.brg(np.linspace(0,1.0, no_scans))
+                shades = cm.brg(np.linspace(min_map_value, max_map_value, no_scans))
                 colors = np.tile(shades, (1, 1, 1))
                 colors = np.transpose(colors, (1,0,2))
 
@@ -335,6 +370,13 @@ class Plot(object):
         return pen
 
 
+    def plotExternalReferences(self):
+        data = self.getExternalReferenceData()
+        for x, y, label in data:
+            pen = pg.mkPen(color=[255,0,0], style=QtCore.Qt.SolidLine)
+            self.plotWidget.plot(x, y, name = label, pen = pen)
+
+
     def clear_plot(self):
         pi = self.plotWidget.getPlotItem()
         items = pi.listDataItems()
@@ -355,6 +397,8 @@ class Plot(object):
 
         for item in items:
             pi.removeItem(item)
+
+
 
 
     def updateCursorPlot(self, plotWidget, event):

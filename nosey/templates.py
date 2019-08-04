@@ -40,6 +40,7 @@ class ViewButton(QtGui.QPushButton):
         self.setToolTip("View this item in monitor")
         self.setFocusPolicy(QtCore.Qt.NoFocus)
 
+
 class RefButton(QtGui.QPushButton):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -48,6 +49,34 @@ class RefButton(QtGui.QPushButton):
         icon.addPixmap(QtGui.QPixmap(os.path.join(dirname, 'icons/full.png')), QtGui.QIcon.Normal, QtGui.QIcon.On)
         icon.addPixmap(QtGui.QPixmap(os.path.join(dirname, 'icons/empty.png')), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.setToolTip("Set this item as reference")
+        self.setIcon(icon)
+        self.setStyleSheet("QPushButton:checked { font-size:10pt; font-weight: bold; background-color: #81c2eb }")
+        self.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.setCheckable(True)
+
+
+class ExtRef1Button(QtGui.QPushButton):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        icon = QtGui.QIcon()
+        dirname = os.path.dirname(__file__)
+        icon.addPixmap(QtGui.QPixmap(os.path.join(dirname, 'icons/extRef1.png')), QtGui.QIcon.Normal, QtGui.QIcon.On)
+        icon.addPixmap(QtGui.QPixmap(os.path.join(dirname, 'icons/extRef1.png')), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.setToolTip("Set this item as external reference 1")
+        self.setIcon(icon)
+        self.setStyleSheet("QPushButton:checked { font-size:10pt; font-weight: bold; background-color: #81c2eb }")
+        self.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.setCheckable(True)
+
+
+class ExtRef2Button(QtGui.QPushButton):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        icon = QtGui.QIcon()
+        dirname = os.path.dirname(__file__)
+        icon.addPixmap(QtGui.QPixmap(os.path.join(dirname, 'icons/extRef2.png')), QtGui.QIcon.Normal, QtGui.QIcon.On)
+        icon.addPixmap(QtGui.QPixmap(os.path.join(dirname, 'icons/extRef2.png')), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.setToolTip("Set this item as external reference 2")
         self.setIcon(icon)
         self.setStyleSheet("QPushButton:checked { font-size:10pt; font-weight: bold; background-color: #81c2eb }")
         self.setFocusPolicy(QtCore.Qt.NoFocus)

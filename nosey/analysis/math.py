@@ -1,5 +1,6 @@
 import numpy as np
 import scipy.interpolate as interp
+import scipy.optimize as optim
 
 def normalize_curve(e, i, window = None):
     """Return normalized curve and factor by which curve was scaled."""
@@ -77,3 +78,25 @@ def integratedAbsoluteDifference(e0, i0, e1, i1, windowNorm, windowCOM):
         ind1                = np.argmin(np.abs(e - windowCOM[1]))
         iad                 = np.sum(np.abs(i[ind0:ind1]))
     return iad
+
+
+def fractionFit(data, ref_a, ref_b):
+
+    # Interpolate
+    f_data              = interp.interp1d(data[0], data[1])
+    f_ref_a             = interp.interp1d(ref_a[0], ref_a[1])
+    f_ref_b             = interp.interp1d(ref_b[0], ref_b[1])
+    energy, intensity   = zip(data, ref_a, ref_b)
+    min_energy          = np.max(list(np.min(e) for e in energy))
+    max_energy          = np.min(list(np.max(e) for e in energy))
+    points              = np.max(list([len(i) for i in intensity]))
+    ce                  = np.linspace(min_energy, max_energy, points)
+
+    def modelFunction(energy, f):
+        return f * f_ref_a(energy) + (1-f)*f_ref_b(energy)
+
+
+    fit_data = ce, f_data(ce)
+    popt, pcov = optim.curve_fit(modelFunction, *fit_data, bounds = (0,1))
+
+    return popt[0], ce, lambda e : modelFunction(e, popt[0])

@@ -9,9 +9,10 @@ from nosey.sources import Sources
 from nosey.plot import Plot
 from nosey.groups import Groups
 from nosey.settings import Settings
+from nosey.references import References
 
 
-class MainFrame(QtGui.QMainWindow, Monitor, Sources, Plot, Groups, Settings):
+class MainFrame(QtGui.QMainWindow, Monitor, Sources, Plot, Groups, Settings, References):
     def __init__(self, *args, **kwargs):
         super(self.__class__, self).__init__(*args, **kwargs)
         dirname = os.path.dirname(__file__)
@@ -93,7 +94,8 @@ class MainFrame(QtGui.QMainWindow, Monitor, Sources, Plot, Groups, Settings):
         self.setupPlot()
         self.setupGroupsFrame()
         self.setupSettingTree()
-        self.splitter_2.setStretchFactor(0, 3)
+        self.setupReferences()
+        self.splitter.setStretchFactor(0, 3)
 
         # Events
         self.proxies = []

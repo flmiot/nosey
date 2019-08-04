@@ -1,6 +1,4 @@
-import os
 import numpy as np
-import pyqtgraph as pg
 from pyqtgraph.Qt import QtCore, QtGui
 
 import nosey
@@ -42,13 +40,13 @@ class Settings(object):
             for item in items:
                 spinBox = QtGui.QSpinBox()
                 spinBox.setValue(3)
-                spinBox.valueChanged.connect(self.applySettings)
+                spinBox.valueChanged.connect(self.updatePlot)
                 self.treeWidget.setItemWidget(item, 1, spinBox)
 
             items = self.treeWidget.findItems('Offset', flags)
             for item in items:
                 spinBox = QtGui.QSpinBox()
-                spinBox.setValue(20)
+                spinBox.setValue(35)
                 spinBox.valueChanged.connect(self.applySettings)
                 self.treeWidget.setItemWidget(item, 1, spinBox)
 
@@ -63,6 +61,7 @@ class Settings(object):
         items.append(self.findItem(['IAD analysis', 'Enabled']))
         items.append(self.findItem(['Difference', 'Enabled']))
         items.append(self.findItem(['Background subtraction', 'Polynomial fitting', 'Enabled']))
+        items.append(self.findItem(['Fraction fitting', 'Enabled']))
 
         if item in items:
             self.updatePlot()
@@ -90,12 +89,15 @@ class Settings(object):
         plotTitleSize   = '{}pt'.format(self.getSetting(['Plot settings', 'Title', 'Font size']))
         plotXLabelSize  = '{}pt'.format(self.getSetting(['Plot settings', 'Axis labels', 'Font size']))
         plotYLabelSize  = '{}pt'.format(self.getSetting(['Plot settings', 'Axis labels', 'Font size']))
+        tickLabelSize   = self.getSetting(['Plot settings', 'Tick labels', 'Font size'])
 
         plotTitle = self.getSetting(['Plot settings', 'Title', 'Text'])
         plotXLabel = self.getSetting(['Plot settings', 'Axis labels', 'X axis', 'Text'])
         plotYLabel = self.getSetting(['Plot settings', 'Axis labels', 'Y axis', 'Text'])
         plotXLabelUnits = self.getSetting(['Plot settings', 'Axis labels', 'X axis', 'Units'])
         plotYLabelUnits = self.getSetting(['Plot settings', 'Axis labels', 'Y axis', 'Units'])
+        tickTextOffset  = self.getSetting(['Plot settings', 'Tick labels', 'Offset'])
+
 
         s = {'color': '#000'}
         plotItem.setTitle(plotTitle, size = plotTitleSize, **s)
@@ -103,6 +105,11 @@ class Settings(object):
             **{'font-size':plotXLabelSize}, units = plotXLabelUnits, **s)
         plotItem.getAxis('left').setLabel(plotYLabel,
             **{'font-size':plotYLabelSize}, units = plotYLabelUnits, **s)
+
+        plotItem.getAxis('left').setTickFont(QtGui.QFont('Tahoma', tickLabelSize))
+        plotItem.getAxis('left').setStyle(autoExpandTextSpace = False, tickTextWidth  = tickTextOffset)
+        plotItem.getAxis('bottom').setTickFont(QtGui.QFont('Tahoma', tickLabelSize))
+        plotItem.getAxis('bottom').setStyle(autoExpandTextSpace = False, tickTextHeight = int(tickTextOffset * 18/30))
 
         plotLineWidth = int(self.getSetting(['Plot settings', 'Line thickness']))
 

@@ -23,14 +23,22 @@ class Logbar(QtGui.QStatusBar):
             self.progressBar.setMaximumSize(75, 5)
             self.messageLabel = QtGui.QLabel("")
             self.messageLabel.setObjectName("MessageLabel")
+            self.timer  = QtGui.QLabel("(0.000 s)")
             self.setLogColor('#f7f7f7')
             self.addPermanentWidget(self.messageLabel)
             self.addPermanentWidget(self.progressBar)
+            self.addPermanentWidget(self.timer)
+
+
+    def setTimerValue(self, value):
+        fmt = '({:.3f} s)'.format(value)
+        self.timer.setText(fmt)
+
 
     def writeLog(self, message, level):
         if message != '\n':
             if level == logging.ERROR:
-                self.setLogColor('#ff8652')
+                self.setLogColor('#e8a497')
             else:
                 self.setLogColor('#f7f7f7')
             self.messageLabel.setText(message)

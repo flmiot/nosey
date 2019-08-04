@@ -10,19 +10,19 @@ from nosey.templates import HideButton, RemoveButton, RefButton
 class Groups(object):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.groups = [True]
+
 
     def setupGroupsFrame(self):
         self.tableGroups.cellChanged.connect(self.updateSourceComboBoxes)
         self.addPlottingGroup()
         self.tableGroups.cellWidget(0, 2).toggle()
 
+
     def addPlottingGroup(self):
         rows = self.tableGroups.rowCount()
         self.tableGroups.insertRow(rows)
 
         plottingGroupName = "Unnamed group"
-        self.groups.append(True)
 
         # Button items
         btn_active      = HideButton()
@@ -59,18 +59,16 @@ class Groups(object):
 
 
     def toggleGroup(self, item):
-        row = self.tableGroups.row(item)
-        self.groups[row] = self.tableGroups.cellWidget(row, 0).isChecked()
         self.updatePlot()
 
 
     def removeGroup(self, item):
         if self.tableGroups.rowCount() > 1:
             row = self.tableGroups.row(item)
-            del self.groups[row]
             self.tableGroups.removeRow(row)
             self.updateSourceComboBoxes()
             self.updatePlot()
+
 
     def setRefGroup(self, item):
         if self.getReferenceGroupIndex() is None:
