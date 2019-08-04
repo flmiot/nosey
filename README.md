@@ -19,7 +19,3 @@ python __main__.py
 - Enable the automatic plotting-update to view and access changes quickly (e.g ROI size) 
 
 # Quickstart guide
-
-![File input demo](documentation/demonstration/load_files.gif)
-
-![File input demo](documentation/demonstration/analyzer.gif)
