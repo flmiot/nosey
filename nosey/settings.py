@@ -25,9 +25,13 @@ class Settings(object):
             items = self.treeWidget.findItems('size', flags)
             for item in items:
                 spinBox = QtGui.QSpinBox()
-                spinBox.setValue(16)
                 spinBox.valueChanged.connect(self.applySettings)
                 self.treeWidget.setItemWidget(item, 1, spinBox)
+
+            # Set font sizes
+            self.setSetting(['Plot settings', 'Title', 'Font size'], 16)
+            self.setSetting(['Plot settings', 'Axis labels', 'Font size'], 14)
+            self.setSetting(['Plot settings', 'Tick labels', 'Font size'], 12)
 
             items = self.treeWidget.findItems('thickness', flags)
             for item in items:
@@ -82,7 +86,6 @@ class Settings(object):
 
     def applySettings(self, *args, **kwargs):
 
-        ###################### Plotting ######################
         plotItem = self.plotWidget.getPlotItem()
 
         # Plot title and labels
@@ -118,8 +121,6 @@ class Settings(object):
             pen.setWidth(plotLineWidth)
             item.setPen(pen)
 
-    # =================================================== #
-
 
     def getSetting(self, strings):
         item    = self.findItem(strings)
@@ -139,6 +140,26 @@ class Settings(object):
                 return widget.currentData()
             else:
                 raise Exception("Unknown setting type requested.")
+
+
+    def setSetting(self, strings, value):
+        item    = self.findItem(strings)
+        widget  = self.treeWidget.itemWidget(item, 1)
+
+        if widget is None:
+            if bool(QtCore.Qt.ItemIsUserCheckable & item.flags()):
+                item.setCheckState(1, value)
+            else:
+                item.setText(1, value)
+        else:
+            if isinstance(widget, QtGui.QSpinBox):
+                widget.setValue(value)
+            elif isinstance(widget, QtGui.QLineEdit):
+                widget.setText(value)
+            elif isinstance(widget, QtGui.QComboBox):
+                widget.setCurrentText(value)
+            else:
+                Exception("Unknown setting type requested.")
 
 
     def findItem(self, strings, items = []):
