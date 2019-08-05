@@ -123,7 +123,7 @@ class Monitor(object):
             for pos in positions:
                 roi.addEnergyPoint(pos, self)
 
-            roi.connectUpdateSlot(self.updatePlot)
+            roi.connectUpdateSlotProxy(self.updatePlot)
 
 
 
@@ -185,7 +185,9 @@ class Monitor(object):
                 images = np.zeros((len(scans),) + scans[0].images[0].shape)
                 for ind, scan in enumerate(scans):
                     images[ind] = np.sum(scan.images, axis = 0)
-                roi.setEnergyPointsAuto(images, self.imageView)
+                sum_before_search = self.getSetting(['Energy calibration', 'Sum runs before search'])
+                search_radius = float(self.getSetting(['Energy calibration', 'Search radius']))
+                roi.setEnergyPointsAuto(images, self.imageView, sum_before_search, search_radius)
         except Exception as e:
             nosey.Log.error("Automatic energy calibration failed: {}".format(e))
 

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1648</width>
-    <height>1214</height>
+    <width>1024</width>
+    <height>800</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -4473,6 +4473,44 @@ QMainWindow::separator:vertical {
         <item>
          <property name="text">
           <string>Module</string>
+         </property>
+        </item>
+       </item>
+       <item>
+        <property name="text">
+         <string>Energy calibration</string>
+        </property>
+        <item>
+         <property name="text">
+          <string>Sum runs before search</string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="checkState">
+          <enum>Unchecked</enum>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Search radius</string>
+         </property>
+         <property name="text">
+          <string>10</string>
+         </property>
+         <property name="flags">
+          <set>ItemIsSelectable|ItemIsEditable|ItemIsDragEnabled|ItemIsEnabled</set>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Common shift</string>
+         </property>
+         <property name="text">
+          <string>0</string>
+         </property>
+         <property name="flags">
+          <set>ItemIsSelectable|ItemIsEditable|ItemIsDragEnabled|ItemIsUserCheckable|ItemIsEnabled</set>
          </property>
         </item>
        </item>

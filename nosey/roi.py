@@ -4,6 +4,7 @@ from pyqtgraph import QtCore, QtGui
 
 import nosey
 from nosey.analysis.analyzer import Analyzer
+import nosey.analysis.math as nmath
 import matplotlib.pyplot as plt
 
 class ROI(object):
@@ -31,7 +32,7 @@ class ROI(object):
         signal.addScaleHandle([1, 0.5], [0, 0.5])
         pos = [position[0], position[1] + size[1] / 2]
         axis = pg.ROI(pos, [size[0], 0], pen = axis_pen)
-        size[1] = size[1] * 0.25
+        size[1] = size[1] * 0.5
         background01   = pg.ROI(position, size, pen = bg_pen)
         background01.addScaleHandle([0.5, 0], [0.5, 1])
         background02   = pg.ROI(position, size,  pen = bg_pen)
@@ -134,7 +135,7 @@ class ROI(object):
         ep_pen = pg.mkPen(color='#ff6666')
         y = self.objects[0].pos()[1] + self.objects[0].size()[1] / 2
         name = '{} - Index: {}'.format(self.name, len(self.energyPoints))
-        c = EnergyPointROI([x-5, y-5], size = (10,10), name = name, pen = ep_pen)
+        c = EnergyPointROI([x, y], size = (10,10), name = name, pen = ep_pen)
         self.energyPoints.append(c)
         monitor.imageView.getView().addItem(c)
 
@@ -165,19 +166,65 @@ class ROI(object):
         return positions
 
 
-    def setEnergyPointsAuto(self, images, imageView):
-        a = Analyzer.make_signal_from_QtRoi(self, [195, 487], imageView, 0)
-        no_of_peaks = images.shape[0]
-        positions = np.empty(no_of_peaks)
+    def setEnergyPointsAuto(self, images, imageView, sum_before_detection,
+        search_radius):
+        sig = Analyzer.make_signal_from_QtRoi(self, [195, 487], imageView, 0)
+        bg01 = Analyzer.make_signal_from_QtRoi(self, [195, 487], imageView, 1)
+        bg02 = Analyzer.make_signal_from_QtRoi(self, [195, 487], imageView, 2)
+        positions = np.empty( len(self.energyPoints) )
         self.blockSignals(True)
-        for ind, image in enumerate(images):
-            object = self.energyPoints[ind]
-            position = positions[ind]
-            ep_pos = object.pos()
-            _, curve = a.get_signal(image)
-            position = np.argmax(curve)
-            ep_pos[0] = position
-            object.setPos(ep_pos)
+
+        if sum_before_detection:
+            image = np.sum(images, axis = 0)
+            x, y, bg, _ = sig.get_signal_series([image], bg01, bg02)
+            y -= bg
+            x = x[0]
+            curve = np.ma.array(y[0], mask = False)
+
+            # Find peaks with search_radius
+            peaks = []
+            for n in range(len(self.energyPoints)):
+                max_index = curve.argmax()
+                print(max_index)
+                i0 = max(0, max_index - search_radius)
+                i1 = min(max_index + search_radius, len(curve))
+                x_com = np.arange(len(curve))
+                pos = nmath.calculateCOM(x_com, curve, window = [i0, i1])
+                peaks.append(pos)
+                new_mask = curve.mask
+                new_mask[int(pos-search_radius):int(pos+search_radius)] = True
+                curve.mask = new_mask
+
+
+            peaks = sorted(peaks)
+            print(peaks)
+
+            for ind, peak_pos in enumerate(peaks):
+                object = self.energyPoints[ind]
+                ep_pos = object.pos()
+                ep_pos[0] = peak_pos + sig.get_roi()[0]
+                object.setPos(ep_pos)
+
+        else:
+            if images.shape[0] != len( self.energyPoints ):
+                self.blockSignals(False)
+                fmt = "Unequal number of energy points and runs. "\
+                "Enable 'Sum runs before search'."
+                raise IndexError(fmt)
+
+            x, y, bg, _ = sig.get_signal_series(images, bg01, bg02)
+            y -= bg
+
+            for ind, curve in enumerate(y):
+                object = self.energyPoints[ind]
+                ep_pos = object.pos()
+                max_index = np.argmax(curve)
+                x_com = np.arange(len(curve))
+                i0, i1 = max_index - search_radius, max_index + search_radius
+                ep_pos[0] = nmath.calculateCOM(x_com, curve, window = [i0, i1])
+                ep_pos[0] += sig.get_roi()[0]
+                object.setPos(ep_pos)
+
         self.blockSignals(False)
 
 
@@ -201,7 +248,7 @@ class ROI(object):
 
             for energyPoint in self.energyPoints:
                 ep_pos = energyPoint.pos()
-                ep_pos[1] = pos[1] + size[1] / 2 - 5
+                ep_pos[1] = pos[1] + size[1] / 2
                 energyPoint.setPos(ep_pos)
 
             # Update all object sizes
@@ -225,7 +272,7 @@ class ROI(object):
         if object in self.energyPoints:
             pos, size = self.objects[0].pos(), self.objects[0].size()
             ep_pos = object.pos()
-            ep_pos[1] = pos[1] + size[1] / 2 - 5
+            ep_pos[1] = pos[1] + size[1] / 2
             object.setPos(ep_pos)
 
         self.blockSignals(False)
@@ -266,11 +313,20 @@ class EnergyPointROI(pg.ROI):
         r = self.boundingRect()
         p.setRenderHint(QtGui.QPainter.Antialiasing)
         p.setPen(self.currentPen)
-
         p.scale(r.width(), r.height())## workaround for GL bug
-        r = QtCore.QRectF(r.x()/r.width(), r.y()/r.height(), 1,1)
+        r = QtCore.QRectF(-.5,-.5,1,1)
+
 
         p.drawEllipse(r)
+        p.drawLine(QtCore.QPointF(0, -.5), QtCore.QPointF(0, .5))
+
+
+    def boundingRect(self):
+        r       = pg.ROI.boundingRect(self)
+        size    = r.width()
+        radius  = size / 2
+        return QtCore.QRectF(r.x()- radius, r.y()- radius, size, size)
+
 
 
     def getArrayRegion(self, arr, img=None, axes=(0, 1), **kwds):

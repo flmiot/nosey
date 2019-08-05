@@ -113,7 +113,7 @@ class Analyzer(object):
             ea = np.arange(len(np.arange(x0, x1+1)))
             fit = None
         else:
-            ea, fit = self.calibration.getAxis(np.arange(len(np.arange(x0, x1+1))))
+            ea, fit = self.calibration.getAxis(np.arange(x0, x1+1))
 
         ii = np.empty(len(images), dtype = list)
         bg = np.zeros(len(images), dtype = list)

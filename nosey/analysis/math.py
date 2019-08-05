@@ -59,12 +59,10 @@ def calculateCOM(e, i, window = None):
         e0, e1  = window
         i0, i1  = np.argmin(np.abs(e-e0)), np.argmin(np.abs(e-e1))
         i, e    = i[i0:i1], e[i0:i1]
-    else:
-        e0 = 0
 
     cumsum = np.cumsum(i)
     f = interp.interp1d(cumsum, e)
-    return float(f(0.5*np.max(cumsum))) + e0
+    return float(f(0.5*np.max(cumsum)))
 
 
 def integratedAbsoluteDifference(e0, i0, e1, i1, windowNorm, windowCOM):
