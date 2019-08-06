@@ -4502,17 +4502,6 @@ QMainWindow::separator:vertical {
           <set>ItemIsSelectable|ItemIsEditable|ItemIsDragEnabled|ItemIsEnabled</set>
          </property>
         </item>
-        <item>
-         <property name="text">
-          <string>Common shift</string>
-         </property>
-         <property name="text">
-          <string>0</string>
-         </property>
-         <property name="flags">
-          <set>ItemIsSelectable|ItemIsEditable|ItemIsDragEnabled|ItemIsUserCheckable|ItemIsEnabled</set>
-         </property>
-        </item>
        </item>
        <item>
         <property name="text">

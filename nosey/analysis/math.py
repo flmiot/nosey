@@ -94,7 +94,12 @@ def fractionFit(data, ref_a, ref_b):
         return f * f_ref_a(energy) + (1-f)*f_ref_b(energy)
 
 
-    fit_data = ce, f_data(ce)
-    popt, pcov = optim.curve_fit(modelFunction, *fit_data, bounds = (0,1))
+    fit_data    = ce, f_data(ce)
+    popt, pcov  = optim.curve_fit(modelFunction, *fit_data, bounds = (0,1))
+    f           = lambda e : modelFunction(e, popt[0])
+
+    # Compute sum of squared residuals (SQR)
+    sqr = np.sum((f(ce) - f_data(ce))**2)
+    print(sqr, pcov)
 
     return popt[0], ce, lambda e : modelFunction(e, popt[0])
