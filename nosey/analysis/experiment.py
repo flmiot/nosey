@@ -1,7 +1,7 @@
-import time
 import numpy as np
 import nosey
 
+from nosey.guard import timer
 from nosey.analysis.result import AnalysisResult
 
 class Experiment(object):
@@ -16,16 +16,13 @@ class Experiment(object):
         """Use the *add_scan* method to populate the experiment with scans."""
         self.scans                  = [] # List of all added scans
         self.analyzers              = [] # List of all added anaylzers
-        self.bg_roi                 = [] # List of tuples of bg ROI
 
 
-
+    @timer("Analysis finished")
     def get_spectrum(self):
 
         """
         """
-
-        start = time.time()
 
         if len(self.scans) < 1:
             raise ValueError("No active scans!")
@@ -39,22 +36,10 @@ class Experiment(object):
 
         for scan in self.scans:
 
-            in_e, out_e, inte, back, fit = scan.get_energy_spectrum(self.analyzers,
-                self.bg_roi)
+            in_e, out_e, inte, back, fit = scan.get_energy_spectrum(self.analyzers)
 
             d = {scan.name : list([a.name for a in self.analyzers])}
             result.add_data(in_e, out_e, inte, back, fit, d)
-
-        end = time.time()
-        fmt = "Single spectra obtained [Took {:2f} s]".format(end-start)
-        nosey.Log.debug(fmt)
-        start = end
-
-
-        end = time.time()
-        fmt = "Spectra summed [Took {:2f} s]".format(end-start)
-        nosey.Log.debug(fmt)
-
 
 
         return result

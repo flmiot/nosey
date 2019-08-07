@@ -46,7 +46,7 @@ files = [
     'run08_19_00139_00006.tif'
     ]
 
-basepath = 'C:/Users/otteflor/Google Drive/Cobalt tautomers - XFEL/XES-BL9 - 05.2019'
+basepath = 'C:/Users/hambu/Google Drive/Cobalt tautomers - XFEL/XES-BL9 - 05.2019'
 
 fullFiles = [os.path.join(basepath, f) for f in files]
 scans = []
@@ -67,12 +67,19 @@ for r in roi:
     a.auto_calibrate(images, e, sum_before = True, search_radius = 15, outlier_rejection = True)
     analyzers.append(a)
 
-in_e, out_e, intensity, background, fits = scans[0].get_energy_spectrum(analyzers)
-intensity = np.sum(intensity, axis = 1)
+# in_e, out_e, intensity, background, fits = scans[0].get_energy_spectrum(analyzers)
+# intensity = np.sum(intensity, axis = 1)
 
 
-for sx, sy in zip(out_e, intensity):
-    plt.plot(sx, sy)
+experiment.scans = scans
+experiment.analyzers = analyzers
+result = experiment.get_spectrum()
+
+ei, ii, bi, l = result.get_curves(False, False)
+
+for scanX, scanY in zip(ei, ii):
+    for analyzerX, analyzerY in zip(scanX, scanY):
+        plt.plot(analyzerX, analyzerY)
 plt.show()
 
 # plt.imshow(scans[0].images[0])

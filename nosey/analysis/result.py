@@ -38,9 +38,7 @@ class AnalysisResult(object):
         normalize_analyzers_before_sum = False,
         poly_order = None
         ):
-        """
-        Specify *referenceResult* if difference should be calculated.
-        """
+
 
         in_e, out_e = self.in_e, self.out_e
         i, b = self.intensities, self.background
@@ -97,8 +95,10 @@ class AnalysisResult(object):
         bi = np.array(bi)
         ei = np.array(out_e)
 
+        print(">>>>", ei.shape)
         if not single_analyzers:
             ei, ii, bi = self.sum_analyzers(ei, ii, bi, normalize_analyzers_before_sum)
+        print(">>>>", ei.shape)
 
         if not single_scans:
             ei, ii, bi = self.sum_scans(ei, ii, bi, normalize_scans_before_sum)
@@ -110,27 +110,6 @@ class AnalysisResult(object):
                     bi[scan_index, analyzer_index] = nmath.fit_curve(curve, poly_order)
 
         return ei, ii, bi, l
-
-
-    def getIAD(self, r, windowNorm = None, windowCOM = None):
-
-        er, ir, br, _       = r.get_curves(False, False)
-        e, i, b, _          = self.get_curves(False, False)
-        er, ir, br          = er[0,0], ir[0,0], br[0,0]
-        e, i, b             = e[0,0], i[0,0], b[0,0]
-        com_shift           = nmath.calculateCOM(er, ir-br) - nmath.calculateCOM(e, i-b)
-        e                  += com_shift
-        e, i, b             = nmath.interpolate_and_sum([e, er], [i, -1 * ir], [b, br], True, windowNorm)
-
-        if windowCOM is None:
-            iad             = np.sum(np.abs(i))
-        else:
-            ind0            = np.argmin(np.abs(e - windowCOM[0]))
-            ind1            = np.argmin(np.abs(e - windowCOM[1]))
-            iad             = np.sum(np.abs(i[ind0:ind1]))
-        return iad
-
-
 
 
     def sum_analyzers(self, energies, intensities, backgrounds, normalize_before_sum = False):
@@ -156,11 +135,15 @@ class AnalysisResult(object):
         z = zip(range(len(energies)), energies, intensities, backgrounds)
         for ind, energy, intensity, background in z:
 
+
+
             ce, ii, b = nmath.interpolate_and_sum(energy, intensity, background, normalize_before_sum)
 
             energies_summed[ind] = [ce]
             intensities_summed[ind] = [ii]
             backgrounds_summed[ind] = [b]
+
+
 
         return energies_summed, intensities_summed, backgrounds_summed
 
@@ -194,6 +177,26 @@ class AnalysisResult(object):
             backgrounds_summed.T[ind]   = [b]
 
         return energies_summed, intensities_summed, backgrounds_summed
+
+
+# def getIAD(self, r, windowNorm = None, windowCOM = None):
+#
+#     er, ir, br, _       = r.get_curves(False, False)
+#     e, i, b, _          = self.get_curves(False, False)
+#     er, ir, br          = er[0,0], ir[0,0], br[0,0]
+#     e, i, b             = e[0,0], i[0,0], b[0,0]
+#     com_shift           = nmath.calculateCOM(er, ir-br) - nmath.calculateCOM(e, i-b)
+#     e                  += com_shift
+#     e, i, b             = nmath.interpolate_and_sum([e, er], [i, -1 * ir], [b, br], True, windowNorm)
+#
+#     if windowCOM is None:
+#         iad             = np.sum(np.abs(i))
+#     else:
+#         ind0            = np.argmin(np.abs(e - windowCOM[0]))
+#         ind1            = np.argmin(np.abs(e - windowCOM[1]))
+#         iad             = np.sum(np.abs(i[ind0:ind1]))
+#     return iad
+#
 
 
     # def _interpolate_and_sum(self, energy, intensity, background, normalize_before_sum = False, window = None):
