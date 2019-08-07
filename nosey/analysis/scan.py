@@ -17,10 +17,7 @@ class Scan(object):
         self.images         = None
         self.energies       = None
         self.monitor        = None
-        self.active         = True
-        # self.bg_model     = None
         self.loaded         = False
-        self.offset         = [0,0]
         self.range          = [0, len(image_files)]
 
 
@@ -68,55 +65,35 @@ class Scan(object):
         self.images = recipe.getImages(self.files)
         self.loaded = True
 
+        img_shape           = self.images.shape
+        shape               = (nosey.MAX_NUMBER_ANALYZERS, img_shape[0], img_shape[2])
+        self.out_e           = np.empty((nosey.MAX_NUMBER_ANALYZERS, img_shape[2]))
+        self.intensity       = np.empty(shape)
+        self.background      = np.empty(shape)
+        self.in_e            = np.arange(self.images.shape[0])
+        self.fits            = np.empty(shape)
+
         # arr = np.array(self.images)
         # arr = np.sum(arr, axis = 0)
         # plt.imshow(np.log(arr))
         # plt.show()
 
 
-    def save_scan(self, path, analyzers):
-        """Save energy loss spectra of this scan object into a textfile."""
-        arr = np.array(self.get_energy_loss_spectrum(analyzers))
-        arr = np.reshape(arr, (2*len(analyzers),-1))
-
-        header = ''
-        for ind in range(len(analyzers)):
-            header += 'ene_{0} ana_{0} '.format(ind)
-        np.savetxt(path, arr.T, header = header, comments = '')
-
-
-    def toggle(self):
-        self.active = not self.active
-
-
-    def center_analyzers(self, analyzers):
-        for an in analyzers:
-            pixel_wise = an.pixel_wise
-            an.determine_central_energy(images=self.images, base=self.energies,
-                pixel_wise = pixel_wise)
-
-
-    def get_energy_spectrum(self, analyzers, bg_roi):
-
-        in_e = np.arange(self.images.shape[0])
-        out_e = np.empty((len(analyzers)), dtype = list)
-        intensity = np.empty((len(analyzers), len(in_e)), dtype = list)
-        background = np.empty((len(analyzers), len(in_e)), dtype = list)
-        fits = np.empty((len(analyzers)), dtype = list)
+    def get_energy_spectrum(self, analyzers):
+        s = np.s_[0:len(analyzers)]
 
         for ind, an in enumerate(analyzers):
-            b, s, bg, fit = an.get_signal_series(self.images, *bg_roi[ind])
-
-            out_e[ind] = b
-            intensity[ind] = s
-            background[ind] = bg
-            fits[ind] = fit
+            ei, ii, bg, fit = an.counts(self.images)
+            self.out_e[ind] = ei
+            self.intensity[ind] = ii
+            self.background[ind] = bg
+            self.fits[ind] = fit
 
             # I0
             # intensity[ind] /= self.monitor
             # background[ind] /= self.monitor
 
-        return in_e, out_e, intensity, background, fits
+        return self.in_e, self.out_e[s], self.intensity[s], self.background[s], self.fits[s]
 
         # for ind, an in enumerate(analyzers):
         #     b, s = an.get_signal_series(images=self.images)

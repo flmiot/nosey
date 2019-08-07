@@ -1,27 +1,27 @@
 import time
 import numpy as np
 import nosey
-
+import nosey.analysis.math as nmath
 from nosey.analysis.calibration import EnergyCalibration
+from nosey.guard import timer
+
 
 class Analyzer(object):
-    def __init__(self, name, roi = None, mask = None):
-        """
-        Analyzers have a property called *active*, which can be used to include/exclude them when
-        doing analysis.
-        """
-
-        self.roi                = None      # xmin,ymin,xmax,ymax e.g. [0,0,5,5]
-        self.active             = True
+    def __init__(self, name, rois = None, mask = None, calibration = None):
         self.name               = name
+        self.rois               = {'signal': [], 'upper_bg': [], 'lower_bg': []}
         self.mask               = None
         self.calibration        = None
 
-        if roi is not None:
-            self.set_roi(roi)
+        if rois is not None:
+            self.rois = rois
 
         if mask is not None:
-            self.set_mask(mask)
+            self.mask = mask
+
+        if calibration is not None:
+            self.calibration = calibration
+
 
     @classmethod
     def make_signal_from_QtRoi(cls, roi, mask, imageView, type = 0):
@@ -34,106 +34,323 @@ class Analyzer(object):
         return a
 
 
-    def size(self, mask = None):
-        if mask is None:
-            x0, y0, x1, y1 = self.roi
+    @timer("Return integrated counts for analyzer")
+    def counts(self, images, axis_calibration = True):
+        """ Integrate a region of interest (ROI) for this analyzer.
+
+        Dimensions:
+        -----------
+        N: Number of detector images
+        x: Number of detector pixels along primary axis
+        y: Number of detector pixels along secondary axis
+
+        Args:
+            images  (np.ndarray)
+                    array of detector images with shape (N, y, x)
+            r_type  (string)
+                    ROI type, either "signal", "upper_bg" or "lower_bg"
+
+        Raises:
+            ValueError: Invalid image input array, invalid type string or ROI
+
+        Returns:
+            (np.ndarray) Integrated detector images with shape (N, x)
+        """
+
+        # Counts
+        try:
+            ii          = self.integrate(images, 'signal')
+            size        = self.size('signal')
+            bg_rois     = 0
+        except ValueError as e:
+            fmt = "Please set a valid signal ROI before use: {}".format(e)
+            raise ValueError(fmt)
+
+        try:
+            bg_upper    = self.integrate(images, 'upper_bg')
+            bg_upper   *= size / self.size('upper_bg')
+            bg_rois    += 1
+        except:
+            bg_upper    = np.zeros((images.shape[0], ii.shape[1] ))
+
+        try:
+            bg_lower    = self.integrate(images, 'lower_bg')
+            bg_lower   *= size / self.size('lower_bg')
+            bg_rois    += 1
+        except:
+            bg_lower    = np.zeros((images.shape[0], ii.shape[1] ))
+
+        if bg_rois > 0:
+            bg = (bg_upper + bg_lower) / bg_rois
         else:
-            x0, y0, x1, y1 = self.clip_roi(self.roi, mask)
+            bg = np.zeros((images.shape[0], ii.shape[1] ))
 
-        size = y1 - y0 + 1
-        return size if size > 0 else 0
-
-
-    def pos(self):
-        x0, y0, x1, y1 = self.roi
-        return np.array([(y1-y0)/2 + y0, (x1-x0)/2 + x0])
-
-
-    def set_roi(self, roi):
-
-        if isinstance(roi, list):
-            self.roi = np.array(roi)
-        elif isinstance(roi, np.ndarray):
-            self.roi = roi
+        # Axis calibration
+        if axis_calibration:
+            x0, _, x1, _ = self.get_roi('signal')
+            try:
+                ea, fit = self.calibration.getAxis(np.arange(x0, x1))
+            except:
+                # Non calibrated axes always start with 0 to let users shift
+                # uncalibrated curves by moving the signal region of interest
+                # (ROI)
+                ea, fit = np.arange(x0, x1) - x0, None
         else:
-            fmt = "ROI has to be specified like [xmin, ymin, xmax, ymax], "\
-                "either as list or np.ndarray."
-            raise Exception(fmt)
+            ea, fit = None, None
 
 
-    def get_roi(self, mask = None):
+
+        return ea, ii, bg, fit
+
+
+    def integrate(self, images, r_type):
+        """ Integrate a region of interest (ROI) for this analyzer.
+
+        Dimensions:
+        -----------
+        N: Number of detector images
+        x: Number of detector pixels along primary axis
+        y: Number of detector pixels along secondary axis
+
+        Args:
+            images  (np.ndarray)
+                    array of detector images with shape (N, y, x)
+            r_type  (string)
+                    ROI type, either "signal", "upper_bg" or "lower_bg"
+
+        Raises:
+            ValueError: Invalid image input array, invalid type string or ROI
+
+        Returns:
+            (np.ndarray) Integrated detector images with shape (N, 1, x)
+        """
+
+        x0, y0, x1, y1 = self.get_roi(r_type)
+        return np.sum(images[:, y0:y1+1, x0:x1+1], axis = 1)
+
+
+    def set_roi(self, roi, r_type):
+        """ Set region of interest (ROI) coordinates for this analyzer.
+
+        Args:
+            roi     (list)
+                    ROI coordinates as [x0, y0, x1, y1]
+            r_type  (string)
+                    ROI type, either "signal", "upper_bg" or "lower_bg"
+
+        Raises:
+            ValueError: Wrong coordinate format or invalid type string
+
+        Returns:
+            None
+        """
+
+        if not r_type in self.rois.keys():
+            raise ValueError('Invalid roi type requested: {}'.format(r_type))
+
+        if isinstance(roi, list) and len(roi) == 4:
+            self.rois[r_type] = roi
+        else:
+            raise ValueError('Invalid ROI coordinate format: {}'.format(roi))
+
+
+    def get_roi(self, r_type, mask = None):
+        """ Get region of interest (ROI) coordinates from this analyzer.
+
+        Args:
+            type    (string)
+                    ROI type, either "signal", "upper_bg" or "lower_bg"
+            r_type  (tuple)
+                    2D image shape used for clipping, i.e. (dim1, dim2)
+
+        Raises:
+            ValueError: Invalid type string, invalid ROI
+
+        Returns:
+            (list) roi coordinates as [x0, y0, x1, y1]
+        """
+
+        if not r_type in self.rois.keys():
+            raise ValueError('Invalid ROI type requested: {}'.format(r_type))
 
         if mask is None:
             mask = self.mask
 
-        if mask is None:
-            return self.roi
-        else:
-            return self.clip_roi(self.roi, mask)
+        return self.clip_roi(self.rois[r_type], mask)
 
 
-    def set_mask(self, mask):
-        if isinstance(mask, list):
-            self.mask = np.array(mask)
-        elif isinstance(mask, np.ndarray):
-            self.mask = mask
-        else:
-            fmt = "Mask has to be specified like [ymax, xmax], "\
-                "either as list or np.ndarray."
-            raise Exception(fmt)
+    def calibrate(self, positions, energies):
+        """ Add an energy calibration to this analyzer.
 
+        Args:
+            positions   (list) 1D positions along the dispersive detector axis
+            energies    (list) corresponding energies for positions
 
-    def setEnergies(self, positions, energies):
+        Raises:
+            -
+
+        Returns:
+            None
+        """
+
         self.calibration = EnergyCalibration(positions, energies)
 
 
-    def get_signal(self, image):
+    def auto_calibrate(self, images, energies, sum_before, search_radius,
+        outlier_rejection = False):
+        """ Add an energy calibration to this analyzer automatically.
+
+        Dimensions:
+        -----------
+        N: Number of detector images
+        x: Number of detector pixels along primary axis
+        y: Number of detector pixels along secondary axis
+
+        Args:
+            images              (np.ndarray)
+                                array of detector images with shape (N, y, x)
+            energies            (list)
+                                Calibration energies (will also determine how
+                                many peaks are searched)
+            sum_before          (bool)
+                                sum images before peak search
+            search_radius       (int)
+                                search radius for peak detection
+            outlier_rejection   (bool)
+                                Suppress single pixel intensity outliers during
+                                peak search
+
+        Raises:
+            ValueError:
+                                Invalid detector image input array
+            IndexError:
+                                Unequal number of images and energies
+
+        Returns:
+            None
         """
+
+        _, ii, bg, _ = self.counts(images, axis_calibration = False)
+        peaks = []
+
+        if outlier_rejection:
+            outliers = nmath.getOutliers(np.sum(images, axis = 0))
+            outliers = [x[0] for x in outliers]
+
+        if sum_before:  # Number of images and len(energies) can be different
+
+            ii = np.sum(ii, axis = 0) - np.sum(bg, axis = 0)
+            curve = np.ma.array(ii , mask = False)
+
+            # Find len(energies) peaks with *search_radius*
+            for n in range( len(energies) ):
+                max_index = curve.argmax()
+
+                if outlier_rejection:
+                    while max_index in outliers:
+                        new_mask = curve.mask
+                        new_mask[max_index] = True
+                        curve.mask = new_mask
+                        max_index = curve.argmax()
+
+                i0 = max(0, max_index - search_radius)
+                i1 = min(max_index + search_radius, len(curve))
+                x_com = np.arange(len(curve))
+                pos = nmath.calculateCOM(x_com, curve, window = [i0, i1])
+                pos += self.get_roi('signal')[0]
+                peaks.append(pos)
+                new_mask = curve.mask
+                new_mask[int(pos-search_radius):int(pos+search_radius)] = True
+                curve.mask = new_mask
+
+        else:  # There has to be one image for each energy in *energies*
+
+            if images.shape[0] != len( energies ):
+                fmt = "Unequal number of energy points and runs. "\
+                "Enable 'Sum runs before search'."
+                raise IndexError(fmt)
+
+            ii -= bg
+
+            for ind, curve in enumerate(ii):
+                max_index = np.argmax(curve)
+                x_com = np.arange(len(curve))
+                i0, i1 = max_index - search_radius, max_index + search_radius
+                pos = nmath.calculateCOM(x_com, curve, window = [i0, i1])
+                pos += self.get_roi('signal')[0]
+                peaks.append(pos)
+
+        peaks = sorted(peaks)
+        self.calibrate(peaks, energies)
+
+
+
+    def size(self, r_type, mask = None):
+        """ Get the size of the regions of interest (ROI) for this analyzer.
+
+        Args:
+            r_type  (string)
+                    ROI type, either "signal", "upper_bg" or "lower_bg"
+            mask    (tuple)
+                    2D image shape used for clipping, i.e. (dim1, dim2)
+
+        Raises:
+            ValueError: Invalid type string
+
+        Returns:
+            (tuple) Size for requested ROI type in pixels
         """
 
-        if self.roi is None:
-            raise ValueError("ROI needs to be set before use.")
+        if not r_type in self.rois.keys():
+            raise ValueError('Invalid ROI type requested: {}'.format(r_type))
 
-        x0,y0,x1,y1 = self.clip_roi(self.roi, image.shape)
+        if mask is None:
+            mask = self.mask
 
-        ii = np.sum(image[y0:y1+1,x0:x1+1], axis = 0)
-        ea = np.arange(len(ii))
+        x0, y0, x1, y1 = self.clip_roi(self.rois[r_type], mask)
+        size = (x1 - x0 if x1 - x0 > 0 else 0, y1 - y0 if y1 - y0 > 0 else 0)
+        return size
 
-        return ea, ii
 
+    def pos(self):
+        """ Get the position of the 'signal' region of interest (ROI).
 
-    def get_signal_series(self, images, upper_bg, lower_bg):
+        Args:
+            mask    (tuple)
+                    2D image shape used for clipping, i.e. (dim1, dim2)
+
+        Raises:
+            -
+
+        Returns:
+            (tuple) Position in pixels
         """
+        x0, y0, x1, y1 = self.rois['signal']
+        pos = tuple((y1-y0)/2 + y0, (x1-x0)/2 + x0)
+        return pos
+
+
+    def clip_roi(self, coordinates, shape = None):
+        """ Clip region of interest (ROI) coordinates with an image shape.
+
+        Args:
+            coordinates (list) list of ROI coordinates
+            shape       (tuple) image shape used for clipping
+
+        Raises:
+            ValueError: Invalid coordinate format, invalid shape
+
+        Returns:
+            (list) Clipped ROI coordinates
         """
 
-        start = time.time()
-        x0, y0, x1, y1 = self.clip_roi(self.roi, images[0].shape)
+        if shape is None:
+            return coordinates
 
-        if self.calibration is None:
-            ea = np.arange(len(np.arange(x0, x1+1)))
-            fit = None
-        else:
-            ea, fit = self.calibration.getAxis(np.arange(x0, x1+1))
+        if not isinstance(coordinates, list) and len(coordinates) == 4:
+            raise ValueError("Invalid ROI coordinate input.")
 
-        ii = np.empty(len(images), dtype = list)
-        bg = np.zeros(len(images), dtype = list)
-
-
-        for ind, image in enumerate(images):
-            _, ii[ind] = self.get_signal(image)
-            bg[ind] = self.get_background(image, upper_bg, lower_bg)
-
-
-
-        end = time.time()
-        fmt = "Returned signal series [Took {:2f} s]".format(end-start)
-        nosey.Log.debug(fmt)
-
-        return ea, ii, bg, fit
-
-    def clip_roi(self, roi, shape):
-        x0, y0, x1, y1 = roi
-
+        x0, y0, x1, y1 = coordinates
         if x0 < 0:
             x0 = 0
         if y0 < 0:
@@ -144,57 +361,3 @@ class Analyzer(object):
             y1 = shape[0] - 1
 
         return [x0,y0,x1,y1]
-
-
-    def get_background(self, image, upper, lower):
-
-        bg = np.zeros(image.shape[1])
-
-        # # Find nearest background ROIs
-        # for bg_roi in background_rois:
-        #     if bg_roi.pos()[0] > self.pos()[0]:
-        #         if upper is None:
-        #             upper = bg_roi
-        #         else:
-        #             dis_self_roi = np.linalg.norm(self.pos() - bg_roi.pos())
-        #             dis_self_upper = np.linalg.norm(self.pos() - upper.pos())
-        #             if dis_self_roi < dis_self_upper:
-        #                 upper = bg_roi
-        #     else:
-        #         if lower is None:
-        #             lower = bg_roi
-        #         else:
-        #             dis_self_roi = np.linalg.norm(self.pos() - bg_roi.pos())
-        #             dis_self_lower = np.linalg.norm(self.pos() - lower.pos())
-        #             if dis_self_roi < dis_self_lower:
-        #                 lower = bg_roi
-        #
-        # if not upper is None:
-        #     #x0, y0, x1, y1 = self.clip_roi(upper.roi, image.shape)
-        #     #bg_upper = np.sum(image[y0:y1+1, x0:x1+1], axis = 0)
-        _, bg_upper = upper.get_signal(image)
-        size = upper.size(mask = image.shape)
-        if size > 0:
-            x0, _, x1, _ = upper.clip_roi(upper.roi, image.shape)
-            bg[x0:x1+1] += bg_upper * self.size(mask = image.shape) / size
-        else:
-            upper = None
-
-        # if not lower is None:
-            #x0, y0, x1, y1 = self.clip_roi(lower.roi, image.shape)
-            #bg_lower = np.sum(image[y0:y1+1, x0:x1+1], axis = 0)
-        _, bg_lower = lower.get_signal(image)
-        size = lower.size(mask = image.shape)
-        if size > 0:
-            x0, _, x1, _ = lower.clip_roi(lower.roi, image.shape)
-            bg[x0:x1+1] += bg_lower * self.size(mask = image.shape) / size
-        else:
-            lower = None
-
-        if not lower is None and not upper is None:
-            bg /= 2
-
-        x0, _, x1, _ = self.clip_roi(self.roi, image.shape)
-        # plt.plot(bg)
-        # plt.show()
-        return bg[x0:x1+1]

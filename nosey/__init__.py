@@ -16,6 +16,10 @@ gui.applySettings()
 
 # Logging
 Log = logging.getLogger(__name__)
+logging.basicConfig(level = logging.DEBUG)
 handler = StatusBarHandler(stream = gui.statusBar)
 Log.addHandler(handler)
-Log.setLevel(level = logging.INFO)
+Log.setLevel(level = logging.DEBUG)
+
+# Memory settings
+MAX_NUMBER_ANALYZERS = 72

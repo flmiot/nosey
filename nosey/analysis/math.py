@@ -2,6 +2,8 @@ import numpy as np
 import scipy.interpolate as interp
 import scipy.optimize as optim
 
+import matplotlib.pyplot as plt
+
 def normalize_curve(e, i, window = None):
     """Return normalized curve and factor by which curve was scaled."""
     if window is not None:
@@ -103,3 +105,38 @@ def fractionFit(data, ref_a, ref_b):
     print(sqr, pcov)
 
     return popt[0], ce, lambda e : modelFunction(e, popt[0])
+
+
+def getOutliers(image, threshold = 0.1):
+    image = np.abs(image)
+    differences = {}
+    differences['east']     = image - np.roll(image, -1, axis = 1)
+    differences['south']    = image - np.roll(image, -1, axis = 0)
+    differences['west']     = image - np.roll(image, 1, axis = 1)
+    differences['north']    = image - np.roll(image, 1, axis = 0)
+
+    outliers = []
+    for shift in ['east', 'south', 'west', 'north']:
+        tval = np.max(differences[shift]) * threshold
+        o = np.where(differences[shift] > tval)
+        for y, x in zip(*o):
+            if shift is 'east':
+                if x == 0:
+                    continue
+
+            elif shift is 'south':
+                if y == 0:
+                    continue
+
+            elif shift is 'west':
+                if x == image.shape[1] - 1:
+                    continue
+
+            else:
+                if y == image.shape[0] - 1:
+                    continue
+
+            if not [x,y] in outliers:
+                outliers.append([x,y])
+
+    return outliers

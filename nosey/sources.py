@@ -98,11 +98,12 @@ class Sources(object):
         scans = []
         for row in range(self.tableSources.rowCount()):
             item = self.tableSources.item(row, 4)
+            view_btn = self.tableSources.cellWidget(row, 0)
             scan = item.data(pg.QtCore.Qt.UserRole)
             comboBox = self.tableSources.cellWidget(row, 2)
             groupItem = comboBox.itemData(comboBox.currentIndex())
             groupFilter = True if group is None else groupItem == group
-            if scan.active and groupFilter:
+            if view_btn.isChecked() and groupFilter:
                 scans.append(scan)
         return scans
 
