@@ -24,13 +24,12 @@ class Analyzer(object):
 
 
     @classmethod
-    def make_signal_from_QtRoi(cls, roi, mask, imageView, type = 0):
-        """type can be 0,1 or 2 (signal, bg01 or bg02)"""
-        bb = roi.getCoordinates(imageView)[type]
+    def make_from_QtRoi(cls, roi, mask, imageView):
         a = cls(roi.name)
-        a.set_roi(bb)
-        a.set_mask(mask)
-
+        for type in ['signal', 'upper_bg', 'lower_bg']:
+            bb = roi.getCoordinates(imageView, type)
+            a.set_roi(bb, type)
+        a.mask = mask
         return a
 
 

@@ -64,15 +64,6 @@ class Scan(object):
 
         self.images = recipe.getImages(self.files)
         self.loaded = True
-
-        img_shape           = self.images.shape
-        shape               = (nosey.MAX_NUMBER_ANALYZERS, img_shape[0], img_shape[2])
-        self.out_e           = np.empty((nosey.MAX_NUMBER_ANALYZERS, img_shape[2]))
-        self.intensity       = np.empty(shape)
-        self.background      = np.empty(shape)
-        self.in_e            = np.arange(self.images.shape[0])
-        self.fits            = np.empty(shape)
-
         # arr = np.array(self.images)
         # arr = np.sum(arr, axis = 0)
         # plt.imshow(np.log(arr))
@@ -80,20 +71,38 @@ class Scan(object):
 
 
     def get_energy_spectrum(self, analyzers):
-        s = np.s_[0:len(analyzers)]
+        img_shape       = self.images.shape
+        shape           = (len(analyzers), img_shape[0], img_shape[2])
+        out_e           = np.empty((len(analyzers), img_shape[2]))
+        intensity       = np.empty(shape)
+        background      = np.empty(shape)
+        in_e            = np.arange(self.images.shape[0])
+        fits            = np.empty(shape)
 
         for ind, an in enumerate(analyzers):
             ei, ii, bg, fit = an.counts(self.images)
-            self.out_e[ind] = ei
-            self.intensity[ind] = ii
-            self.background[ind] = bg
-            self.fits[ind] = fit
+
+            stop = ii.shape[1]
+            #
+            # print(ei.shape, ii.shape, bg.shape)
+            # print(out_e[ind, 0:stop].shape, intensity[ind].shape, background[ind].shape)
+
+            out_e[ind] = -1
+            intensity[ind] = -1
+            background[ind] = -1
+            fits[ind] = -1
+            out_e[ind, :stop] = ei
+            intensity[ind, 0, :stop] = ii
+            background[ind, 0, :stop] = bg
+
+
+            # fits[ind, 0:len(fit)] = fit
 
             # I0
             # intensity[ind] /= self.monitor
             # background[ind] /= self.monitor
 
-        return self.in_e, self.out_e[s], self.intensity[s], self.background[s], self.fits[s]
+        return in_e, out_e, intensity, background, fits
 
         # for ind, an in enumerate(analyzers):
         #     b, s = an.get_signal_series(images=self.images)

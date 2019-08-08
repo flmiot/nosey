@@ -46,7 +46,7 @@ files = [
     'run08_19_00139_00006.tif'
     ]
 
-basepath = 'C:/Users/hambu/Google Drive/Cobalt tautomers - XFEL/XES-BL9 - 05.2019'
+basepath = 'C:/Users/otteflor/Google Drive/Cobalt tautomers - XFEL/XES-BL9 - 05.2019'
 
 fullFiles = [os.path.join(basepath, f) for f in files]
 scans = []
@@ -59,7 +59,7 @@ for ind, f in enumerate(fullFiles):
     images[ind] += s.images[0]
 
 e = [7630, 7640, 7650, 7660, 7670]
-roi = [[0, 8, 487, 21], [0, 34, 487, 58]]
+roi = [[5, 8, 487, 21], [0, 34, 487, 58]]
 analyzers = []
 for r in roi:
     a = Analyzer('')
@@ -75,7 +75,7 @@ experiment.scans = scans
 experiment.analyzers = analyzers
 result = experiment.get_spectrum()
 
-ei, ii, bi, l = result.get_curves(False, False)
+ei, ii, bi, l = result.get_curves(False, True)
 
 for scanX, scanY in zip(ei, ii):
     for analyzerX, analyzerY in zip(scanX, scanY):

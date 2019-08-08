@@ -78,7 +78,7 @@ class ROI(object):
             obj.blockSignals( b )
 
 
-    def getCoordinates(self, imageView):
+    def getCoordinates(self, imageView, r_type):
         if imageView.image is None:
             return
 
@@ -88,25 +88,29 @@ class ROI(object):
         axes = (imageView.axes['x'], imageView.axes['y'])
 
         coordinates = []
-        for object in self.objects[:3]:
-            _, coords = object.getArrayRegion(image.view(np.ndarray),
-                imageView.imageItem, axes, returnMappedCoords=True)
+        if r_type == 'signal':
+            ind = 0
+        elif r_type == 'upper_bg':
+            ind = 1
+        elif r_type == 'lower_bg':
+            ind = 2
+        else:
+            raise ValueError("Invalid ROI type requested.")
 
-            if coords is None:
-                coordinates.append(None)
-                continue
+
+        _, coords = self.objects[ind].getArrayRegion(image.view(np.ndarray),
+            imageView.imageItem, axes, returnMappedCoords=True)
+
+        if coords is None:
+            return None
 
 
-
-            # get bounding box
-            x,y = coords[0].flatten(), coords[1].flatten()
-
-            x0, x1 = np.min(x), np.max(x)
-            y0, y1 = np.min(y), np.max(y)
-            bbox = list([int(i) for i in [x0,y0,x1,y1]])
-            coordinates.append(bbox)
-
-        return coordinates
+        # get bounding box
+        x,y = coords[0].flatten(), coords[1].flatten()
+        x0, x1 = np.min(x), np.max(x)
+        y0, y1 = np.min(y), np.max(y)
+        bbox = list([int(i) for i in [x0,y0,x1,y1]])
+        return bbox
 
 
     def toggle(self):

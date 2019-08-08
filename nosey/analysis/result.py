@@ -95,10 +95,8 @@ class AnalysisResult(object):
         bi = np.array(bi)
         ei = np.array(out_e)
 
-        print(">>>>", ei.shape)
         if not single_analyzers:
             ei, ii, bi = self.sum_analyzers(ei, ii, bi, normalize_analyzers_before_sum)
-        print(">>>>", ei.shape)
 
         if not single_scans:
             ei, ii, bi = self.sum_scans(ei, ii, bi, normalize_scans_before_sum)
@@ -124,26 +122,28 @@ class AnalysisResult(object):
         energies        Array (S x A x P)
         intensities     Array (S x A x P)
         backgrounds     Array (S x A x P)
+
+        List of A x P arrays
         """
 
-        energies_summed = np.empty((len(energies),1), dtype = list)
-        intensities_summed = np.empty((len(energies),1), dtype = list)
-        backgrounds_summed = np.empty((len(energies),1), dtype = list)
+        S = len(intensities)
+        A = 1
+        N = 1
+        P = intensities[0].shape[1]
 
+        energies_summed     = np.empty( (S, A, P) )
+        intensities_summed  = np.empty( (S, A, P) )
+        backgrounds_summed  = np.empty( (S, A, P) )
 
-        # Iterate over scans
+        # # Iterate over scans
         z = zip(range(len(energies)), energies, intensities, backgrounds)
         for ind, energy, intensity, background in z:
 
-
-
             ce, ii, b = nmath.interpolate_and_sum(energy, intensity, background, normalize_before_sum)
 
-            energies_summed[ind] = [ce]
-            intensities_summed[ind] = [ii]
-            backgrounds_summed[ind] = [b]
-
-
+            energies_summed[ind] = ce
+            intensities_summed[ind] = ii
+            backgrounds_summed[ind] = b
 
         return energies_summed, intensities_summed, backgrounds_summed
 
@@ -162,19 +162,27 @@ class AnalysisResult(object):
         backgrounds     Array (S x A x P)
         """
 
-        n_analyzers = len(energies[0])
-        energies_summed = np.empty((1, n_analyzers), dtype = list)
-        intensities_summed = np.empty((1, n_analyzers), dtype = list)
-        backgrounds_summed = np.empty((1, n_analyzers), dtype = list)
+        S = 1
+        A = intensities[0].shape[0]
+        N = 1
+        P = intensities[0].shape[1]
+
+        energies_summed = np.empty( (S, A, P) )
+        intensities_summed = np.empty( (S, A, P) )
+        backgrounds_summed = np.empty( (S, A, P) )
 
         # Iterate over analyzers
-        z = zip(range(n_analyzers), energies.T, intensities.T, backgrounds.T)
+
+
+        l = [np.transpose(a, (1,0,2)) for a in [energies, intensities, backgrounds]]
+        z = zip(range(A), *l)
         for ind, energy, intensity, background in z:
+
             ce, ii, b = nmath.interpolate_and_sum(energy, intensity, background, normalize_before_sum)
 
-            energies_summed.T[ind]      = [ce]
-            intensities_summed.T[ind]   = [ii]
-            backgrounds_summed.T[ind]   = [b]
+            np.transpose(energies_summed, (1,0,2))[ind]      = ce
+            np.transpose(intensities_summed, (1,0,2))[ind]   = ii
+            np.transpose(backgrounds_summed, (1,0,2))[ind]   = b
 
         return energies_summed, intensities_summed, backgrounds_summed
 

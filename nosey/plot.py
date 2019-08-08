@@ -111,18 +111,14 @@ class Plot(object):
                     if not r.active:
                         continue
 
-                    sig = Analyzer.make_signal_from_QtRoi(r, [195, 487], self.imageView, 0)
+                    a = Analyzer.make_from_QtRoi(r, [195, 487], self.imageView)
                     energies = self.getEnergies()
 
                     if len(energies) >= 2:
                         positions = r.getEnergyPointPositions()
-                        sig.setEnergies(positions, energies)
+                        a.calibrate(positions, energies)
 
-                    bg01 = Analyzer.make_signal_from_QtRoi(r, [195, 487], self.imageView, 1)
-                    bg02 = Analyzer.make_signal_from_QtRoi(r, [195, 487], self.imageView, 2)
-
-                    experiment.analyzers.append(sig)
-                    experiment.bg_roi.append( (bg01, bg02) )
+                    experiment.analyzers.append(a)
 
                 result = experiment.get_spectrum()
 
@@ -225,6 +221,9 @@ class Plot(object):
                 # Plot analyzers
                 z2 = zip(range(len(energy)), energy, intensity, background, label)
                 for ind_a, single_e, single_i, single_b, single_l in z2:
+
+                    indizes = np.where(single_i > -1)[0]
+                    print(">>>>", indizes)
 
                     if groups > 1:
                         group_name = self.tableGroups.item(ind, 3).text()
