@@ -95,13 +95,11 @@ class MainFrame(QtGui.QMainWindow, Monitor, Sources, Plot, Groups, Settings, Ref
         self.setupGroupsFrame()
         self.setupSettingTree()
         self.setupReferences()
-        self.splitter.setStretchFactor(0, 3)
 
         # Events
         self.proxies = []
         self.proxies.append(pg.SignalProxy(self.imageView.getView().scene().sigMouseMoved,
             rateLimit=20, slot = self.updateCursorMonitor))
-
         self.proxies.append(pg.SignalProxy(self.plotWidget.getPlotItem().scene().sigMouseMoved,
             rateLimit=20, slot = lambda e : self.updateCursorPlot(self.plotWidget, e)))
         self.proxies.append(pg.SignalProxy(self.plotWidgetDiff.getPlotItem().scene().sigMouseMoved,

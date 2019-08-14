@@ -6,7 +6,7 @@ from pyqtgraph.Qt import QtCore, QtGui
 import matplotlib.cm as cm
 
 import nosey.guard
-from nosey.analysis.experiment import Experiment
+# from nosey.analysis.experiment import Experiment
 from nosey.analysis.analyzer import Analyzer
 import nosey.analysis.math as nmath
 
@@ -223,7 +223,6 @@ class Plot(object):
                 for ind_a, single_e, single_i, single_b, single_l in z2:
 
                     indizes = np.where(single_i > -1)[0]
-                    print(">>>>", indizes)
 
                     if groups > 1:
                         group_name = self.tableGroups.item(ind, 3).text()

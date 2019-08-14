@@ -1,8 +1,6 @@
 import numpy as np
 import timeit
 import re
-import array
-from multiprocessing import Pool
 
 N   = 4096
 S   = 32
@@ -46,8 +44,6 @@ class AnalyzerA:
 
     def integrate(self, images, spectra):
         spectra[self.id] = np.sum(images, axis = 0)
-
-
 
 # scans_a = []
 # scans_b = []

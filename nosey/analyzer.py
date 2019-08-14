@@ -1,13 +1,23 @@
+"""
+The analyzer module handles region-of-interest (ROI) integration of 2D images.
+"""
+
 import time
 import numpy as np
 import nosey
-import nosey.analysis.math as nmath
-from nosey.analysis.calibration import EnergyCalibration
-from nosey.guard import timer
+import nosey.math as nmath
+from nosey.calibration import EnergyCalibration
+#from nosey.gui.guard import timer
 
 
 class Analyzer(object):
-    def __init__(self, name, rois = None, mask = None, calibration = None):
+    """
+    Create an analyzer.
+    """
+
+    def __init__(self, name = '', rois = None, mask = None, calibration = None):
+        """ Specify name, rois, mask and calibration. """
+
         self.name               = name
         self.rois               = {'signal': [], 'upper_bg': [], 'lower_bg': []}
         self.mask               = None
@@ -33,20 +43,26 @@ class Analyzer(object):
         return a
 
 
-    @timer("Return integrated counts for analyzer")
-    def counts(self, images, axis_calibration = True):
+    def __repr__(self):
+        return "Analyzer '{}' ROI: {}".format(self.name, self.rois['signal'])
+
+
+    #@timer("Return integrated counts for analyzer")
+    def counts(self, input, axis_calibration = True, out = None):
         """ Integrate a region of interest (ROI) for this analyzer.
 
-        Dimensions:
-        -----------
-        N: Number of detector images
-        x: Number of detector pixels along primary axis
-        y: Number of detector pixels along secondary axis
-
         Args:
-            images  (np.ndarray)
+            input   (np.ndarray)
                     array of detector images with shape (N, y, x)
-            r_type  (string)
+
+                    Dimensions:
+                        N   Number of detector images
+
+                        x   Number of detector pixels along primary axis
+
+                        y   Number of detector pixels along secondary axis
+
+            axis_calibration  (bool)
                     ROI type, either "signal", "upper_bg" or "lower_bg"
 
         Raises:
@@ -58,62 +74,107 @@ class Analyzer(object):
 
         # Counts
         try:
-            ii          = self.integrate(images, 'signal')
-            size        = self.size('signal')
-            bg_rois     = 0
+            if out is None:
+                ii, er      = self.integrate(input, 'signal')
+            else:
+                self.integrate(input, 'signal', out = out)
+
         except ValueError as e:
             fmt = "Please set a valid signal ROI before use: {}".format(e)
             raise ValueError(fmt)
 
-        try:
-            bg_upper    = self.integrate(images, 'upper_bg')
-            bg_upper   *= size / self.size('upper_bg')
-            bg_rois    += 1
-        except:
-            bg_upper    = np.zeros((images.shape[0], ii.shape[1] ))
+        size        = self.size('signal')[1]
+        bg_rois     = 0
+        if out is not None:
+            out['ii_bg']    = np.zeros((input.shape[0], ii.shape[1]))
+            out['er_ii_bg'] = np.zeros((input.shape[0], ii.shape[1]))
 
         try:
-            bg_lower    = self.integrate(images, 'lower_bg')
-            bg_lower   *= size / self.size('lower_bg')
-            bg_rois    += 1
-        except:
-            bg_lower    = np.zeros((images.shape[0], ii.shape[1] ))
+            rel_size = size / self.size('upper_bg')[1]
+            if out is None:
+                bg_upper, er_u   = self.integrate(input, 'upper_bg', rel_size)
+            else:
+                o = {'ii' : out['ii_bg'], 'er_ii': out['er_ii_bg']}
+                self.integrate(input, 'upper_bg', rel_size, out = o)
+            bg_rois         += 1
+
+        except Exception as e:
+            fmt = "Upper background integration failed: {}.".format(e)
+            nosey.Log.warning(fmt)
+            if out is None:
+                bg_upper    = np.zeros((input.shape[0], ii.shape[1] ))
+                er_u        = np.zeros((input.shape[0], ii.shape[1] ))
+
+        try:
+            rel_size = size / self.size('lower_bg')[1]
+            if out is None:
+                bg_lower, er_l   = self.integrate(input, 'lower_bg', rel_size)
+            else:
+                o = {'ii' : out['ii_bg_lower'], 'er_ii': out['er_ii_bg_lower']}
+                self.integrate(input, 'lower_bg', rel_size, out = o)
+            bg_rois         += 1
+
+        except Exception as e:
+            fmt = "Lower background integration failed: {}.".format(e)
+            nosey.Log.warning(fmt)
+            if out is None:
+                bg_lower    = np.zeros((input.shape[0], ii.shape[1] ))
+                er_l        = np.zeros((input.shape[0], ii.shape[1] ))
 
         if bg_rois > 0:
-            bg = (bg_upper + bg_lower) / bg_rois
+            print(bg_rois)
+            if out is None:
+                bg      = np.divide(np.add(bg_upper, bg_lower), bg_rois)
+                er_bg   = np.divide(np.add(er_u, er_l), bg_rois)
+            else:
+                out['ii_bg']    = np.divide(out['ii_bg'], bg_rois)
+                out['er_ii_bg'] = np.divide(out['er_ii_bg'], bg_rois)
+
         else:
-            bg = np.zeros((images.shape[0], ii.shape[1] ))
+            bg      = np.zeros((images.shape[0], ii.shape[1]))
+            er_bg   = np.zeros((images.shape[0], ii.shape[1]))
 
         # Axis calibration
         if axis_calibration:
             x0, _, x1, _ = self.get_roi('signal')
             try:
-                ea, fit = self.calibration.getAxis(np.arange(x0, x1))
+                if out is None:
+                    ea, fit = self.calibration.getAxis(np.arange(x0, x1))
+                else:
+                    self.calibration.getAxis(np.arange(x0, x1), out = out)
+
             except:
                 # Non calibrated axes always start with 0 to let users shift
                 # uncalibrated curves by moving the signal region of interest
                 # (ROI)
-                ea, fit = np.arange(x0, x1) - x0, None
+                if out is None:
+                    ea, fit = np.arange(x0, x1) - x0, None
+                else:
+                    out['ea'], out['fit'] = np.arange(x0, x1) - x0, None
         else:
-            ea, fit = None, None
+            if out is None:
+                ea, fit = None, None
+            else:
+                out['ea'], out['fit'] = None, None
+
+        if out is None:
+            return ea, ii, er, bg, er_bg, fit
 
 
-
-        return ea, ii, bg, fit
-
-
-    def integrate(self, images, r_type):
+    def integrate(self, input, r_type, scale = 1.0, out = None):
         """ Integrate a region of interest (ROI) for this analyzer.
 
-        Dimensions:
-        -----------
-        N: Number of detector images
-        x: Number of detector pixels along primary axis
-        y: Number of detector pixels along secondary axis
-
         Args:
-            images  (np.ndarray)
+            input   (np.ndarray)
                     array of detector images with shape (N, y, x)
+
+                    Dimensions:
+                        N   Number of detector images
+
+                        x   Number of detector pixels along primary axis
+
+                        y   Number of detector pixels along secondary axis
+
             r_type  (string)
                     ROI type, either "signal", "upper_bg" or "lower_bg"
 
@@ -125,7 +186,23 @@ class Analyzer(object):
         """
 
         x0, y0, x1, y1 = self.get_roi(r_type)
-        return np.sum(images[:, y0:y1+1, x0:x1+1], axis = 1)
+        if out is None:
+            errors = np.sum(np.sqrt(input)[:, y0:y1+1, x0:x1+1], axis = 1)
+            counts = np.sum(input[:, y0:y1+1, x0:x1+1], axis = 1)
+            if scale != 1.0:
+                return np.multiply(counts, scale), np.multiply(errors, scale)
+            else:
+                return counts, errors
+
+        else:
+            s = np.s_[:, :, x0:x1+1]
+            if scale != 1.0:
+                out['ii'][s] = np.multiply(np.sum(input[s], axis = 1), scale)
+                out['er_ii'][s] = np.multiply(np.sum(np.sqrt(input)[s],
+                    axis = 1), scale)
+            else:
+                out['ii'][s] = np.sum(input[s], axis = 1)
+                out['er_ii'][s] = np.sum(np.sqrt(input)[s], axis = 1)
 
 
     def set_roi(self, roi, r_type):
@@ -141,7 +218,7 @@ class Analyzer(object):
             ValueError: Wrong coordinate format or invalid type string
 
         Returns:
-            None
+            self
         """
 
         if not r_type in self.rois.keys():
@@ -151,6 +228,8 @@ class Analyzer(object):
             self.rois[r_type] = roi
         else:
             raise ValueError('Invalid ROI coordinate format: {}'.format(roi))
+
+        return self
 
 
     def get_roi(self, r_type, mask = None):
@@ -199,15 +278,17 @@ class Analyzer(object):
         outlier_rejection = False):
         """ Add an energy calibration to this analyzer automatically.
 
-        Dimensions:
-        -----------
-        N: Number of detector images
-        x: Number of detector pixels along primary axis
-        y: Number of detector pixels along secondary axis
-
         Args:
             images              (np.ndarray)
                                 array of detector images with shape (N, y, x)
+
+                                Dimensions:
+                                    N   Number of detector images
+
+                                    x   Number of detector pixels along primary axis
+
+                                    y   Number of detector pixels along secondary axis
+
             energies            (list)
                                 Calibration energies (will also determine how
                                 many peaks are searched)
@@ -228,9 +309,10 @@ class Analyzer(object):
         Returns:
             None
         """
-
         _, ii, bg, _ = self.counts(images, axis_calibration = False)
         peaks = []
+
+
 
         if outlier_rejection:
             outliers = nmath.getOutliers(np.sum(images, axis = 0))

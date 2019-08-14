@@ -1,25 +1,12 @@
 import logging
-from pyqtgraph.Qt import QtGui
-from nosey.mainframe import MainFrame
-from nosey.analysis.experiment import Experiment
-from nosey.logbar import StatusBarHandler
-from nosey.analysis.recipes import DELTARecipe, SOLEILRecipe
+from nosey.analyzer import Analyzer
+from nosey.run import Run
+from nosey.analysis import Analysis
+from nosey.policy import DELTA_ImportPolicy, SOLEIL_ImportPolicy
 
 __version__ = '0.1'                     #
-lastComputationTime = 0.1               #
-recipes = [DELTARecipe, SOLEILRecipe]   # Import modules
+lastComputationTime = 0.1
+name = "nosey"
 
-# GUI
-app = QtGui.QApplication([])
-gui = MainFrame()
-gui.applySettings()
-
-# Logging
 Log = logging.getLogger(__name__)
-logging.basicConfig(level = logging.DEBUG)
-handler = StatusBarHandler(stream = gui.statusBar)
-Log.addHandler(handler)
-Log.setLevel(level = logging.DEBUG)
-
-# Memory settings
-MAX_NUMBER_ANALYZERS = 72
+logging.basicConfig(level = logging.INFO)

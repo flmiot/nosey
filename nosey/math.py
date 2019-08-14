@@ -2,8 +2,6 @@ import numpy as np
 import scipy.interpolate as interp
 import scipy.optimize as optim
 
-import matplotlib.pyplot as plt
-
 def normalize_curve(e, i, window = None):
     """Return normalized curve and factor by which curve was scaled."""
     if window is not None:
@@ -38,7 +36,6 @@ def interpolate_and_sum(energy, intensity, background, normalize_before_sum = Fa
     bg = np.zeros(points)
     ce = np.linspace(min_energy, max_energy, points)
     for e, i, b in zip(energy, intensity, background):
-
         fi = interp.interp1d(e, i)
         fb = interp.interp1d(e, b)
         if normalize_before_sum:
@@ -51,9 +48,6 @@ def interpolate_and_sum(energy, intensity, background, normalize_before_sum = Fa
         bg += b
 
     return ce, ii, bg
-
-def vec_interpolate_and_sum(*args, normalize_before_sum = False, window = None, **kwargs):
-    return np.vectorize(interpolate_and_sum(*args, normalize_before_sum = normalize_before_sum, window = window, **kwargs))
 
 
 def calculateCOM(e, i, window = None):
@@ -117,6 +111,8 @@ def getOutliers(image, threshold = 0.1):
     differences['north']    = image - np.roll(image, 1, axis = 0)
 
     outliers = []
+
+
     for shift in ['east', 'south', 'west', 'north']:
         tval = np.max(differences[shift]) * threshold
         o = np.where(differences[shift] > tval)
@@ -141,3 +137,17 @@ def getOutliers(image, threshold = 0.1):
                 outliers.append([x,y])
 
     return outliers
+
+
+def getUniqueValues(values, return_indizes = False, threshold = 0.5):
+    v, counts = np.unique(values, return_counts = True)
+    v = v[counts > threshold *np.max(counts)]
+    v = sorted(v)
+
+    if not return_indizes:
+        return v
+    else:
+        indizes = []
+        for value in v:
+            indizes.append(np.where(values == value)[0])
+        return v, indizes

@@ -1,0 +1,123 @@
+!
+! Comments 
+%c 
+  filename  = logfile 
+  date      = 16-May-2019 time     = 07:30:07 
+  scan mot  = MOT73;  SSY 
+!
+! Parameter 
+%p 
+ SAMPLE_TIME = 300 
+ MEAN_I0MONI = 5845980 
+ MEAN_IABSMONI = 0 
+ MEAN_TEMP = 44.17585 
+ MEAN_TEMP_PROBE = 0 
+ MEAN_I_DELTA = -0.07844518 
+ START_POSITION = -5.49825 
+ STOP_POSITION = -5.47825 
+ STEPWIDTH = 0.000333333 
+ ENERGY = 8500.002 
+ ENERGY  =  8500 
+ABSY  =  -1.750001 
+ABSTH  =  -40 
+S1B  =  -2.549988 
+S1T  =  -0.6500123 
+MI2TH  =  0 
+MI2Y  =  50 
+MI2PHI  =  0 
+BP1  =  70 
+BP2  =  120 
+BP3  =  230 
+MC1TH  =  26.4484 
+MC1Y  =  0 
+MC1Z  =  -22.69146 
+MC1CHI  =  -0.481 
+MC2TH  =  26.4484 
+MC2Y  =  60 
+MC2Z  =  22.69146 
+MC2PHI  =  -0.85 
+MC2SAG1  =  1455 
+MC2SAG2  =  1455 
+S2B  =  0.67 
+S2T  =  1.67 
+S2L  =  -0.25 
+S2R  =  -2.25 
+ROWDUMMY1  =  1.1 
+GAMMA  =  0.4 
+PILX  =  274.9867 
+PILZ  =  680.0003 
+ANALYZER  =  0 
+PILY  =  7.22545 
+ROWDUMMY2  =  -2.492045 
+MI1TH  =  30.294 
+MI1Y  =  33.21537 
+SAMX  =  0 
+MI3Y  =  1.7 
+MI3PHI  =  -0.7992 
+MI3X  =  2.5 
+MI3CHI  =  0 
+MI3Z  =  9.85 
+MI3TH  =  0.155 
+S3L  =  3.38 
+S3R  =  -11.62 
+S3B  =  -11.5 
+S3T  =  8.5 
+S4B  =  0.04615005 
+S4T  =  0.1461501 
+S4L  =  0.138 
+S4R  =  -1.862 
+S5T  =  9.6394 
+S5B  =  -8.36065 
+S5R  =  19.0896 
+S5L  =  -43.33855 
+S6R  =  -5.14 
+S6L  =  14.7998 
+S6T  =  4.1688 
+S6B  =  -11.1998 
+DIFFY  =  -7.852 
+DIFFX  =  -1.6 
+DIFFZ  =  -0.5 
+ALF  =  0.03 
+TT  =  64 
+TH  =  0.15 
+CHI  =  0 
+PHI  =  0 
+ANATT  =  0 
+ANATH  =  0 
+SAMY1  =  0.3 
+SAMY2  =  2.000001 
+SAMTH  =  0 
+SAMCHI  =  0 
+SAMZ  =  4.371 
+TEST1  =  -1 
+SSY  =  -5.47825 
+SSX  =  9.8 
+SSZ  =  2 
+SSTH  =  0.18 
+SSCHI  =  0.5212271 
+MARZ  =  899.9998 
+MARX  =  72.55022 
+MARY  =  182.1252 
+! 
+! Data 
+%d 
+ Col 1 Position [units]  FLOAT 
+ Col 2 Norm display counter [arb.units]  FLOAT 
+ Col 3 Detector [counts]  FLOAT 
+ Col 4 I0 Monitor [counts]  FLOAT 
+ Col 5 Iabs Monitor [counts]  FLOAT 
+ Col 6 Pin Diode [counts]  FLOAT 
+ Col 7 I_Delta [mA]  FLOAT 
+ Col 8 Temperature [K]  FLOAT 
+ Col 9 Temp_Probe [K]  FLOAT 
+ Col 10 Cublock [counts]  FLOAT 
+ Col 11 Amptek [counts]  FLOAT 
+ Col 12 AMPTEK1  FLOAT 
+ Col 13 AMPTEK2  FLOAT 
+ Col 14 AMPTEK3  FLOAT 
+ Col 15 Sam_Time [Seconds]  FLOAT 
+ Col 16 absorber position  FLOAT 
+ Col 17 absorber factor  FLOAT 
+       -5.49825             0             0       8152423             0      10393713    -0.1367188     -26.36719             0             0             0             0             0             0             0            13  3.164557e+17 
+      -5.497917             0             0       8381415             0      10647121    -0.2050781       220.166             0             0             0              0              0              0             0            13  3.164557e+17 
+      -5.497583             0             0       8333885             0      10586900    0.06835938      75.14648             0             0             0              0              0              0             0            13  3.164557e+17 

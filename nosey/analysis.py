@@ -2,51 +2,86 @@
 
 import numpy as np
 import scipy.interpolate as interp
-import nosey
 
-from nosey.analysis.label import Label
-import nosey.analysis.math as nmath
+import nosey
+from nosey.label import Label
+import nosey.math as nmath
 
 import matplotlib.pyplot as plt
 
-class AnalysisResult(object):
+class Analysis(object):
     def __init__(self):
-        self.in_e           = []
-        self.out_e          = []
-        self.intensities    = []
-        self.background     = []
-        self.fits           = []
+
+        self.results        = {'completed':False, 'steps_summed':True}
         self.labels         = Label()
 
 
-    def add_data(self, in_e, out_e, intensity, background, fit, label_dict):
-        self.in_e.append(in_e)
-        self.out_e.append(out_e)
-        self.intensities.append(intensity)
-        self.background.append(background)
-        self.fits.append(fit)
-        self.labels.add_scan_labels(label_dict)
+    def run(self, runs, analyzers, sum_steps = True):
+        if len(runs) < 1:
+            raise ValueError("No active runs!")
+        if len(analyzers) < 1:
+            raise ValueError("No active analyzers!")
 
 
-    def get_curves(
-        self,
-        single_scans, single_analyzers,
-        scanning_type = False,
+        self.results['completed']   = False
+        self.results['steps_summed']= sum_steps
+
+        # Reserve required memory
+        if sum_steps:
+            shape = (len(runs) * 1, len(analyzers), runs[0].size()[2])
+            self.results['energy']      = np.empty(shape)
+            self.results['intensity']   = np.empty(shape)
+            self.results['background']  = np.empty(shape)
+
+            for i, run in enumerate(runs):
+                run.get_energy_spectrum(analyzers,
+                    sum_steps = True,
+                    out_e = self.results['energy'][i],
+                    out_i = self.results['intensity'][i],
+                    out_b = self.results['background'][i])
+                d = {run.name : list([a.name for a in analyzers])}
+                self.labels.add_scan_labels(d)
+
+        else:
+            steps = 0
+            for scan in self.scans:
+                steps += len(scan.steps)
+            shape = (steps, len(analyzers), runs[0].size()[2])
+
+
+
+    def get_curves(self,
+        single_scans,
+        single_analyzers,
+        sum_steps = True,
         single_image = None,
         slices = 1,
-        normalize_scans_before_sum = False,
-        normalize_analyzers_before_sum = False,
-        poly_order = None
-        ):
+        poly_order = None):
+
+        if not self.results['completed']:
+            raise RuntimeError(
+            "Analysis result is none. "
+            "'run()' method needs to be called first.")
+
+        if self.results['steps_summed'] != sum_steps:
+            raise RuntimeError(
+            "Analysis was completed for steps_summed='{}'. "
+            "Call the 'run()' method with sum_steps='{}' first.".format(
+            self.results['steps_summed'], sum_steps))
+
 
 
         in_e, out_e = self.in_e, self.out_e
         i, b = self.intensities, self.background
         l = self.labels.get_labels(single_scans, single_analyzers)
 
-        no_scans = len(i)
+        shape = ()
+        scans = 1
+
         no_analyzers = len(i[0])
         no_points_in_e = len(i[0][0])
+
+
 
         # Scanning type does not work at the moment
         # if scanning_type:
@@ -96,10 +131,10 @@ class AnalysisResult(object):
         ei = np.array(out_e)
 
         if not single_analyzers:
-            ei, ii, bi = self.sum_analyzers(ei, ii, bi, normalize_analyzers_before_sum)
+            ei, ii, bi = self.sum_analyzers(ei, ii, bi)
 
         if not single_scans:
-            ei, ii, bi = self.sum_scans(ei, ii, bi, normalize_scans_before_sum)
+            ei, ii, bi = self.sum_scans(ei, ii, bi)
 
         if poly_order is not None:
             for scan_index in range(bi.shape[0]):
@@ -110,7 +145,7 @@ class AnalysisResult(object):
         return ei, ii, bi, l
 
 
-    def sum_analyzers(self, energies, intensities, backgrounds, normalize_before_sum = False):
+    def sum_analyzers(self, energies, intensities, backgrounds):
         """
         Interpolate spectra for multiple analyzers linearly and sum them
         scan-wise.
@@ -139,7 +174,7 @@ class AnalysisResult(object):
         z = zip(range(len(energies)), energies, intensities, backgrounds)
         for ind, energy, intensity, background in z:
 
-            ce, ii, b = nmath.interpolate_and_sum(energy, intensity, background, normalize_before_sum)
+            ce, ii, b = nmath.interpolate_and_sum(energy, intensity, background)
 
             energies_summed[ind] = ce
             intensities_summed[ind] = ii
@@ -148,7 +183,7 @@ class AnalysisResult(object):
         return energies_summed, intensities_summed, backgrounds_summed
 
 
-    def sum_scans(self, energies, intensities, backgrounds, normalize_before_sum = False):
+    def sum_scans(self, energies, intensities, backgrounds):
         """
         Interpolate spectra for multiple scans linearly and sum them
         analyzer-wise.
@@ -178,7 +213,7 @@ class AnalysisResult(object):
         z = zip(range(A), *l)
         for ind, energy, intensity, background in z:
 
-            ce, ii, b = nmath.interpolate_and_sum(energy, intensity, background, normalize_before_sum)
+            ce, ii, b = nmath.interpolate_and_sum(energy, intensity, background)
 
             np.transpose(energies_summed, (1,0,2))[ind]      = ce
             np.transpose(intensities_summed, (1,0,2))[ind]   = ii

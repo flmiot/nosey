@@ -5,8 +5,7 @@ import pyqtgraph as pg
 from pyqtgraph.Qt import QtCore, QtGui
 
 import nosey
-from nosey.analysis.scan import Scan
-from nosey.analysis.recipes import SOLEILRecipe
+from nosey.analysis.run import Run
 from nosey.templates import HideButton, RemoveButton, ViewButton, PlotGroupComboBox
 
 class Sources(object):
