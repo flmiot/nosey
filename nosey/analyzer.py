@@ -7,7 +7,7 @@ import numpy as np
 import nosey
 import nosey.math as nmath
 from nosey.calibration import EnergyCalibration
-#from nosey.gui.guard import timer
+from nosey.timer import timer
 
 
 class Analyzer(object):
@@ -47,7 +47,7 @@ class Analyzer(object):
         return "Analyzer '{}' ROI: {}".format(self.name, self.rois['signal'])
 
 
-    #@timer("Return integrated counts for analyzer")
+    @timer("Return integrated counts for analyzer")
     def counts(self, input, axis_calibration = True, out = None):
         """ Integrate a region of interest (ROI) for this analyzer.
 
@@ -97,8 +97,8 @@ class Analyzer(object):
         size        = self.size('signal')[1]
         bg_rois     = 0
         if out is not None:
-            out['ii_bg']    = np.zeros((input.shape[0], ii.shape[1]))
-            out['er_ii_bg'] = np.zeros((input.shape[0], ii.shape[1]))
+            out['ii_bg'].fill(0)
+            out['er_ii_bg'].fill(0)
 
         # Upper background ROI integration
         try:
@@ -107,15 +107,15 @@ class Analyzer(object):
                 bg_upper, er_u   = self.integrate(input, 'upper_bg', rel_size)
             else:
                 o = {'ii' : out['ii_bg'], 'er_ii': out['er_ii_bg']}
-                self.integrate(input, 'upper_bg', rel_size, out = o)
+                self.integrate(input, 'upper_bg', rel_size, out = o, add = True)
             bg_rois         += 1
 
         except Exception as e:
             fmt = "Upper background integration failed: {}.".format(e)
             nosey.Log.warning(fmt)
             if out is None:
-                bg_upper    = np.zeros((input.shape[0], ii.shape[1] ))
-                er_u        = np.zeros((input.shape[0], ii.shape[1] ))
+                bg_upper    = np.zeros((input.shape[0], input.shape[2] ))
+                er_u        = np.zeros((input.shape[0], input.shape[2] ))
 
         # Lower background ROI integration
         try:
@@ -123,29 +123,29 @@ class Analyzer(object):
             if out is None:
                 bg_lower, er_l   = self.integrate(input, 'lower_bg', rel_size)
             else:
-                o = {'ii' : out['ii_bg_lower'], 'er_ii': out['er_ii_bg_lower']}
-                self.integrate(input, 'lower_bg', rel_size, out = o)
+                o = {'ii' : out['ii_bg'], 'er_ii': out['er_ii_bg']}
+                self.integrate(input, 'lower_bg', rel_size, out = o, add = True)
             bg_rois         += 1
 
         except Exception as e:
             fmt = "Lower background integration failed: {}.".format(e)
             nosey.Log.warning(fmt)
             if out is None:
-                bg_lower    = np.zeros((input.shape[0], ii.shape[1] ))
-                er_l        = np.zeros((input.shape[0], ii.shape[1] ))
+                bg_lower    = np.zeros((input.shape[0], input.shape[2] ))
+                er_l        = np.zeros((input.shape[0], input.shape[2] ))
 
-        # Scale background by 0.5, if two ROI were integrated
+        # Scale background by 0.5, if two background ROI were integrated
         if bg_rois > 0:
             if out is None:
                 bg      = np.divide(np.add(bg_upper, bg_lower), bg_rois)
                 er_bg   = np.divide(np.add(er_u, er_l), bg_rois)
             else:
-                out['ii_bg']    = np.divide(out['ii_bg'], bg_rois)
-                out['er_ii_bg'] = np.divide(out['er_ii_bg'], bg_rois)
+                np.divide(out['ii_bg'], bg_rois, out = out['ii_bg'])
+                np.divide(out['er_ii_bg'], bg_rois, out = out['er_ii_bg'])
 
         else:
-            bg      = np.zeros((images.shape[0], ii.shape[1]))
-            er_bg   = np.zeros((images.shape[0], ii.shape[1]))
+            bg      = np.zeros((input.shape[0], input.shape[2]))
+            er_bg   = np.zeros((input.shape[0], input.shape[2]))
 
         # Axis calibration
         if axis_calibration:
@@ -163,18 +163,20 @@ class Analyzer(object):
                 if out is None:
                     ea, fit = np.arange(x0, x1) - x0, None
                 else:
-                    out['ea'], out['fit'] = np.arange(x0, x1) - x0, None
+                    out['ea'][:], out['fit'][:] = np.arange(x0, x1) - x0, None
+
         else:
             if out is None:
                 ea, fit = None, None
             else:
-                out['ea'], out['fit'] = None, None
+                out['ea'][:], out['fit'][:] = None, None
 
         if out is None:
             return ea, ii, er, bg, er_bg, fit
 
 
-    def integrate(self, input, r_type, scale = 1.0, out = None):
+
+    def integrate(self, input, r_type, scale = 1.0, out = None, add = False):
         """ Integrate a region of interest (ROI) for this analyzer.
 
         Args:
@@ -190,6 +192,12 @@ class Analyzer(object):
 
             r_type  (string)
                     ROI type, either "signal", "upper_bg" or "lower_bg"
+
+            scale   (float)
+
+            out     (dict)
+
+            add     (bool)
 
         Raises:
             ValueError: Invalid image input array, invalid type string or ROI
@@ -208,14 +216,32 @@ class Analyzer(object):
                 return counts, errors
 
         else:
-            s = np.s_[:, :, x0:x1+1]
+            s = np.s_[:, y0:y1+1, x0:x1+1]
             if scale != 1.0:
-                out['ii'][s] = np.multiply(np.sum(input[s], axis = 1), scale)
-                out['er_ii'][s] = np.multiply(np.sum(np.sqrt(input)[s],
-                    axis = 1), scale)
+                if add:
+                    np.add(out['ii'],
+                        np.multiply(
+                            np.sum(input[s], axis = 1), scale),
+                                out = out['ii'])
+
+                    np.add(out['er_ii'],
+                        np.multiply(np.sum(np.sqrt(input)[s], axis = 1), scale),
+                            out = out['er_ii'])
+                else:
+                    np.multiply(np.sum(input[s], axis = 1), scale,
+                        out = out['ii'])
+                    np.multiply(np.sum(np.sqrt(input)[s], axis = 1), scale,
+                        out = out['er_ii'])
             else:
-                out['ii'][s] = np.sum(input[s], axis = 1)
-                out['er_ii'][s] = np.sum(np.sqrt(input)[s], axis = 1)
+                if add:
+                    np.add(out['ii'], np.sum(input[s], axis = 1),
+                        out = out['ii'])
+                    np.add(out['er_ii'], np.sum(np.sqrt(input)[s], axis = 1),
+                        out = out['er_ii'])
+                else:
+                    np.sum(input[s], axis = 1, out = out['ii'])
+                    np.sum(np.sqrt(input)[s], axis = 1, out = out['er_ii'])
+
 
 
     def set_roi(self, roi, r_type):

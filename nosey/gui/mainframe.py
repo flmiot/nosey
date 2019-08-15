@@ -4,12 +4,13 @@ import pyqtgraph as pg
 from pyqtgraph.Qt import QtCore, QtGui, uic
 
 import nosey
-from nosey.monitor import Monitor
-from nosey.sources import Sources
-from nosey.plot import Plot
-from nosey.groups import Groups
-from nosey.settings import Settings
-from nosey.references import References
+import nosey.gui
+from nosey.gui.monitor import Monitor
+from nosey.gui.sources import Sources
+from nosey.gui.plot import Plot
+from nosey.gui.groups import Groups
+from nosey.gui.settings import Settings
+from nosey.gui.references import References
 
 
 class MainFrame(QtGui.QMainWindow, Monitor, Sources, Plot, Groups, Settings, References):

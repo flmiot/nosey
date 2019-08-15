@@ -3,8 +3,8 @@ import pyqtgraph as pg
 from pyqtgraph import QtCore, QtGui
 
 import nosey
-from nosey.analysis.analyzer import Analyzer
-import nosey.analysis.math as nmath
+import nosey.math as nmath
+
 import matplotlib.pyplot as plt
 
 class ROI(object):
@@ -172,9 +172,9 @@ class ROI(object):
 
     def setEnergyPointsAuto(self, images, imageView, sum_before_detection,
         search_radius):
-        sig = Analyzer.make_signal_from_QtRoi(self, [195, 487], imageView, 0)
-        bg01 = Analyzer.make_signal_from_QtRoi(self, [195, 487], imageView, 1)
-        bg02 = Analyzer.make_signal_from_QtRoi(self, [195, 487], imageView, 2)
+        sig = nosey.Analyzer.make_signal_from_QtRoi(self, [195, 487], imageView, 0)
+        bg01 = nosey.Analyzer.make_signal_from_QtRoi(self, [195, 487], imageView, 1)
+        bg02 = nosey.Analyzer.make_signal_from_QtRoi(self, [195, 487], imageView, 2)
         positions = np.empty( len(self.energyPoints) )
         self.blockSignals(True)
 

@@ -35,6 +35,7 @@ def interpolate_and_sum(energy, intensity, background, normalize_before_sum = Fa
     ii = np.zeros(points)
     bg = np.zeros(points)
     ce = np.linspace(min_energy, max_energy, points)
+
     for e, i, b in zip(energy, intensity, background):
         fi = interp.interp1d(e, i)
         fb = interp.interp1d(e, b)

@@ -16,36 +16,79 @@ class Analysis(object):
         self.labels         = Label()
 
 
-    def run(self, runs, analyzers, sum_steps = True):
+    def run(self, runs, analyzers, sum_steps = True, out = None):
+        """ Run the analysis.
+
+        Args:
+            runs        (list)
+                        list of Run objects
+
+            analyzers   (list)
+                        list of Analyzer objects
+
+            sum_steps   (bool) [default: True]
+                        Sum the images of each run before integration
+
+            out     (dict) [default: None]
+                    dict of (preallocated) memory. If None new arrays will be
+                    allocated and returned. If specified content has to be:
+
+                    "ea":       nd.array ()
+                    "ii":       nd.array ()
+                    "er_ii":    nd.array ()
+                    "ii_bg":    nd.array ()
+                    "er_ii_bg": nd.array ()
+                    "fit":      nd.array ()
+                    "stop":     nd.array ()
+
+        Raises:
+            None
+
+        Returns:
+            None
+        """
+
         if len(runs) < 1:
             raise ValueError("No active runs!")
         if len(analyzers) < 1:
             raise ValueError("No active analyzers!")
-
 
         self.results['completed']       = False
         self.results['analyzers']       = analyzers
         self.results['runs']            = runs
         self.results['steps_summed']    = sum_steps
 
-        # Reserve required memory
         if sum_steps:
-            shape = (len(runs) * 1, len(analyzers), runs[0].size()[2])
-            self.results['ea']      = np.empty(shape)
-            self.results['ii']      = np.empty(shape)
-            self.results['er_ii']   = np.empty(shape)
-            self.results['bg']      = np.empty(shape)
-            self.results['er_bg']   = np.empty(shape)
-            self.results['fit']     = np.empty(shape)
+            if out is None:
+                shape = (len(runs) * 1, len(analyzers), runs[0].size()[2])
+                self.results['ea']          = np.empty(shape)
+                self.results['ii']          = np.empty(shape)
+                self.results['er_ii']       = np.empty(shape)
+                self.results['ii_bg']       = np.empty(shape)
+                self.results['er_ii_bg']    = np.empty(shape)
+                self.results['fit']         = np.empty(shape)
+
+                sh = (len(runs) * 1, len(analyzers))
+                self.results['stop']        = np.empty(sh)
+
+            else:
+                self.results['ea']          = out['ea']
+                self.results['ii']          = out['ii']
+                self.results['er_ii']       = out['er_ii']
+                self.results['ii_bg']       = out['ii_bg']
+                self.results['er_ii_bg']    = out['er_ii_bg']
+                self.results['fit']         = out['fit']
+                self.results['stop']        = out['stop']
 
             for i, run in enumerate(runs):
                 out = {
-                    'ea' :      self.results['ea'][i],
-                    'ii' :      self.results['ii'][i],
-                    'er_ii':    self.results['er_ii'][i],
-                    'bg':       self.results['bg'][i],
-                    'er_bg':    self.results['er_bg'][i],
-                    'fit':      self.results['fit'][i]
+                    'ea' :      self.results['ea'][i:i+1],
+                    'ii' :      self.results['ii'][i:i+1],
+                    'er_ii':    self.results['er_ii'][i:i+1],
+                    'ii_bg':    self.results['ii_bg'][i:i+1],
+                    'er_ii_bg': self.results['er_ii_bg'][i:i+1],
+                    'fit':      self.results['fit'][i:i+1],
+                    'stop':     self.results['stop'][i:i+1],
                     }
 
                 run.get_spectrum(analyzers, sum_steps = True, out = out)
@@ -58,6 +101,7 @@ class Analysis(object):
                 steps += len(scan.steps)
             shape = (steps, len(analyzers), runs[0].size()[2])
 
+        self.results['completed'] = True
 
 
     def get_curves(self,
@@ -82,17 +126,15 @@ class Analysis(object):
             nosey.Log.warning(fmt.format(sum_steps, not sum_steps))
 
 
-        in_e, out_e = self.in_e, self.out_e
-        i, b = self.intensities, self.background
+        # in_e, out_e = self.results['ea'], self.results['ea']
+        # i, b = self.results['ii'], self.results['ii_bg']
         l = self.labels.get_labels(single_scans, single_analyzers)
-
-        shape = ()
-        scans = 1
-
-        no_analyzers = len(i[0])
-        no_points_in_e = len(i[0][0])
-
-
+        #
+        # shape = ()
+        # scans = 1
+        #
+        # no_analyzers = len(i[0])
+        # no_points_in_e = len(i[0][0])
 
         # Scanning type does not work at the moment
         # if scanning_type:
@@ -112,13 +154,13 @@ class Analysis(object):
         #             ei[ind_s, ind_a] = np.array(in_e[ind_s])
         #
         # else:
-
-        ii = []
-        bi = []
-
-        # Iterate scans
-        z = zip(range(len(i)), i, b)
-        for ind, il, bl in z:
+        #
+        # ii = []
+        # bi = []
+        #
+        # # Iterate scans
+        # z = zip(range(len(i)), i, b)
+        # for ind, il, bl in z:
             # if not single_image is None: # Single image does not work at the moment
             #     if slices == 1:
             #         ii.append(il[:, single_image])
@@ -133,13 +175,17 @@ class Analysis(object):
             #         ii.append(np.sum(il[:, i0:i1], axis = 1))
             #         bi.append(np.sum(bl[:, i0:i1], axis = 1))
             # else:
+        #
+        #     ii.append(np.sum(il, axis = 1))
+        #     bi.append(np.sum(bl, axis = 1))
+        #
+        # ii = np.array(ii)
+        # bi = np.array(bi)
+        # ei = np.array(out_e)
+        #
+        # print(self.results['ii_bg'].shape)
 
-            ii.append(np.sum(il, axis = 1))
-            bi.append(np.sum(bl, axis = 1))
-
-        ii = np.array(ii)
-        bi = np.array(bi)
-        ei = np.array(out_e)
+        ei, ii, bi = self.results['ea'], self.results['ii'], self.results['ii_bg']
 
         if not single_analyzers:
             ei, ii, bi = self.sum_analyzers(ei, ii, bi)
@@ -187,7 +233,7 @@ class Analysis(object):
 
             ce, ii, b = nmath.interpolate_and_sum(energy, intensity, background)
 
-            energies_summed[ind] = ce
+            energies_summed[ind]    = ce
             intensities_summed[ind] = ii
             backgrounds_summed[ind] = b
 
@@ -212,6 +258,8 @@ class Analysis(object):
         A = intensities[0].shape[0]
         N = 1
         P = intensities[0].shape[1]
+
+
 
         energies_summed = np.empty( (S, A, P) )
         intensities_summed = np.empty( (S, A, P) )

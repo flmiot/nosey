@@ -5,10 +5,8 @@ import pyqtgraph as pg
 from pyqtgraph.Qt import QtCore, QtGui
 import matplotlib.cm as cm
 
-import nosey.guard
-# from nosey.analysis.experiment import Experiment
-from nosey.analysis.analyzer import Analyzer
-import nosey.analysis.math as nmath
+from nosey.gui.guard import updateGuard
+import nosey.math as nmath
 
 import matplotlib.pyplot as plt
 
@@ -48,7 +46,7 @@ class Plot(object):
         self.plotWidgetIAD.getAxis('bottom').setPen(color = 'k')
 
 
-    @nosey.guard.updateGuard
+    @updateGuard
     def updatePlot(self, *args, **kwargs):
         try:
 
@@ -111,7 +109,7 @@ class Plot(object):
                     if not r.active:
                         continue
 
-                    a = Analyzer.make_from_QtRoi(r, [195, 487], self.imageView)
+                    a = nosey.Analyzer.make_from_QtRoi(r, [195, 487], self.imageView)
                     energies = self.getEnergies()
 
                     if len(energies) >= 2:

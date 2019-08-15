@@ -4,10 +4,10 @@ import matplotlib.pyplot as plt
 import pyqtgraph as pg
 from pyqtgraph import QtCore, QtGui
 import logging
-from nosey.analysis.policy import DELTA_ImportPolicy
-from nosey.analysis.run import Run
-from nosey.analysis.analysis import Analysis
-from nosey.analysis.analyzer import Analyzer
+from nosey.policy import DELTA_ImportPolicy
+from nosey.run import Run
+from nosey.analysis import Analysis
+from nosey.analyzer import Analyzer
 from timeit import timeit
 
 
@@ -56,7 +56,7 @@ p = DELTA_ImportPolicy()
 s.read(p, files = fullFiles[:6], log_file = full_log)
 
 e = [7630, 7640, 7650, 7660, 7670]
-roi = [[5, 8, 487, 21], [0, 34, 487, 58]]
+roi = [[0, 8, 487, 21], [0, 34, 487, 58]]
 analyzers = []
 for r in roi:
     a = Analyzer('')

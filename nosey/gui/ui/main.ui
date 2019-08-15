@@ -15,7 +15,7 @@
   </property>
   <property name="windowIcon">
    <iconset>
-    <normaloff>../icons/appIcon.png</normaloff>../icons/appIcon.png</iconset>
+    <normaloff>../../icons/appIcon.png</normaloff>../../icons/appIcon.png</iconset>
   </property>
   <property name="styleSheet">
    <string notr="true">QWidget {
@@ -2536,7 +2536,7 @@ QMainWindow::separator:vertical {
            </property>
            <property name="icon">
             <iconset>
-             <normaloff>../icons/icons8-plus-mathe-60.png</normaloff>../icons/icons8-plus-mathe-60.png</iconset>
+             <normaloff>../../icons/icons8-plus-mathe-60.png</normaloff>../../icons/icons8-plus-mathe-60.png</iconset>
            </property>
           </widget>
          </item>
@@ -4123,7 +4123,7 @@ QMainWindow::separator:vertical {
            </property>
            <property name="icon">
             <iconset>
-             <normaloff>../icons/icons8-plus-mathe-60.png</normaloff>../icons/icons8-plus-mathe-60.png</iconset>
+             <normaloff>../../icons/icons8-plus-mathe-60.png</normaloff>../../icons/icons8-plus-mathe-60.png</iconset>
            </property>
           </widget>
          </item>
@@ -4191,7 +4191,7 @@ QMainWindow::separator:vertical {
            </property>
            <property name="icon">
             <iconset>
-             <normaloff>../icons/icons8-plus-mathe-60.png</normaloff>../icons/icons8-plus-mathe-60.png</iconset>
+             <normaloff>../../icons/icons8-plus-mathe-60.png</normaloff>../../icons/icons8-plus-mathe-60.png</iconset>
            </property>
            <property name="iconSize">
             <size>
@@ -4667,7 +4667,7 @@ QMainWindow::separator:vertical {
        </property>
        <property name="icon">
         <iconset>
-         <normaloff>../icons/icons8-plus-mathe-60.png</normaloff>../icons/icons8-plus-mathe-60.png</iconset>
+         <normaloff>../../icons/icons8-plus-mathe-60.png</normaloff>../../icons/icons8-plus-mathe-60.png</iconset>
        </property>
       </widget>
      </item>
@@ -4734,7 +4734,7 @@ QMainWindow::separator:vertical {
          </property>
          <property name="icon">
           <iconset>
-           <normaloff>../icons/icons8-plus-mathe-60.png</normaloff>../icons/icons8-plus-mathe-60.png</iconset>
+           <normaloff>../../icons/icons8-plus-mathe-60.png</normaloff>../../icons/icons8-plus-mathe-60.png</iconset>
          </property>
         </widget>
        </item>
@@ -4793,7 +4793,7 @@ QMainWindow::separator:vertical {
   <action name="actionUpdatePlot">
    <property name="icon">
     <iconset>
-     <normaloff>../icons/update.png</normaloff>../icons/update.png</iconset>
+     <normaloff>../../icons/update.png</normaloff>../../icons/update.png</iconset>
    </property>
    <property name="text">
     <string>UpdatePlot</string>
@@ -4811,7 +4811,7 @@ QMainWindow::separator:vertical {
    </property>
    <property name="icon">
     <iconset>
-     <normaloff>../icons/auto-update.png</normaloff>../icons/auto-update.png</iconset>
+     <normaloff>../../icons/auto-update.png</normaloff>../../icons/auto-update.png</iconset>
    </property>
    <property name="text">
     <string>Update automatically</string>
@@ -4826,7 +4826,7 @@ QMainWindow::separator:vertical {
    </property>
    <property name="icon">
     <iconset>
-     <normaloff>../icons/normalize.png</normaloff>../icons/normalize.png</iconset>
+     <normaloff>../../icons/normalize.png</normaloff>../../icons/normalize.png</iconset>
    </property>
    <property name="text">
     <string>normalize</string>
@@ -4844,7 +4844,7 @@ QMainWindow::separator:vertical {
    </property>
    <property name="icon">
     <iconset>
-     <normaloff>../icons/subtract_background_model.png</normaloff>../icons/subtract_background_model.png</iconset>
+     <normaloff>../../icons/subtract_background_model.png</normaloff>../../icons/subtract_background_model.png</iconset>
    </property>
    <property name="text">
     <string>subtractBackground</string>
@@ -4862,7 +4862,7 @@ QMainWindow::separator:vertical {
    </property>
    <property name="icon">
     <iconset>
-     <normaloff>../icons/single_analyzers.png</normaloff>../icons/single_analyzers.png</iconset>
+     <normaloff>../../icons/single_analyzers.png</normaloff>../../icons/single_analyzers.png</iconset>
    </property>
    <property name="text">
     <string>singleAnalyzers</string>
@@ -4880,7 +4880,7 @@ QMainWindow::separator:vertical {
    </property>
    <property name="icon">
     <iconset>
-     <normaloff>../icons/single_scans.png</normaloff>../icons/single_scans.png</iconset>
+     <normaloff>../../icons/single_scans.png</normaloff>../../icons/single_scans.png</iconset>
    </property>
    <property name="text">
     <string>singleScans</string>
@@ -4898,7 +4898,7 @@ QMainWindow::separator:vertical {
    </property>
    <property name="icon">
     <iconset>
-     <normaloff>../icons/single_image.png</normaloff>../icons/single_image.png</iconset>
+     <normaloff>../../icons/single_image.png</normaloff>../../icons/single_image.png</iconset>
    </property>
    <property name="text">
     <string>singleImage</string>
@@ -4913,7 +4913,7 @@ QMainWindow::separator:vertical {
    </property>
    <property name="icon">
     <iconset>
-     <normaloff>../icons/scanning_type.png</normaloff>../icons/scanning_type.png</iconset>
+     <normaloff>../../icons/scanning_type.png</normaloff>../../icons/scanning_type.png</iconset>
    </property>
    <property name="text">
     <string>scanningType</string>
@@ -4943,7 +4943,7 @@ QMainWindow::separator:vertical {
    </property>
    <property name="icon">
     <iconset>
-     <normaloff>../icons/com_shift.png</normaloff>../icons/com_shift.png</iconset>
+     <normaloff>../../icons/com_shift.png</normaloff>../../icons/com_shift.png</iconset>
    </property>
    <property name="text">
     <string>COMShift</string>
@@ -4969,7 +4969,7 @@ QMainWindow::separator:vertical {
   <customwidget>
    <class>Logbar</class>
    <extends>QStatusBar</extends>
-   <header>nosey.logbar</header>
+   <header>nosey.gui.logbar</header>
   </customwidget>
  </customwidgets>
  <resources/>

@@ -64,27 +64,23 @@ class Run(object):
                 stop = an.get_roi(r_type = 'signal')[2]
 
                 if out is None:
-                    ei, ii, er, bg, er_bg, fit = an.counts(summed)
-                    out_e[ind]                  = -1
-                    intensity[ind]              = -1
-                    background[ind]             = -1
-                    errors[ind]                 = -1
-                    errors_bg[ind]              = -1
-                    fits[ind]                   = -1
-                    out_e[ind, :stop]           = ei
-                    intensity[ind, :, :stop]    = ii
-                    errors[ind, :, :stop]       = er
-                    errors_bg[ind, :, :stop]    = er_bg
-                    background[ind, :, :stop]   = bg
-                    
+                    ei, ii, er, bg, er_bg, fit  = an.counts(summed)
+                    out_e[ind, 0:stop]        = ei
+                    intensity[ind, 0:stop]    = ii
+                    errors[ind, 0:stop]       = er
+                    errors_bg[ind, 0:stop]    = er_bg
+                    background[ind, 0:stop]   = bg
+
                 else:
+                    out['stop'][:,ind] = stop
                     o = {
-                        'ea'        : out['ea'][ind, :stop],
-                        'ii'        : out['ii'][ind, :, :stop],
-                        'ii_bg'     : out['ii_bg'][ind, :, :stop],
-                        'er_ii'     : out['ii'][ind, :, :stop],
-                        'er_ii_bg'  : out['ii_bg'][ind, :, :stop],
-                        'fit'       : out['fit'][ind, :, :stop]
+                        'ea'        : out['ea'][:, ind],
+                        'ii'        : out['ii'][:, ind],
+                        'ii_bg'     : out['ii_bg'][:, ind],
+                        'er_ii'     : out['er_ii'][:, ind],
+                        'er_ii_bg'  : out['er_ii_bg'][:, ind],
+                        'fit'       : out['fit'][:, ind],
+                        'stop'      : out['stop'][:, ind]
                         }
 
                     an.counts(summed, out = o)

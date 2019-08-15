@@ -1,5 +1,5 @@
 import logging
-import nosey
+import nosey.gui
 from pyqtgraph import QtGui
 
 class StatusBarHandler(logging.StreamHandler):

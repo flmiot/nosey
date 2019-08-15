@@ -8,5 +8,7 @@ __version__ = '0.1'                     #
 lastComputationTime = 0.1
 name = "nosey"
 
+recipes = [DELTA_ImportPolicy, SOLEIL_ImportPolicy]   # Import modules
+
 Log = logging.getLogger(__name__)
 logging.basicConfig(level = logging.INFO)
