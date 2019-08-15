@@ -62,8 +62,19 @@ class Analyzer(object):
 
                         y   Number of detector pixels along secondary axis
 
-            axis_calibration  (bool)
+            axis_calibration  (bool) [default: True]
                     ROI type, either "signal", "upper_bg" or "lower_bg"
+
+            out     (dict) [default: None]
+                    dict of (preallocated) memory. If None new arrays will be
+                    allocated and returned. If specified content has to be:
+
+                    "ea":       nd.array ()
+                    "ii":       nd.array ()
+                    "er_ii":    nd.array ()
+                    "ii_bg":    nd.array ()
+                    "er_ii_bg": nd.array ()
+                    "fit":      nd.array ()
 
         Raises:
             ValueError: Invalid image input array, invalid type string or ROI
@@ -72,7 +83,7 @@ class Analyzer(object):
             (np.ndarray) Integrated detector images with shape (N, x)
         """
 
-        # Counts
+        # Main signal ROI integration
         try:
             if out is None:
                 ii, er      = self.integrate(input, 'signal')
@@ -89,6 +100,7 @@ class Analyzer(object):
             out['ii_bg']    = np.zeros((input.shape[0], ii.shape[1]))
             out['er_ii_bg'] = np.zeros((input.shape[0], ii.shape[1]))
 
+        # Upper background ROI integration
         try:
             rel_size = size / self.size('upper_bg')[1]
             if out is None:
@@ -105,6 +117,7 @@ class Analyzer(object):
                 bg_upper    = np.zeros((input.shape[0], ii.shape[1] ))
                 er_u        = np.zeros((input.shape[0], ii.shape[1] ))
 
+        # Lower background ROI integration
         try:
             rel_size = size / self.size('lower_bg')[1]
             if out is None:
@@ -121,8 +134,8 @@ class Analyzer(object):
                 bg_lower    = np.zeros((input.shape[0], ii.shape[1] ))
                 er_l        = np.zeros((input.shape[0], ii.shape[1] ))
 
+        # Scale background by 0.5, if two ROI were integrated
         if bg_rois > 0:
-            print(bg_rois)
             if out is None:
                 bg      = np.divide(np.add(bg_upper, bg_lower), bg_rois)
                 er_bg   = np.divide(np.add(er_u, er_l), bg_rois)

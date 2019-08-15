@@ -32,7 +32,7 @@ analyzer.set_roi([0, 9, 487, 23], 'upper_bg')   # Upper background ROI (opt)
 analyzer.set_roi([0, 37, 487, 51], 'lower_bg')  # Lower background ROI (opt)
 
 # We get the integrated spectrum by calling get_energy_spectrum with analyzers
-ie, oe, ii, er, bg, er_bg, f = run.get_energy_spectrum( [analyzer] )
+ie, oe, ii, er, bg, er_bg, f = run.get_spectrum( [analyzer] )
 
 # Side by side: Detector images and integrated spectrum
 plt.figure(1)

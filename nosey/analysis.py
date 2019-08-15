@@ -23,22 +23,32 @@ class Analysis(object):
             raise ValueError("No active analyzers!")
 
 
-        self.results['completed']   = False
-        self.results['steps_summed']= sum_steps
+        self.results['completed']       = False
+        self.results['analyzers']       = analyzers
+        self.results['runs']            = runs
+        self.results['steps_summed']    = sum_steps
 
         # Reserve required memory
         if sum_steps:
             shape = (len(runs) * 1, len(analyzers), runs[0].size()[2])
-            self.results['energy']      = np.empty(shape)
-            self.results['intensity']   = np.empty(shape)
-            self.results['background']  = np.empty(shape)
+            self.results['ea']      = np.empty(shape)
+            self.results['ii']      = np.empty(shape)
+            self.results['er_ii']   = np.empty(shape)
+            self.results['bg']      = np.empty(shape)
+            self.results['er_bg']   = np.empty(shape)
+            self.results['fit']     = np.empty(shape)
 
             for i, run in enumerate(runs):
-                run.get_energy_spectrum(analyzers,
-                    sum_steps = True,
-                    out_e = self.results['energy'][i],
-                    out_i = self.results['intensity'][i],
-                    out_b = self.results['background'][i])
+                out = {
+                    'ea' :      self.results['ea'][i],
+                    'ii' :      self.results['ii'][i],
+                    'er_ii':    self.results['er_ii'][i],
+                    'bg':       self.results['bg'][i],
+                    'er_bg':    self.results['er_bg'][i],
+                    'fit':      self.results['fit'][i]
+                    }
+
+                run.get_spectrum(analyzers, sum_steps = True, out = out)
                 d = {run.name : list([a.name for a in analyzers])}
                 self.labels.add_scan_labels(d)
 
@@ -64,11 +74,12 @@ class Analysis(object):
             "'run()' method needs to be called first.")
 
         if self.results['steps_summed'] != sum_steps:
-            raise RuntimeError(
-            "Analysis was completed for steps_summed='{}'. "
-            "Call the 'run()' method with sum_steps='{}' first.".format(
-            self.results['steps_summed'], sum_steps))
-
+            self.run(
+                self.results['runs'], self.results['analyzers'],
+                sum_steps = sum_steps)
+            fmt = "Analysis 'run()' method was called with sum_steps{}, because"
+            "it was previously run with sum_steps={}."
+            nosey.Log.warning(fmt.format(sum_steps, not sum_steps))
 
 
         in_e, out_e = self.in_e, self.out_e
