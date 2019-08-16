@@ -1,21 +1,19 @@
-# X-ray emission data analysis tool (Win / Linux / macOS)
+# Design   
+NOSEY aims at beeing a beamline tool for fast explorative data analysis
 
-## Prerequisites
--	Python 3.5 or higher
--	Non-standard python package __PyQtGraph__ (http://www.pyqtgraph.org/), written by Luke Campagnola
-
-It is recommended to use Anaconda (https://www.anaconda.com/) and run
-```
-conda install -c anaconda pyqtgraph
-```
-
-To enter the GUI, just type
-```
-python __main__.py 
-```
-
-## Features:
-- Manage numerous scans and analyzer (ROIs) at the same time. View them separately, overlayed or summed (via linear interpolation) 
-- Enable the automatic plotting-update to view and access changes quickly (e.g ROI size) 
-
-# Quickstart guide
+## The basic design principles are:
+    -   Ease of use: Minimal dependencies, pure python, documentation, examples
+    -   Work with the raw image files alone as long as possible (ease of use)
+    -   More meta-data can be added/imported on an as-needed basis
+    -   Modularity: code base detached from everything GUI, modular code base
+    -   Should come with a complete and mature GUI, which exposes all functions
+    -   Flexibility: adaptable to both synchrotron and FEL beamlines
+    -   Complete set of standard tools to help navigate the experiment:
+        -   Background subtraction
+        -   Integrated absolute difference
+        -   Center-of-mass shift of curves
+        -   Normalisation to Area / Peak-height
+        -   Differences / transients
+        -   HERFD scanning mode
+        -   Full error propagation
+        -   Curve fitting
