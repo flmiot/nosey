@@ -1,8 +1,8 @@
 import sys
 
 from pyqtgraph.Qt import QtCore
-import nosey
+import gui
 
-if __name__ == '__main__':        
-    nosey.gui.show()
-    nosey.app.exec_()
+if __name__ == '__main__':
+    gui.gui.show()
+    gui.app.exec_()

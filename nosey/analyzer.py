@@ -175,7 +175,6 @@ class Analyzer(object):
             return ea, ii, er, bg, er_bg, fit
 
 
-
     def integrate(self, input, r_type, scale = 1.0, out = None, add = False):
         """ Integrate a region of interest (ROI) for this analyzer.
 

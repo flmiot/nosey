@@ -19,9 +19,16 @@ except:
     pass
 
 
+class ImportPolicy(object):
+    def __init__(self):
+        super().__init__()
+
+    def read(self, *args, **kwargs):
+        fmt = "{} does not have a valid 'read()' method."
+        raise NotImplementedError(fmt.format(type(self).__name__))
 
 
-class DELTA_ImportPolicy(object):
+class DELTA_ImportPolicy(ImportPolicy):
     """DELTA: Recipe for PILATUS detector at BL8, DELTA storage ring, Dortmund."""
 
     def __init__(self, log_columns = 17, i0_column = 5, scan_column = 0):
@@ -60,7 +67,7 @@ class DELTA_ImportPolicy(object):
 
 
 
-class SOLEIL_ImportPolicy(object):
+class SOLEIL_ImportPolicy(ImportPolicy):
     """SOLEIL: Recipe for PILATUS detector at GALAXIES, SOLEIL storage ring, France."""
 
     def getImages(self, filename, roi = None, indizes = None):

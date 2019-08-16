@@ -18,19 +18,21 @@ import nosey
 p = nosey.DELTA_ImportPolicy()
 
 run1 = nosey.Run(name = 'Run 1')
-detector_files  = ['data/pilatus_run_01_0{}.tif'.format(i) for i in range(1,4)]
-run1.read(p, detector_files, 'data/run_01.FIO')
+base_name = 'data/run08_19_00112_0000{}.tif'
+detector_files  = [base_name.format(i) for i in range(1, 6 + 1)]
+run1.read(p, detector_files, 'data/run08_19_00112.FIO')
 
 run2 = nosey.Run(name = 'Run 2')
-detector_files  = ['data/pilatus_run_02_0{}.tif'.format(i) for i in range(1,4)]
-run2.read(p, detector_files, 'data/run_02.FIO')
+base_name = 'data/run08_19_00116_0000{}.tif'
+detector_files  = [base_name.format(i) for i in range(1, 6 + 1)]
+run2.read(p, detector_files, 'data/run08_19_00116.FIO')
 
 runs = [run1, run2]
 
 # We create four analyzer objects (cf. example 01)
-signal = [[0, 23, 487, 37], [0, 40, 487, 45]]
-upper_bg = [[0, 9, 487, 23], [0, 9, 487, 23]]
-lower_bg = [[0, 37, 487, 51], [0, 37, 487, 51]]
+signal = [[0, 20, 487, 40], [0, 120, 487, 140]]
+upper_bg = [[0, 0, 487, 20], [0, 100, 487, 120]]
+lower_bg = [[0, 40, 487, 60], [0, 120, 487, 140]]
 analyzers = []
 for ind, s, u, l in zip(range(len(signal)), signal, upper_bg, lower_bg):
     analyzer = nosey.Analyzer('Roi {}'.format(ind))

@@ -1,5 +1,4 @@
 from pyqtgraph.Qt import QtGui
-import nosey
 from nosey.gui.mainframe import MainFrame
 from nosey.gui.logbar import StatusBarHandler
 from nosey.policy import DELTA_ImportPolicy, SOLEIL_ImportPolicy

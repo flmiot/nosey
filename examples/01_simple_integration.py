@@ -22,14 +22,14 @@ run = nosey.Run(name = 'A demo run')
 p = nosey.DELTA_ImportPolicy()
 
 # Reading the image files is really easy now:
-detector_files  = ['data/pilatus_0{}.tif'.format(i) for i in range(1,4)]
-run.read(p, detector_files, 'data/logfile.FIO')
+detector_files  = ['data/run01.tif']
+run.read(p, detector_files)
 
 # We create an analyzer. Analyzer objects hold regions-of-interest (ROI)
 analyzer = nosey.Analyzer(name = 'Demo analyzer')
-analyzer.set_roi([0, 23, 487, 37], 'signal')    # Main signal ROI
-analyzer.set_roi([0, 9, 487, 23], 'upper_bg')   # Upper background ROI (opt)
-analyzer.set_roi([0, 37, 487, 51], 'lower_bg')  # Lower background ROI (opt)
+analyzer.set_roi([0, 20, 487, 40], 'signal')    # Main signal ROI
+analyzer.set_roi([0, 0, 487, 20], 'upper_bg')   # Upper background ROI (opt)
+analyzer.set_roi([0, 40, 487, 60], 'lower_bg')  # Lower background ROI (opt)
 
 # We get the integrated spectrum by calling get_energy_spectrum with analyzers
 ie, oe, ii, er, bg, er_bg, f = run.get_spectrum( [analyzer] )
