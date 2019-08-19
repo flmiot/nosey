@@ -3,8 +3,9 @@ import numpy as np
 import pyqtgraph as pg
 from pyqtgraph.Qt import QtCore, QtGui, uic
 
-from nosey.gui.roi import ROI
-from nosey.gui.templates import HideButton, RemoveButton, RefButton
+from nosey.roi import ROI
+import nosey.guard
+from nosey.templates import HideButton, RemoveButton, RefButton
 
 class Groups(object):
     def __init__(self, *args, **kwargs):

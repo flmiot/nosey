@@ -5,8 +5,9 @@ import pyqtgraph as pg
 from pyqtgraph.Qt import QtCore, QtGui
 
 import nosey
-from nosey.run import Run
-from nosey.gui.templates import HideButton, RemoveButton, ViewButton, PlotGroupComboBox
+from nosey.analysis.scan import Scan
+from nosey.analysis.recipes import SOLEILRecipe
+from nosey.templates import HideButton, RemoveButton, ViewButton, PlotGroupComboBox
 
 class Sources(object):
     def __init__(self, *args, **kwargs):
@@ -97,12 +98,11 @@ class Sources(object):
         scans = []
         for row in range(self.tableSources.rowCount()):
             item = self.tableSources.item(row, 4)
-            view_btn = self.tableSources.cellWidget(row, 0)
             scan = item.data(pg.QtCore.Qt.UserRole)
             comboBox = self.tableSources.cellWidget(row, 2)
             groupItem = comboBox.itemData(comboBox.currentIndex())
             groupFilter = True if group is None else groupItem == group
-            if view_btn.isChecked() and groupFilter:
+            if scan.active and groupFilter:
                 scans.append(scan)
         return scans
 

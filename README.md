@@ -1,53 +1,21 @@
-# Design   
-ffi aims at beeing a beamline tool for fast explorative data analysis.
-It's main goal is to get meaningful feedback about aquired data as fast as
-possible.
+# X-ray emission data analysis tool (Win / Linux / macOS)
 
-## The basic principles are:
+## Prerequisites
+-	Python 3.5 or higher
+-	Non-standard python package __PyQtGraph__ (http://www.pyqtgraph.org/), written by Luke Campagnola
 
-1.   Ease of use: Minimal dependencies, pure python, documentation, examples:
-    -   No extensive knowledge of python should be required for use
-    -   Both beginners and experienced users should be able to benefit
-2.   Work with the raw image files alone as long as possible (ease of use)
-    -   Easier to setup because only reduced adaptions to the beamline necessary
-    -   More meta-data can be added/imported on an as-needed basis
-    -   More meta-data should be optional and scans should be resolved smartly
-4.   Modularity: code base detached from everything GUI, modular code base
-    -   Strict separation between "functional core" and GUI (works without GUI!)
-5.   Should come with a complete and mature GUI, which exposes all functions
-    -   Reliable GUI which follows the needs during exploratory data analysis
-6.   Flexibility: adaptable to both synchrotron and FEL beamlines
-    -   Native treatment of transient scans and pump-probe experiments
-7.   Completeness: Offer set of standard tools to help navigate the experiment:
-    -   Background subtraction
-    -   Integrated absolute difference
-    -   Center-of-mass shift of curves
-    -   Normalisation to Area / Peak-height
-    -   Differences / transients
-    -   HERFD scanning mode
-    -   Full error propagation
-    -   Curve fitting
+It is recommended to use Anaconda (https://www.anaconda.com/) and run
+```
+conda install -c anaconda pyqtgraph
+```
 
-integration
-detector
-explorative
-data
-analysis
-synchrotron
-2d
-multi-dimension
-rapid
-X-ray
-Emission
-Spectroscopy
-Scattering
-Inelastic
-Tool
-live
-fel
-sum
-dispersive
-fast
-feedback
+To enter the GUI, just type
+```
+python __main__.py 
+```
 
-von Hamos
+## Features:
+- Manage numerous scans and analyzer (ROIs) at the same time. View them separately, overlayed or summed (via linear interpolation) 
+- Enable the automatic plotting-update to view and access changes quickly (e.g ROI size) 
+
+# Quickstart guide

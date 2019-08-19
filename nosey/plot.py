@@ -5,8 +5,10 @@ import pyqtgraph as pg
 from pyqtgraph.Qt import QtCore, QtGui
 import matplotlib.cm as cm
 
-from nosey.gui.guard import updateGuard
-import nosey.math as nmath
+import nosey.guard
+from nosey.analysis.experiment import Experiment
+from nosey.analysis.analyzer import Analyzer
+import nosey.analysis.math as nmath
 
 import matplotlib.pyplot as plt
 
@@ -46,7 +48,7 @@ class Plot(object):
         self.plotWidgetIAD.getAxis('bottom').setPen(color = 'k')
 
 
-    @updateGuard
+    @nosey.guard.updateGuard
     def updatePlot(self, *args, **kwargs):
         try:
 
@@ -109,14 +111,18 @@ class Plot(object):
                     if not r.active:
                         continue
 
-                    a = nosey.Analyzer.make_from_QtRoi(r, [195, 487], self.imageView)
+                    sig = Analyzer.make_signal_from_QtRoi(r, [195, 487], self.imageView, 0)
                     energies = self.getEnergies()
 
                     if len(energies) >= 2:
                         positions = r.getEnergyPointPositions()
-                        a.calibrate(positions, energies)
+                        sig.setEnergies(positions, energies)
 
-                    experiment.analyzers.append(a)
+                    bg01 = Analyzer.make_signal_from_QtRoi(r, [195, 487], self.imageView, 1)
+                    bg02 = Analyzer.make_signal_from_QtRoi(r, [195, 487], self.imageView, 2)
+
+                    experiment.analyzers.append(sig)
+                    experiment.bg_roi.append( (bg01, bg02) )
 
                 result = experiment.get_spectrum()
 
@@ -219,8 +225,6 @@ class Plot(object):
                 # Plot analyzers
                 z2 = zip(range(len(energy)), energy, intensity, background, label)
                 for ind_a, single_e, single_i, single_b, single_l in z2:
-
-                    indizes = np.where(single_i > -1)[0]
 
                     if groups > 1:
                         group_name = self.tableGroups.item(ind, 3).text()

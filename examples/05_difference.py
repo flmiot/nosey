@@ -1,1 +1,0 @@
-""" Spectral differences with NOSEY """

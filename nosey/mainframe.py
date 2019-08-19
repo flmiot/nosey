@@ -4,13 +4,12 @@ import pyqtgraph as pg
 from pyqtgraph.Qt import QtCore, QtGui, uic
 
 import nosey
-import nosey.gui
-from nosey.gui.monitor import Monitor
-from nosey.gui.sources import Sources
-from nosey.gui.plot import Plot
-from nosey.gui.groups import Groups
-from nosey.gui.settings import Settings
-from nosey.gui.references import References
+from nosey.monitor import Monitor
+from nosey.sources import Sources
+from nosey.plot import Plot
+from nosey.groups import Groups
+from nosey.settings import Settings
+from nosey.references import References
 
 
 class MainFrame(QtGui.QMainWindow, Monitor, Sources, Plot, Groups, Settings, References):
@@ -96,11 +95,13 @@ class MainFrame(QtGui.QMainWindow, Monitor, Sources, Plot, Groups, Settings, Ref
         self.setupGroupsFrame()
         self.setupSettingTree()
         self.setupReferences()
+        self.splitter.setStretchFactor(0, 3)
 
         # Events
         self.proxies = []
         self.proxies.append(pg.SignalProxy(self.imageView.getView().scene().sigMouseMoved,
             rateLimit=20, slot = self.updateCursorMonitor))
+
         self.proxies.append(pg.SignalProxy(self.plotWidget.getPlotItem().scene().sigMouseMoved,
             rateLimit=20, slot = lambda e : self.updateCursorPlot(self.plotWidget, e)))
         self.proxies.append(pg.SignalProxy(self.plotWidgetDiff.getPlotItem().scene().sigMouseMoved,

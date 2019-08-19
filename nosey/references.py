@@ -2,7 +2,8 @@ import os
 import numpy as np
 import pyqtgraph as pg
 from pyqtgraph.Qt import QtCore, QtGui
-from nosey.gui.templates import HideButton, RemoveButton, ExtRef1Button, ExtRef2Button
+from nosey.templates import HideButton, RemoveButton, ExtRef1Button, ExtRef2Button
+
 
 import nosey
 

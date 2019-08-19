@@ -1,1 +1,0 @@
-""" Fraction fitting with NOSEY """

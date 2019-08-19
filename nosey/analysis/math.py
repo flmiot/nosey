@@ -31,12 +31,14 @@ def fit_curve(i, order = 3):
 def interpolate_and_sum(energy, intensity, background, normalize_before_sum = False, window = None):
     min_energy = np.max(list(np.min(e) for e in energy))
     max_energy = np.min(list(np.max(e) for e in energy))
+
     points = np.max(list([len(i) for i in intensity]))
-    ii = np.zeros(points)
-    bg = np.zeros(points)
+    ii = np.zeros(points, dtype = np.float)
+    bg = np.zeros(points, dtype = np.float)
     ce = np.linspace(min_energy, max_energy, points)
 
     for e, i, b in zip(energy, intensity, background):
+
         fi = interp.interp1d(e, i)
         fb = interp.interp1d(e, b)
         if normalize_before_sum:
@@ -101,54 +103,3 @@ def fractionFit(data, ref_a, ref_b):
     print(sqr, pcov)
 
     return popt[0], ce, lambda e : modelFunction(e, popt[0])
-
-
-def getOutliers(image, threshold = 0.1):
-    image = np.abs(image)
-    differences = {}
-    differences['east']     = image - np.roll(image, -1, axis = 1)
-    differences['south']    = image - np.roll(image, -1, axis = 0)
-    differences['west']     = image - np.roll(image, 1, axis = 1)
-    differences['north']    = image - np.roll(image, 1, axis = 0)
-
-    outliers = []
-
-
-    for shift in ['east', 'south', 'west', 'north']:
-        tval = np.max(differences[shift]) * threshold
-        o = np.where(differences[shift] > tval)
-        for y, x in zip(*o):
-            if shift is 'east':
-                if x == 0:
-                    continue
-
-            elif shift is 'south':
-                if y == 0:
-                    continue
-
-            elif shift is 'west':
-                if x == image.shape[1] - 1:
-                    continue
-
-            else:
-                if y == image.shape[0] - 1:
-                    continue
-
-            if not [x,y] in outliers:
-                outliers.append([x,y])
-
-    return outliers
-
-
-def getUniqueValues(values, return_indizes = False, threshold = 0.5):
-    v, counts = np.unique(values, return_counts = True)
-    v = v[counts > threshold *np.max(counts)]
-    v = sorted(v)
-
-    if not return_indizes:
-        return v
-    else:
-        indizes = []
-        for value in v:
-            indizes.append(np.where(values == value)[0])
-        return v, indizes

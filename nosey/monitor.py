@@ -3,8 +3,9 @@ import numpy as np
 import pyqtgraph as pg
 from pyqtgraph.Qt import QtCore, QtGui, uic
 
-from nosey.gui.roi import ROI
-from nosey.gui.templates import HideButton, RemoveButton
+from nosey.roi import ROI
+import nosey.guard
+from nosey.templates import HideButton, RemoveButton
 
 class Monitor(object):
 
