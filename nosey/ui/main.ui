@@ -4602,7 +4602,7 @@ QMainWindow::separator:vertical {
            <string>0</string>
           </property>
           <property name="flags">
-           <set>ItemIsSelectable|ItemIsDragEnabled|ItemIsEnabled</set>
+           <set>ItemIsSelectable|ItemIsEditable|ItemIsDragEnabled|ItemIsEnabled</set>
           </property>
          </item>
          <item>
@@ -4613,7 +4613,7 @@ QMainWindow::separator:vertical {
            <string>487</string>
           </property>
           <property name="flags">
-           <set>ItemIsSelectable|ItemIsDragEnabled|ItemIsEnabled</set>
+           <set>ItemIsSelectable|ItemIsEditable|ItemIsDragEnabled|ItemIsEnabled</set>
           </property>
          </item>
         </item>
