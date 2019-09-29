@@ -16,6 +16,10 @@ class Analysis(object):
         self.labels         = Label()
 
 
+    def get_spectrum(self, runs, analyzers, out = None, **opts):
+        pass
+
+
     def run(self, runs, analyzers, sum_steps = True, out = None):
         """ Run the analysis.
 
@@ -280,6 +284,9 @@ class Analysis(object):
 
         return energies_summed, intensities_summed, backgrounds_summed
 
+class AnalysisError(Exception):
+
+    pass
 
 # def getIAD(self, r, windowNorm = None, windowCOM = None):
 #

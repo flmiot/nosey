@@ -1,7 +1,12 @@
 # Design   
-ffi aims at beeing a beamline tool for fast explorative data analysis.
+NOSEY aims at beeing a beamline tool for fast explorative data analysis.
 It's main goal is to get meaningful feedback about aquired data as fast as
 possible.
+
+## What kind of data?
+- 2-dimensional detector data with regions of interest
+- Flourescence, emission or scattering data by use of crystal analyzers
+-
 
 ## The basic principles are:
 
@@ -28,6 +33,10 @@ possible.
     -   Full error propagation
     -   Curve fitting
 
+
+
+
+simple
 integration
 detector
 explorative
@@ -49,5 +58,9 @@ sum
 dispersive
 fast
 feedback
-
+spatially
+resolved
+rois
+results
+evaluate
 von Hamos
