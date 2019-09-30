@@ -6,6 +6,9 @@ class EnergyCalibration(object):
         self.energies = energies
 
     def getAxis(self, x):
-        fitting_degree = 3
+        if len(self.pos) < 3:
+            fitting_degree = 1
+        else:
+            fitting_degree = 3
         coeff = np.polyfit(self.pos, self.energies, fitting_degree)
         return np.poly1d(coeff)(x), None
