@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1024</width>
-    <height>800</height>
+    <height>771</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -2607,6 +2607,9 @@ QMainWindow::separator:vertical {
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
+   <addaction name="actionLoad"/>
+   <addaction name="actionSave"/>
+   <addaction name="separator"/>
    <addaction name="actionUpdatePlot"/>
    <addaction name="actionUpdate_automatically"/>
    <addaction name="actionNormalize"/>
@@ -4945,6 +4948,30 @@ QMainWindow::separator:vertical {
     <string>Shift to common center of mass (COM)</string>
    </property>
   </action>
+  <action name="actionSave">
+   <property name="icon">
+    <iconset>
+     <normaloff>../icons/save.png</normaloff>../icons/save.png</iconset>
+   </property>
+   <property name="text">
+    <string>save</string>
+   </property>
+   <property name="toolTip">
+    <string>Save the current project</string>
+   </property>
+  </action>
+  <action name="actionLoad">
+   <property name="icon">
+    <iconset>
+     <normaloff>../icons/open.png</normaloff>../icons/open.png</iconset>
+   </property>
+   <property name="text">
+    <string>load</string>
+   </property>
+   <property name="toolTip">
+    <string>Load project</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
@@ -4974,8 +5001,8 @@ QMainWindow::separator:vertical {
    <slot>settingsChangedHandler(QTreeWidgetItem*,int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1646</x>
-     <y>963</y>
+     <x>1022</x>
+     <y>749</y>
     </hint>
     <hint type="destinationlabel">
      <x>256</x>
@@ -4990,8 +5017,8 @@ QMainWindow::separator:vertical {
    <slot>addPlottingGroup()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>426</x>
-     <y>368</y>
+     <x>743</x>
+     <y>278</y>
     </hint>
     <hint type="destinationlabel">
      <x>296</x>
@@ -5006,8 +5033,8 @@ QMainWindow::separator:vertical {
    <slot>addExternalReference()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>519</x>
-     <y>375</y>
+     <x>407</x>
+     <y>251</y>
     </hint>
     <hint type="destinationlabel">
      <x>296</x>

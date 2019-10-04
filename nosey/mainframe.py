@@ -10,9 +10,10 @@ from nosey.plot import Plot
 from nosey.groups import Groups
 from nosey.settings import Settings
 from nosey.references import References
+from nosey.projects import Projects
 
 
-class MainFrame(QtGui.QMainWindow, Monitor, Sources, Plot, Groups, Settings, References):
+class MainFrame(QtGui.QMainWindow, Monitor, Sources, Plot, Groups, Settings, References, Projects):
     def __init__(self, *args, **kwargs):
         super(self.__class__, self).__init__(*args, **kwargs)
         dirname = os.path.dirname(__file__)
@@ -29,6 +30,16 @@ class MainFrame(QtGui.QMainWindow, Monitor, Sources, Plot, Groups, Settings, Ref
     @QtCore.pyqtSlot()
     def on_actionExit_triggered(self, *args, **kwargs):
         self.close()
+
+
+    @QtCore.pyqtSlot()
+    def on_actionLoad_triggered(self, *args, **kwargs):
+        self.loadProject()
+
+
+    @QtCore.pyqtSlot()
+    def on_actionSave_triggered(self, *args, **kwargs):
+        self.saveProject()
 
 
     @QtCore.pyqtSlot()
@@ -108,11 +119,3 @@ class MainFrame(QtGui.QMainWindow, Monitor, Sources, Plot, Groups, Settings, Ref
             rateLimit=20, slot = lambda e : self.updateCursorPlot(self.plotWidgetDiff, e)))
         self.proxies.append(pg.SignalProxy(self.plotWidgetIAD.getPlotItem().scene().sigMouseMoved,
             rateLimit=20, slot = lambda e : self.updateCursorPlot(self.plotWidgetIAD, e)))
-
-
-
-class EditDialog(QtGui.QDialog):
-    def __init__(self, *args, **kwargs):
-        super(self.__class__, self).__init__(*args, **kwargs)
-        dirname = os.path.dirname(__file__)
-        uic.loadUi(os.path.join(dirname, 'ui/edit.ui'), self)

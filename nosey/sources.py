@@ -33,7 +33,7 @@ class Sources(object):
             nosey.Log.error(e)
 
 
-    def _read_scan(self, img_path, log_file):
+    def _read_scan(self, img_path, log_file, include = True):
 
         rows = self.tableSources.rowCount()
         self.tableSources.insertRow(rows)
@@ -85,8 +85,12 @@ class Sources(object):
 
         self.updateSourceComboBoxes()
 
+        if include is False:
+            btn_active.toggle()
+
         # Convenience task: Set ComboBox to currently selected group
         selectedGroups = self.tableGroups.selectedItems()
+
         if len(selectedGroups):
             r = self.tableGroups.row(selectedGroups[0])
             dd_plotGroup.setCurrentIndex(r)
@@ -94,7 +98,7 @@ class Sources(object):
         return s
 
 
-    def getScans(self, group = None):
+    def getScans(self, group = None, filter_active = True):
         scans = []
         for row in range(self.tableSources.rowCount()):
             item = self.tableSources.item(row, 4)
@@ -102,8 +106,14 @@ class Sources(object):
             comboBox = self.tableSources.cellWidget(row, 2)
             groupItem = comboBox.itemData(comboBox.currentIndex())
             groupFilter = True if group is None else groupItem == group
-            if scan.active and groupFilter:
-                scans.append(scan)
+            if groupFilter:
+                if filter_active:
+                    if scan.active:
+                        scans.append(scan)
+                else:
+                    scans.append(scan)
+
+
         return scans
 
 

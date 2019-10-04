@@ -402,8 +402,13 @@ class Plot(object):
 
 
     def updateCursorPlot(self, plotWidget, event):
-        pos = event[0]
-        x = plotWidget.getPlotItem().vb.mapSceneToView(pos).x()
-        y = plotWidget.getPlotItem().vb.mapSceneToView(pos).y()
-        fmt = 'x: {:.7f} | y: {:.7f}'.format(x,y)
-        self.statusBar.writeCursorPosition(fmt)
+        try:
+            pos = event[0]
+            x = plotWidget.getPlotItem().vb.mapSceneToView(pos).x()
+            y = plotWidget.getPlotItem().vb.mapSceneToView(pos).y()
+            fmt = 'x: {:.7f} | y: {:.7f}'.format(x,y)
+            self.statusBar.writeCursorPosition(fmt)
+
+        except Exception as e:
+            fmt = 'Cursor position could not be determined: {}'.format(e)
+            nosey.Log.error(fmt)

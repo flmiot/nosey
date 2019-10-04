@@ -1,0 +1,42 @@
+! SCANS
+scan(
+	path='C:\Users\otteflor\Google Drive\BL9_DELTA_SEP19 -Co Kalpha XES\run12_19_xes_inhouse\image_00004.tif',
+	include=False,
+	group='MyFirstGroup'
+	)
+scan(
+	path='C:\Users\otteflor\Google Drive\BL9_DELTA_SEP19 -Co Kalpha XES\run12_19_xes_inhouse\image_00004.tif',
+	include=False,
+	group='MyFirstGroup'
+	)
+scan(
+	path='C:\Users\otteflor\Google Drive\BL9_DELTA_SEP19 -Co Kalpha XES\run12_19_xes_inhouse\image_00004.tif',
+	include=False,
+	group='MyFirstGroup'
+	)
+
+
+! ANALYZERS
+analyzer(
+	include=True,
+	position-x = 78,
+	position-y= 158,
+	width = 15,
+	height = 10,
+	bg01-distance= 5,
+	bg01-height= 10,
+	bg02-distance= 5,
+	bg02-height= 10
+	)
+	
+	
+! GROUPS
+group(
+	include=True,
+	reference=True,
+	name="MyFirstGroup"
+)
+! PLOT
+! NORMALIZE
+! SUBTRACT_BACKGROUND
+! SINGLE_SCANS

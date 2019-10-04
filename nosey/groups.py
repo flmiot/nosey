@@ -14,15 +14,11 @@ class Groups(object):
 
     def setupGroupsFrame(self):
         self.tableGroups.cellChanged.connect(self.updateSourceComboBoxes)
-        self.addPlottingGroup()
-        self.tableGroups.cellWidget(0, 2).toggle()
 
 
-    def addPlottingGroup(self):
+    def addPlottingGroup(self, plottingGroupName = "Unnamed group"):
         rows = self.tableGroups.rowCount()
         self.tableGroups.insertRow(rows)
-
-        plottingGroupName = "Unnamed group"
 
         # Button items
         btn_active      = HideButton()
@@ -68,6 +64,9 @@ class Groups(object):
             self.tableGroups.removeRow(row)
             self.updateSourceComboBoxes()
             self.updatePlot()
+
+
+
 
 
     def setRefGroup(self, item):
