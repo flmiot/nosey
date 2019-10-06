@@ -152,28 +152,28 @@ class Plot(object):
                 run += 1
 
 
-                # Plot data:
-                single_scans    = nosey.gui.actionSingleScans.isChecked()
-                single_analyzers = nosey.gui.actionSingleAnalyzers.isChecked()
-                subtract_background = nosey.gui.actionSubtractBackground.isChecked()
-                normalize       = nosey.gui.actionNormalize.isChecked()
-                scanning_type   = nosey.gui.actionScanningType.isChecked()
-                com_shift       = nosey.gui.actionCOMShift.isChecked()
-                slices          = 1
-                single_image    = None
+            # Plot data:
+            single_scans    = nosey.gui.actionSingleScans.isChecked()
+            single_analyzers = nosey.gui.actionSingleAnalyzers.isChecked()
+            subtract_background = nosey.gui.actionSubtractBackground.isChecked()
+            normalize       = nosey.gui.actionNormalize.isChecked()
+            scanning_type   = nosey.gui.actionScanningType.isChecked()
+            com_shift       = nosey.gui.actionCOMShift.isChecked()
+            slices          = 1
+            single_image    = None
 
 
 
 
-                if calcIAD:
-                    self.plotWidgetIAD.plot(range(len(valuesIAD)), valuesIAD,  symbol='o', symbolPen='r')
+            if calcIAD:
+                self.plotWidgetIAD.plot(range(len(valuesIAD)), valuesIAD,  symbol='o', symbolPen='r')
 
-                self._plot(results, single_analyzers, single_scans,
-                    scanning_type, subtract_background, normalize, single_image,
-                    slices, False, False, poly_order, com_shift, fraction_fit)
+            self._plot(results, single_analyzers, single_scans,
+                scanning_type, subtract_background, normalize, single_image,
+                slices, False, False, poly_order, com_shift, fraction_fit)
 
-                for roi in self.getROI():
-                    roi.connectUpdateSlotProxy(self.updatePlot)
+            for roi in self.getROI():
+                roi.connectUpdateSlotProxy(self.updatePlot)
 
             self.statusBar.setProgressBarFraction(1)
             nosey.lastComputationTime = time.time() - start
