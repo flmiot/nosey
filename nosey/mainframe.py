@@ -124,4 +124,4 @@ class MainFrame(
             slot=lambda e: self.updateCursorPlot(
                 self.plotWidget, e))
 
-        self.proxies.extend([p1, p])
+        self.proxies.extend([p1, p2, p3])
