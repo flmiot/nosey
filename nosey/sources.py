@@ -9,31 +9,30 @@ from nosey.analysis.scan import Scan
 from nosey.analysis.recipes import SOLEILRecipe
 from nosey.templates import HideButton, RemoveButton, ViewButton, PlotGroupComboBox
 
+
 class Sources(object):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.threads = []
         self.proxies = []
 
-
     def setupSources(self):
         pass
-
 
     def addSource(self):
         try:
             #log_path = str(QtGui.QFileDialog.getOpenFileName(self, 'Select logfile')[0])
-            paths = QtGui.QFileDialog.getOpenFileNames(self, 'Select images')[0]
+            paths = QtGui.QFileDialog.getOpenFileNames(
+                self, 'Select images')[0]
 
             for ind, file_path in enumerate(paths):
-                self.statusBar.setProgressBarFraction((ind+1) / len(paths))
-                self._read_scan(file_path, log_file = None)
+                self.statusBar.setProgressBarFraction((ind + 1) / len(paths))
+                self._read_scan(file_path, log_file=None)
 
         except Exception as e:
             nosey.Log.error(e)
 
-
-    def _read_scan(self, img_path, log_file, include = True):
+    def _read_scan(self, img_path, log_file, include=True):
 
         rows = self.tableSources.rowCount()
         self.tableSources.insertRow(rows)
@@ -68,7 +67,7 @@ class Sources(object):
         nosey.Log.debug("Reading {} ...".format(scan_name))
         recipe = self.getSetting(['Data import', 'Module'])
 
-        s = Scan(log_file = scan_name, image_files = img_path)
+        s = Scan(log_file=scan_name, image_files=img_path)
         loader = QThread_Loader(s, recipe())
         self.threads.append(loader)
         loader.start()
@@ -78,10 +77,11 @@ class Sources(object):
         self.tableSources.resizeColumnsToContents()
 
         # Events
-        btn_view.clicked.connect(lambda : self.display(s))
-        btn_active.clicked.connect(lambda : self.showHideScans(item01))
-        btn_remove.clicked.connect(lambda : self.removeSource(item01))
-        dd_plotGroup.currentIndexChanged.connect(lambda : self.changeGroup(item01))
+        btn_view.clicked.connect(lambda: self.display(s))
+        btn_active.clicked.connect(lambda: self.showHideScans(item01))
+        btn_remove.clicked.connect(lambda: self.removeSource(item01))
+        dd_plotGroup.currentIndexChanged.connect(
+            lambda: self.changeGroup(item01))
 
         self.updateSourceComboBoxes()
 
@@ -98,8 +98,7 @@ class Sources(object):
 
         return s
 
-
-    def getScans(self, group = None, filter_active = True):
+    def getScans(self, group=None, filter_active=True):
         scans = []
         for row in range(self.tableSources.rowCount()):
             item = self.tableSources.item(row, 4)
@@ -114,19 +113,16 @@ class Sources(object):
                 else:
                     scans.append(scan)
 
-
         return scans
-
 
     def removeSource(self, item):
         row = self.tableSources.row(item)
         self.tableSources.removeRow(row)
         self.updatePlot()
 
-
     def showHideScans(self, item):
         selected_items = self.tableSources.selectedItems()
-        if not item in selected_items:
+        if item not in selected_items:
             s = item.data(pg.QtCore.Qt.UserRole)
             s.toggle()
         else:
@@ -140,19 +136,17 @@ class Sources(object):
 
         self.updatePlot()
 
-
     def changeGroup(self, item):
         """If item is selected, change group also for all other selected items"""
         selected_items = self.tableSources.selectedItems()
         if item in selected_items:
-            row                 = self.tableSources.row(item)
-            comboBox            = self.tableSources.cellWidget(row, 2)
-            selectedItemIndex   = comboBox.currentIndex()
+            row = self.tableSources.row(item)
+            comboBox = self.tableSources.cellWidget(row, 2)
+            selectedItemIndex = comboBox.currentIndex()
             for i in selected_items:
                 r = self.tableSources.row(i)
                 comboBox = self.tableSources.cellWidget(r, 2)
                 comboBox.setCurrentIndex(selectedItemIndex)
-
 
     def getSaveString(self):
         saveString = "! SCANS\n"
@@ -161,16 +155,19 @@ class Sources(object):
             scan = item.data(pg.QtCore.Qt.UserRole)
             comboBox = self.tableSources.cellWidget(srow, 2)
             group = comboBox.itemData(comboBox.currentIndex())
-            p  = {
-                "path":     '"{}"'.format(scan.files),
-                "include":  scan.active,
-                "group":    '"{}"'.format(group.text())
+            p = {
+                "path": '"{}"'.format(scan.files),
+                "include": scan.active,
+                "group": '"{}"'.format(group.text())
             }
 
             subString = "scan(\n"
-            subString +="\t{}={},\n" * (len(p.keys()) - 1)
-            subString +="\t{}={}\n)\n"
-            mixed = [v for sublist in zip(p.keys(), p.values()) for v in sublist]
+            subString += "\t{}={},\n" * (len(p.keys()) - 1)
+            subString += "\t{}={}\n)\n"
+            mixed = [
+                v for sublist in zip(
+                    p.keys(),
+                    p.values()) for v in sublist]
             subString = subString.format(*mixed)
             saveString += subString
 
@@ -183,17 +180,21 @@ class QThread_Loader(QtCore.QThread):
     imageLoaded = QtCore.pyqtSignal(int)
 
     def __init__(self, scan, recipe, *arg, **kwarg):
-        self.scan       = scan
-        self.recipe     = recipe
+        self.scan = scan
+        self.recipe = recipe
         QtCore.QThread.__init__(self, *arg, **kwarg)
 
     def run(self):
         try:
-            nosey.Log.info("Loading file '{}', please wait...".format(self.scan.name))
+            nosey.Log.info(
+                "Loading file '{}', please wait...".format(
+                    self.scan.name))
             #self.scan.read_logfile(recipe = SOLEILRecipe())
-            self.scan.read_files(recipe = self.recipe)
+            self.scan.read_files(recipe=self.recipe)
             n = len(self.scan.images)
             self.taskFinished.emit(n)
-            nosey.Log.info("File '{}' successfully imported.".format(self.scan.name))
+            nosey.Log.info(
+                "File '{}' successfully imported.".format(
+                    self.scan.name))
         except Exception as e:
             nosey.Log.error("Loader thread crashed: {}".format(e))

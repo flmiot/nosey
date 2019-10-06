@@ -4,6 +4,7 @@ import nosey
 
 from nosey.analysis.result import AnalysisResult
 
+
 class Experiment(object):
     """An Experiment holds a set of analyzers for a number of scans. For each
     scan, summed spectra can be obtained by calling the *get_spectrum()* method.
@@ -14,14 +15,11 @@ class Experiment(object):
 
     def __init__(self):
         """Use the *add_scan* method to populate the experiment with scans."""
-        self.scans                  = [] # List of all added scans
-        self.analyzers              = [] # List of all added anaylzers
-        self.bg_roi                 = [] # List of tuples of bg ROI
-
-
+        self.scans = []  # List of all added scans
+        self.analyzers = []  # List of all added anaylzers
+        self.bg_roi = []  # List of tuples of bg ROI
 
     def get_spectrum(self):
-
         """
         """
 
@@ -32,29 +30,26 @@ class Experiment(object):
         if len(self.analyzers) < 1:
             raise ValueError("No active analyzers!")
 
-        types = list([(s.name,'{}f4'.format(len(s.images))) for s in self.scans])
-
+        types = list([(s.name, '{}f4'.format(len(s.images)))
+                      for s in self.scans])
 
         result = AnalysisResult()
 
         for scan in self.scans:
 
-            in_e, out_e, inte, back, fit = scan.get_energy_spectrum(self.analyzers,
-                self.bg_roi)
+            in_e, out_e, inte, back, fit = scan.get_energy_spectrum(
+                self.analyzers, self.bg_roi)
 
-            d = {scan.name : list([a.name for a in self.analyzers])}
+            d = {scan.name: list([a.name for a in self.analyzers])}
             result.add_data(in_e, out_e, inte, back, fit, d)
 
         end = time.time()
-        fmt = "Single spectra obtained [Took {:2f} s]".format(end-start)
+        fmt = "Single spectra obtained [Took {:2f} s]".format(end - start)
         nosey.Log.debug(fmt)
         start = end
 
-
         end = time.time()
-        fmt = "Spectra summed [Took {:2f} s]".format(end-start)
+        fmt = "Spectra summed [Took {:2f} s]".format(end - start)
         nosey.Log.debug(fmt)
-
-
 
         return result

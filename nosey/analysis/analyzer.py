@@ -4,18 +4,19 @@ import nosey
 
 from nosey.analysis.calibration import EnergyCalibration
 
+
 class Analyzer(object):
-    def __init__(self, name, roi = None, mask = None):
+    def __init__(self, name, roi=None, mask=None):
         """
         Analyzers have a property called *active*, which can be used to include/exclude them when
         doing analysis.
         """
 
-        self.roi                = None      # xmin,ymin,xmax,ymax e.g. [0,0,5,5]
-        self.active             = True
-        self.name               = name
-        self.mask               = None
-        self.calibration        = None
+        self.roi = None      # xmin,ymin,xmax,ymax e.g. [0,0,5,5]
+        self.active = True
+        self.name = name
+        self.mask = None
+        self.calibration = None
 
         if roi is not None:
             self.set_roi(roi)
@@ -24,7 +25,7 @@ class Analyzer(object):
             self.set_mask(mask)
 
     @classmethod
-    def make_signal_from_QtRoi(cls, roi, mask, imageView, type = 0):
+    def make_signal_from_QtRoi(cls, roi, mask, imageView, type=0):
         """type can be 0,1 or 2 (signal, bg01 or bg02)"""
         bb = roi.getCoordinates(imageView)[type]
         a = cls(roi.name)
@@ -33,8 +34,7 @@ class Analyzer(object):
 
         return a
 
-
-    def size(self, mask = None):
+    def size(self, mask=None):
         if mask is None:
             x0, y0, x1, y1 = self.roi
         else:
@@ -43,11 +43,9 @@ class Analyzer(object):
         size = y1 - y0 + 1
         return size if size > 0 else 0
 
-
     def pos(self):
         x0, y0, x1, y1 = self.roi
-        return np.array([(y1-y0)/2 + y0, (x1-x0)/2 + x0])
-
+        return np.array([(y1 - y0) / 2 + y0, (x1 - x0) / 2 + x0])
 
     def set_roi(self, roi):
 
@@ -60,8 +58,7 @@ class Analyzer(object):
                 "either as list or np.ndarray."
             raise Exception(fmt)
 
-
-    def get_roi(self, mask = None):
+    def get_roi(self, mask=None):
 
         if mask is None:
             mask = self.mask
@@ -70,7 +67,6 @@ class Analyzer(object):
             return self.roi
         else:
             return self.clip_roi(self.roi, mask)
-
 
     def set_mask(self, mask):
         if isinstance(mask, list):
@@ -82,10 +78,8 @@ class Analyzer(object):
                 "either as list or np.ndarray."
             raise Exception(fmt)
 
-
     def setEnergies(self, positions, energies):
         self.calibration = EnergyCalibration(positions, energies)
-
 
     def get_signal(self, image):
         """
@@ -94,13 +88,12 @@ class Analyzer(object):
         if self.roi is None:
             raise ValueError("ROI needs to be set before use.")
 
-        x0,y0,x1,y1 = self.clip_roi(self.roi, image.shape)
+        x0, y0, x1, y1 = self.clip_roi(self.roi, image.shape)
 
-        ii = np.sum(image[y0:y1+1,x0:x1+1], axis = 0)
+        ii = np.sum(image[y0:y1 + 1, x0:x1 + 1], axis=0)
         ea = np.arange(len(ii))
 
         return ea, ii
-
 
     def get_signal_series(self, images, upper_bg, lower_bg):
         """
@@ -110,23 +103,20 @@ class Analyzer(object):
         x0, y0, x1, y1 = self.clip_roi(self.roi, images[0].shape)
 
         if self.calibration is None:
-            ea = np.arange(len(np.arange(x0, x1+1)))
+            ea = np.arange(len(np.arange(x0, x1 + 1)))
             fit = None
         else:
-            ea, fit = self.calibration.getAxis(np.arange(x0, x1+1))
+            ea, fit = self.calibration.getAxis(np.arange(x0, x1 + 1))
 
-        ii = np.empty(len(images), dtype = list)
-        bg = np.zeros(len(images), dtype = list)
-
+        ii = np.empty(len(images), dtype=list)
+        bg = np.zeros(len(images), dtype=list)
 
         for ind, image in enumerate(images):
             _, ii[ind] = self.get_signal(image)
             bg[ind] = self.get_background(image, upper_bg, lower_bg)
 
-
-
         end = time.time()
-        fmt = "Returned signal series [Took {:2f} s]".format(end-start)
+        fmt = "Returned signal series [Took {:2f} s]".format(end - start)
         nosey.Log.debug(fmt)
 
         return ea, ii, bg, fit
@@ -143,8 +133,7 @@ class Analyzer(object):
         if y1 > shape[0] - 1:
             y1 = shape[0] - 1
 
-        return [x0,y0,x1,y1]
-
+        return [x0, y0, x1, y1]
 
     def get_background(self, image, upper, lower):
 
@@ -173,10 +162,10 @@ class Analyzer(object):
         #     #x0, y0, x1, y1 = self.clip_roi(upper.roi, image.shape)
         #     #bg_upper = np.sum(image[y0:y1+1, x0:x1+1], axis = 0)
         _, bg_upper = upper.get_signal(image)
-        size = upper.size(mask = image.shape)
+        size = upper.size(mask=image.shape)
         if size > 0:
             x0, _, x1, _ = upper.clip_roi(upper.roi, image.shape)
-            bg[x0:x1+1] += bg_upper * self.size(mask = image.shape) / size
+            bg[x0:x1 + 1] += bg_upper * self.size(mask=image.shape) / size
         else:
             upper = None
 
@@ -184,17 +173,17 @@ class Analyzer(object):
             #x0, y0, x1, y1 = self.clip_roi(lower.roi, image.shape)
             #bg_lower = np.sum(image[y0:y1+1, x0:x1+1], axis = 0)
         _, bg_lower = lower.get_signal(image)
-        size = lower.size(mask = image.shape)
+        size = lower.size(mask=image.shape)
         if size > 0:
             x0, _, x1, _ = lower.clip_roi(lower.roi, image.shape)
-            bg[x0:x1+1] += bg_lower * self.size(mask = image.shape) / size
+            bg[x0:x1 + 1] += bg_lower * self.size(mask=image.shape) / size
         else:
             lower = None
 
-        if not lower is None and not upper is None:
+        if lower is not None and upper is not None:
             bg /= 2
 
         x0, _, x1, _ = self.clip_roi(self.roi, image.shape)
         # plt.plot(bg)
         # plt.show()
-        return bg[x0:x1+1]
+        return bg[x0:x1 + 1]

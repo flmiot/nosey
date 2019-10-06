@@ -1,5 +1,6 @@
 import numpy as np
 
+
 class EnergyCalibration(object):
     def __init__(self, positions, energies):
         self.pos = positions

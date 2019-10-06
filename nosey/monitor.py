@@ -7,43 +7,40 @@ from nosey.roi import ROI
 import nosey.guard
 from nosey.templates import HideButton, RemoveButton
 
+
 class Monitor(object):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.image = np.zeros((4, 487, 195))
 
-
     def setupMonitor(self):
         # Setup frame region slider
         self.lr = pg.LinearRegionItem([1, self.image.shape[0]])
         self.lr.sigRegionChanged.connect(self.frameSelectorChanged)
         self.lr.sigRegionChangeFinished.connect(self.updateImage)
-        self.lr.setBrush([147, 245, 66, 0.5*255])
+        self.lr.setBrush([147, 245, 66, 0.5 * 255])
         self.frameSelector.setXRange(1, self.image.shape[0], padding=0.1)
         self.frameSelector.addItem(self.lr)
         self.frameSelector.showAxis('left', show=False)
         self.frameSelector.setMouseEnabled(x=False, y=False)
 
-
     def display(self, scan):
         # Log.debug("Display scan {}. Summed: {}".format(scan, sum))
         if scan.loaded:
-            self.image = np.transpose(scan.images, axes = [0,2,1])
+            self.image = np.transpose(scan.images, axes=[0, 2, 1])
             self.frameSelector.setXRange(1, self.image.shape[0], padding=0.1)
             self.lr.setRegion([1, self.image.shape[0]])
             self.updateImage()
             self.label_scanName.setText(scan.name)
 
-
     def updateImage(self):
         x0, x1 = self.lr.getRegion()
         x0 -= 1
         x0, x1 = int(x0), int(x1)
-        self.imageView.setImage(np.sum(self.image[x0:x1], axis = 0))
+        self.imageView.setImage(np.sum(self.image[x0:x1], axis=0))
         hmin, hmax = self.imageView.ui.histogram.getLevels()
         self.imageView.ui.histogram.setLevels(hmin, hmax * 0.05)
-
 
     def getROI(self):
         rois = []
@@ -53,19 +50,17 @@ class Monitor(object):
             rois.append(roi)
         return rois
 
-
     def setROI(self, rois):
         for roi in rois:
             self.addRoi(roi)
 
-
-    def addRoi(self, roi = None, energy_point_positions = None):
+    def addRoi(self, roi=None, energy_point_positions=None):
         rows = self.tableRoi.rowCount()
         self.tableRoi.insertRow(rows)
 
-        if roi == None:
+        if roi is None:
             size = [self.image.shape[-2], 10]
-            roi = ROI([0,size[1] / 2], size, 'ROI {}'.format(rows))
+            roi = ROI([0, size[1] / 2], size, 'ROI {}'.format(rows))
 
         roi.addToMonitor(self)
         roi.connectUpdateSlotProxy(self.updatePlot)
@@ -74,18 +69,14 @@ class Monitor(object):
 
         if energy_point_positions is None:
             positions = []
-            step = self.image.shape[1] / max(1, len(energies)-1)
+            step = self.image.shape[1] / max(1, len(energies) - 1)
             for ind in range(0, len(energies)):
                 positions.append((ind) * step)
         else:
             positions = energy_point_positions
 
-
         for pos in positions:
             roi.addEnergyPoint(pos, self)
-
-
-
 
         # proxy = pg.SignalProxy(roi.sigRegionChanged,
         #     rateLimit=2, delay = 0.0, slot = self.update_analyzer)
@@ -107,11 +98,10 @@ class Monitor(object):
         self.tableRoi.resizeColumnsToContents()
 
         # Connect button events
-        btn_remove.clicked.connect(lambda : self.removeROI(item01))
-        btn_active.clicked.connect(lambda : self.showHideRoi(item01))
+        btn_remove.clicked.connect(lambda: self.removeROI(item01))
+        btn_active.clicked.connect(lambda: self.showHideRoi(item01))
 
-
-    def addEnergyPoint(self, energy = None, touch_roi = True):
+    def addEnergyPoint(self, energy=None, touch_roi=True):
         energies = self.getEnergies()
         rows = self.tableEnergy.rowCount()
         self.tableEnergy.insertRow(rows)
@@ -129,8 +119,6 @@ class Monitor(object):
 
                 roi.connectUpdateSlotProxy(self.updatePlot)
 
-
-
         # Button items
         btn_remove = RemoveButton()
         self.tableEnergy.setCellWidget(rows, 0, btn_remove)
@@ -147,19 +135,13 @@ class Monitor(object):
         self.tableEnergy.resizeColumnsToContents()
 
         # Connect button events
-        btn_remove.clicked.connect(lambda : self.removeEnergyPoint(item01))
-
-
-
-
-
+        btn_remove.clicked.connect(lambda: self.removeEnergyPoint(item01))
 
     def removeROI(self, item):
         row = self.tableRoi.row(item)
         roi = item.data(pg.QtCore.Qt.UserRole)
         roi.removeFromMonitor(self)
         self.tableRoi.removeRow(row)
-
 
         # Rename remaining ROI
         for row in range(self.tableRoi.rowCount()):
@@ -170,7 +152,6 @@ class Monitor(object):
             item.setText(roi.name)
             item.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
 
-
     def removeEnergyPoint(self, item):
         index = self.tableEnergy.row(item)
 
@@ -178,7 +159,6 @@ class Monitor(object):
             roi.removeEnergyPoint(index, self)
 
         self.tableEnergy.removeRow(index)
-
 
     def getEnergies(self):
         rows = self.tableEnergy.rowCount()
@@ -195,13 +175,16 @@ class Monitor(object):
                 scans = self.getScans()
                 images = np.zeros((len(scans),) + scans[0].images[0].shape)
                 for ind, scan in enumerate(scans):
-                    images[ind] = np.sum(scan.images, axis = 0)
-                sum_before_search = self.getSetting(['Energy calibration', 'Sum runs before search'])
-                search_radius = float(self.getSetting(['Energy calibration', 'Search radius']))
-                roi.setEnergyPointsAuto(images, self.imageView, sum_before_search, search_radius)
+                    images[ind] = np.sum(scan.images, axis=0)
+                sum_before_search = self.getSetting(
+                    ['Energy calibration', 'Sum runs before search'])
+                search_radius = float(self.getSetting(
+                    ['Energy calibration', 'Search radius']))
+                roi.setEnergyPointsAuto(
+                    images, self.imageView, sum_before_search, search_radius)
         except Exception as e:
-            nosey.Log.error("Automatic energy calibration failed: {}".format(e))
-
+            nosey.Log.error(
+                "Automatic energy calibration failed: {}".format(e))
 
     def frameSelectorChanged(self, *args, **kwargs):
         self.lr.sigRegionChanged.disconnect(self.frameSelectorChanged)
@@ -212,7 +195,6 @@ class Monitor(object):
         self.lr.sigRegionChanged.connect(self.frameSelectorChanged)
         self.lr.sigRegionChangeFinished.connect(self.updateImage)
 
-
     def updateCursorMonitor(self, event):
         pos = event[0]
         x = int(self.imageView.getView().mapSceneToView(pos).x())
@@ -221,19 +203,18 @@ class Monitor(object):
         try:
             if len(self.imageView.image.shape) == 3:
                 z = self.imageView.currentIndex
-                i = self.imageView.image[z,x,y]
+                i = self.imageView.image[z, x, y]
             else:
-                i = self.imageView.image[x,y]
+                i = self.imageView.image[x, y]
         except Exception as e:
             i = 0
         fmt = 'x: {:6d} | y: {:6d} | intensity: {:6.0f}'
-        fmt = fmt.format(x,y, i)
+        fmt = fmt.format(x, y, i)
         self.statusBar.writeCursorPosition(fmt)
-
 
     def showHideRoi(self, item):
         selected_items = self.tableRoi.selectedItems()
-        if not item in selected_items:
+        if item not in selected_items:
             r = item.data(pg.QtCore.Qt.UserRole)
             r.toggle()
         else:
@@ -246,7 +227,6 @@ class Monitor(object):
                     button.toggle()
 
         self.updatePlot()
-
 
     def getSaveString(self):
         """ Combined save string for !ANALYZERS and !CALIBRATIONS"""
@@ -264,24 +244,27 @@ class Monitor(object):
             item = self.tableRoi.item(arow, 2)
             roi = item.data(pg.QtCore.Qt.UserRole)
             points = [ep.pos()[0] for ep in roi.energyPoints]
-            li = '[' + '{} '*len(points) +']'
-            p  = {
-                "include":      roi.active,
-                "position-x":    roi.objects[0].pos()[0],
-                "position-y":   roi.objects[0].pos()[1],
-                "width":        roi.objects[0].size()[0],
-                "height":       roi.objects[0].size()[1],
-                "bg01-distance":roi.b1_distance,
-                "bg01-height":  roi.objects[1].size()[1],
-                "bg02-distance":roi.b2_distance,
-                "bg02-height":  roi.objects[2].size()[1],
-                "energy-points":li.format(*points)
+            li = '[' + '{} ' * len(points) + ']'
+            p = {
+                "include": roi.active,
+                "position-x": roi.objects[0].pos()[0],
+                "position-y": roi.objects[0].pos()[1],
+                "width": roi.objects[0].size()[0],
+                "height": roi.objects[0].size()[1],
+                "bg01-distance": roi.b1_distance,
+                "bg01-height": roi.objects[1].size()[1],
+                "bg02-distance": roi.b2_distance,
+                "bg02-height": roi.objects[2].size()[1],
+                "energy-points": li.format(*points)
             }
 
             subString = "analyzer(\n"
-            subString +="\t{}={},\n" * (len(p.keys()) - 1)
-            subString +="\t{}={}\n)\n"
-            mixed = [v for sublist in zip(p.keys(), p.values()) for v in sublist]
+            subString += "\t{}={},\n" * (len(p.keys()) - 1)
+            subString += "\t{}={}\n)\n"
+            mixed = [
+                v for sublist in zip(
+                    p.keys(),
+                    p.values()) for v in sublist]
             subString = subString.format(*mixed)
             analyzersString += subString
 

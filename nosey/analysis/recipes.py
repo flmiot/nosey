@@ -7,6 +7,7 @@ import numpy as np
 import h5py
 import tifffile as tiff
 
+
 class Recipe(object):
     """A recipe on how to extract data from a selection of files."""
 
@@ -14,47 +15,40 @@ class Recipe(object):
     def load(cls, filepath):
         return pickle.load(open(filepath, 'rb'))
 
-
     @classmethod
     def save(self, filepath, recipes):
         pickle.dump(recipes, open(filepath, 'wb'))
 
-
-    def getImages(self, files, roi = None, indizes = None):
+    def getImages(self, files, roi=None, indizes=None):
         raise NotImplementedError()
 
-
-    def getI0(self, files, indizes = None):
+    def getI0(self, files, indizes=None):
         raise NotImplementedError()
 
-
-    def getTrainID(self, files, indizes = None):
+    def getTrainID(self, files, indizes=None):
         raise NotImplementedError()
 
-
-    def getEnergy(self, files, indizes = None):
+    def getEnergy(self, files, indizes=None):
         raise NotImplementedError()
 
 
 class DELTARecipe(Recipe):
     """DELTA: Recipe for PILATUS detector at BL8, DELTA storage ring, Dortmund."""
 
-    def getImages(self, filename, roi = None, indizes = None):
+    def getImages(self, filename, roi=None, indizes=None):
         if roi:
             x0, y0, x1, y1 = roi
         else:
             x0, y0, x1, y1 = 0, 0, 487, 195
 
-        dtype = '({},{})i4'.format(y1-y0, x1-x0)
-        images = np.empty(1, dtype = dtype)
-
+        dtype = '({},{})i4'.format(y1 - y0, x1 - x0)
+        images = np.empty(1, dtype=dtype)
 
         images[0] = tiff.imread(filename)[y0:y1, x0:x1]
 
         return images
 
-
-    def getI0(self, log_file, indizes = None, cols = 14, i0_column = 4):
+    def getI0(self, log_file, indizes=None, cols=14, i0_column=4):
         with open(log_file, 'r') as content_file:
             content = content_file.read()
 
@@ -66,15 +60,14 @@ class DELTARecipe(Recipe):
 
         i0 = np.empty(len(indizes))
         for index, match in enumerate(matches):
-            if not index in indizes:
+            if index not in indizes:
                 continue
 
             i0[indizes.index(index)] = match[i0_column]
 
         return i0
 
-
-    def getTrainID(self, log_file, indizes = None):
+    def getTrainID(self, log_file, indizes=None):
         with open(log_file, 'r') as content_file:
             content = content_file.read()
 
@@ -86,8 +79,7 @@ class DELTARecipe(Recipe):
 
         return np.arange(len(indizes))
 
-
-    def getEnergy(self, log_file, indizes = None, cols = 14, energy_column = 3):
+    def getEnergy(self, log_file, indizes=None, cols=14, energy_column=3):
         with open(log_file, 'r') as content_file:
             content = content_file.read()
 
@@ -99,7 +91,7 @@ class DELTARecipe(Recipe):
 
         energy = np.empty(len(indizes))
         for index, match in enumerate(matches):
-            if not index in indizes:
+            if index not in indizes:
                 continue
 
             energy[indizes.index(index)] = match[energy_column]
@@ -122,7 +114,7 @@ class SACLARecipe(Recipe):
 class SOLEILRecipe(Recipe):
     """SOLEIL: Recipe for PILATUS detector at GALAXIES, SOLEIL storage ring, France."""
 
-    def getImages(self, filename, roi = None, indizes = None):
+    def getImages(self, filename, roi=None, indizes=None):
         if roi:
             x0, y0, x1, y1 = roi
         else:
@@ -139,48 +131,44 @@ class SOLEILRecipe(Recipe):
         if not indizes:
             indizes = range(images.shape[0])
 
-        dtype = '({},{})i4'.format(y1-y0, x1-x0)
-        images_filtered = np.empty(len(indizes), dtype = dtype)
+        dtype = '({},{})i4'.format(y1 - y0, x1 - x0)
+        images_filtered = np.empty(len(indizes), dtype=dtype)
 
         for index, img in enumerate(images):
-            if not index in indizes:
+            if index not in indizes:
                 continue
 
             images_filtered[indizes.index(index)] = img
         return images
 
-
-    def getI0(self, log_file, indizes = None):
+    def getI0(self, log_file, indizes=None):
         with h5py.File(log_file, 'r') as file:
             i0 = file['/root_spyc_config1d_RIXS_00001/scan_data/data_03'][:]
-
 
         if not indizes:
             indizes = range(len(i0))
 
         i0 = np.empty(len(indizes))
         for index, value in enumerate(i0):
-            if not index in indizes:
+            if index not in indizes:
                 continue
 
             i0[indizes.index(index)] = value
 
         return i0
 
+    def getEnergy(self, log_file, indizes=None, cols=14, energy_column=3):
+        with h5py.File(log_file, 'r') as file:
+            energy = file['/root_spyc_config1d_RIXS_00001/GALAXIES/Monochromator/energy'][:]
 
-    def getEnergy(self, log_file, indizes = None, cols = 14, energy_column = 3):
-            with h5py.File(log_file, 'r') as file:
-                energy = file['/root_spyc_config1d_RIXS_00001/GALAXIES/Monochromator/energy'][:]
+        if not indizes:
+            indizes = range(len(energy))
 
+        energy = np.empty(len(indizes))
+        for index, value in enumerate(energy):
+            if index not in indizes:
+                continue
 
-            if not indizes:
-                indizes = range(len(energy))
+            energy[indizes.index(index)] = value
 
-            energy = np.empty(len(indizes))
-            for index, value in enumerate(energy):
-                if not index in indizes:
-                    continue
-
-                energy[indizes.index(index)] = value
-
-            return energy
+        return energy

@@ -2,38 +2,37 @@ import logging
 import nosey
 from pyqtgraph import QtGui
 
+
 class StatusBarHandler(logging.StreamHandler):
     def emit(self, record):
         try:
             msg = self.format(record)
             stream = self.stream
-            stream.writeLog(msg, level = record.levelno)
+            stream.writeLog(msg, level=record.levelno)
             self.flush()
         except (KeyboardInterrupt, SystemExit):
             raise
-        except:
+        except BaseException:
             self.handleError(record)
 
 
 class Logbar(QtGui.QStatusBar):
     def __init__(self, *args, **kwargs):
-            super().__init__(*args, **kwargs)
-            self.progressBar    = QtGui.QProgressBar()
-            self.progressBar.setTextVisible(False)
-            self.progressBar.setMaximumSize(75, 5)
-            self.messageLabel = QtGui.QLabel("")
-            self.messageLabel.setObjectName("MessageLabel")
-            self.timer  = QtGui.QLabel("(0.000 s)")
-            self.setLogColor('#f7f7f7')
-            self.addPermanentWidget(self.messageLabel)
-            self.addPermanentWidget(self.progressBar)
-            self.addPermanentWidget(self.timer)
-
+        super().__init__(*args, **kwargs)
+        self.progressBar = QtGui.QProgressBar()
+        self.progressBar.setTextVisible(False)
+        self.progressBar.setMaximumSize(75, 5)
+        self.messageLabel = QtGui.QLabel("")
+        self.messageLabel.setObjectName("MessageLabel")
+        self.timer = QtGui.QLabel("(0.000 s)")
+        self.setLogColor('#f7f7f7')
+        self.addPermanentWidget(self.messageLabel)
+        self.addPermanentWidget(self.progressBar)
+        self.addPermanentWidget(self.timer)
 
     def setTimerValue(self, value):
         fmt = '({:.3f} s)'.format(value)
         self.timer.setText(fmt)
-
 
     def writeLog(self, message, level):
         if message != '\n':
@@ -43,15 +42,12 @@ class Logbar(QtGui.QStatusBar):
                 self.setLogColor('#f7f7f7')
             self.messageLabel.setText(message)
 
-
     def writeCursorPosition(self, message):
         if message != '\n':
             self.showMessage(message)
 
-
     def flush(self, *args):
         pass
-
 
     def setProgressBarFraction(self, value):
         if value >= 1:
@@ -61,8 +57,6 @@ class Logbar(QtGui.QStatusBar):
 
         self.progressBar.setStyleSheet(fmt)
         self.progressBar.setValue(value * 100)
-
-
 
     def setLogColor(self, color):
         fmt = "padding:3px; background-color: {}; border-radius: 5px;"
