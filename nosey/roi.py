@@ -185,7 +185,6 @@ class ROI(object):
             peaks = []
             for n in range(len(self.energyPoints)):
                 max_index = curve.argmax()
-                print(max_index)
                 i0 = max(0, max_index - search_radius)
                 i1 = min(max_index + search_radius, len(curve))
                 x_com = np.arange(len(curve))
@@ -197,7 +196,6 @@ class ROI(object):
 
 
             peaks = sorted(peaks)
-            print(peaks)
 
             for ind, peak_pos in enumerate(peaks):
                 object = self.energyPoints[ind]

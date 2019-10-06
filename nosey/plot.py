@@ -402,8 +402,38 @@ class Plot(object):
 
 
     def updateCursorPlot(self, plotWidget, event):
-        pos = event[0]
-        x = plotWidget.getPlotItem().vb.mapSceneToView(pos).x()
-        y = plotWidget.getPlotItem().vb.mapSceneToView(pos).y()
-        fmt = 'x: {:.7f} | y: {:.7f}'.format(x,y)
-        self.statusBar.writeCursorPosition(fmt)
+        try:
+            pos = event[0]
+            x = plotWidget.getPlotItem().vb.mapSceneToView(pos).x()
+            y = plotWidget.getPlotItem().vb.mapSceneToView(pos).y()
+            fmt = 'x: {:.7f} | y: {:.7f}'.format(x,y)
+            self.statusBar.writeCursorPosition(fmt)
+
+        except Exception as e:
+            fmt = 'Cursor position could not be determined: {}'.format(e)
+            nosey.Log.error(fmt)
+
+
+    def getSaveString(self):
+        """ Get the plotting keywords for save file generation"""
+
+        saveString = ""
+        if self.actionUpdatePlot.isChecked():
+            saveString += "!PLOT\n"
+        if self.actionUpdate_automatically.isChecked():
+            saveString += "!AUTO\n"
+        if self.actionNormalize.isChecked():
+            saveString += "!NORMALIZE\n"
+        if self.actionSubtractBackground.isChecked():
+            saveString += "!SUBTRACT_BACKGROUND\n"
+        if self.actionCOMShift.isChecked():
+            saveString += "!COM_SHIFT\n"
+        if self.actionSingleAnalyzers.isChecked():
+            saveString += "!SINGLE_ANALYZERS\n"
+        if self.actionSingleScans.isChecked():
+            saveString += "!SINGLE_SCANS\n"
+
+        if len(saveString) > 0:
+            saveString += "\n"
+
+        return saveString

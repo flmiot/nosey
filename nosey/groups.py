@@ -14,15 +14,15 @@ class Groups(object):
 
     def setupGroupsFrame(self):
         self.tableGroups.cellChanged.connect(self.updateSourceComboBoxes)
-        self.addPlottingGroup()
-        self.tableGroups.cellWidget(0, 2).toggle()
 
 
-    def addPlottingGroup(self):
+    def addGroup(self, e = None, name = None, active = True, reference = False):
+
+        if name is None:
+            name = "Unnamed group"
+
         rows = self.tableGroups.rowCount()
         self.tableGroups.insertRow(rows)
-
-        plottingGroupName = "Unnamed group"
 
         # Button items
         btn_active      = HideButton()
@@ -34,7 +34,7 @@ class Groups(object):
         self.tableGroups.setCellWidget(rows, 1, btn_remove)
         self.tableGroups.setCellWidget(rows, 2, btn_reference)
         item01 = QtGui.QTableWidgetItem()
-        item01.setText(plottingGroupName)
+        item01.setText(name)
         self.tableGroups.setItem(rows, 3, item01)
         self.tableGroups.resizeColumnsToContents()
         self.updateSourceComboBoxes()
@@ -43,6 +43,13 @@ class Groups(object):
         btn_active.clicked.connect(lambda : self.toggleGroup(item01))
         btn_remove.clicked.connect(lambda : self.removeGroup(item01))
         btn_reference.clicked.connect(lambda : self.setRefGroup(item01))
+
+        if active is False:
+            btn_active.toggle()
+
+        if reference is True:
+            btn_reference.toggle()
+            self.setRefGroup(item01, update = False)
 
 
     def updateSourceComboBoxes(self):
@@ -58,8 +65,9 @@ class Groups(object):
                     comboBox.setCurrentIndex(grow)
 
 
-    def toggleGroup(self, item):
-        self.updatePlot()
+    def toggleGroup(self, item, update = True):
+        if update:
+            self.updatePlot()
 
 
     def removeGroup(self, item):
@@ -70,7 +78,7 @@ class Groups(object):
             self.updatePlot()
 
 
-    def setRefGroup(self, item):
+    def setRefGroup(self, item, update = True):
         if self.getReferenceGroupIndex() is None:
             row = self.tableGroups.row(item)
             self.tableGroups.cellWidget(row, 2).setChecked(True)
@@ -80,7 +88,8 @@ class Groups(object):
                     continue
                 else:
                     self.tableGroups.cellWidget(grow, 2).setChecked(False)
-        self.updatePlot()
+        if update:
+            self.updatePlot()
 
 
     def getReferenceGroupIndex(self):
@@ -88,3 +97,24 @@ class Groups(object):
             if self.tableGroups.cellWidget(grow, 2).isChecked():
                 return grow
         return None
+
+
+    def getSaveString(self):
+        saveString = "! GROUPS\n"
+        for grow in range(self.tableGroups.rowCount()):
+            name = '"{}"'.format(self.tableGroups.item(grow, 3).text())
+            p  = {
+                "include":      self.tableGroups.cellWidget(grow, 0).isChecked(),
+                "reference":    grow == self.getReferenceGroupIndex(),
+                "name":         name
+            }
+
+            subString = "group(\n"
+            subString +="\t{}={},\n" * (len(p.keys()) - 1)
+            subString +="\t{}={}\n)\n"
+            mixed = [v for sublist in zip(p.keys(), p.values()) for v in sublist]
+            subString = subString.format(*mixed)
+            saveString += subString
+
+        saveString += "\n"
+        return saveString

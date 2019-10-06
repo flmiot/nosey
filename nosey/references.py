@@ -16,8 +16,11 @@ class References(object):
         pass
 
 
-    def addExternalReference(self):
-        paths = QtGui.QFileDialog.getOpenFileNames(self, 'Select files')[0]
+    def addExternalReference(self, event = None, paths = None, include = True,
+        setAsRef1 = False, setAsRef2 = False):
+
+        if paths is None:
+            paths = QtGui.QFileDialog.getOpenFileNames(self, 'Select files')[0]
 
         for path in paths:
             rows = self.tableExternalReferences.rowCount()
@@ -25,6 +28,8 @@ class References(object):
             filename = os.path.split(path)[1]
 
             data = np.loadtxt(path, skiprows = 1).T
+
+            userData = {'path':path, 'data':data}
 
             # Button items
             btn_active      = HideButton()
@@ -39,7 +44,7 @@ class References(object):
             self.tableExternalReferences.setCellWidget(rows, 3, btn_setAsRef2)
             item = QtGui.QTableWidgetItem()
             item.setText(filename)
-            item.setData(pg.QtCore.Qt.UserRole, data)
+            item.setData(pg.QtCore.Qt.UserRole, userData)
             self.tableExternalReferences.setItem(rows, 4, item)
             self.tableExternalReferences.resizeColumnsToContents()
 
@@ -48,6 +53,14 @@ class References(object):
             btn_remove.clicked.connect(lambda : self.removeExternalReference(item))
             btn_setAsRef1.clicked.connect(lambda : self.setAsRef(item, 1))
             btn_setAsRef2.clicked.connect(lambda : self.setAsRef(item, 2))
+
+            if setAsRef1:
+                btn_setAsRef1.click()
+            if setAsRef2:
+                btn_setAsRef2.click()
+
+            if include is False:
+                btn_active.click()
 
 
 
@@ -104,7 +117,7 @@ class References(object):
         for row in range(self.tableExternalReferences.rowCount()):
             if self.tableExternalReferences.cellWidget(row, 0).isChecked():
                 item = self.tableExternalReferences.item(row, 4)
-                x, y = item.data(pg.QtCore.Qt.UserRole)
+                x, y = item.data(pg.QtCore.Qt.UserRole)['data']
                 label = item.text()
                 data.append([x, y, label])
 
@@ -114,7 +127,36 @@ class References(object):
     def getSelectedExternalReferenceData(self, refID):
         rowIndex = self.getExternalReferenceGroupIndex(refID)
         item = self.tableExternalReferences.item(rowIndex, 4)
-        return item.data(pg.QtCore.Qt.UserRole)
+        return item.data(pg.QtCore.Qt.UserRole)['data']
+
+
+    def getSaveString(self):
+        saveString = "! REFERENCES\n"
+        for rrow in range(self.tableExternalReferences.rowCount()):
+            item    = self.tableExternalReferences.item(rrow, 4)
+            path    = item.data(pg.QtCore.Qt.UserRole)['path']
+            active  = self.tableExternalReferences.cellWidget(rrow, 0).isChecked()
+            r1      = self.tableExternalReferences.cellWidget(rrow, 2).isChecked()
+            r2      = self.tableExternalReferences.cellWidget(rrow, 3).isChecked()
+            name    = self.tableExternalReferences.item(rrow, 4).text()
+
+            p  = {
+                "path":     '"{}"'.format(path),
+                "include":  active,
+                "r1":   r1,
+                "r2":   r2,
+                "name": name
+            }
+
+            subString = "reference(\n"
+            subString +="\t{}={},\n" * (len(p.keys()) - 1)
+            subString +="\t{}={}\n)\n"
+            mixed = [v for sublist in zip(p.keys(), p.values()) for v in sublist]
+            subString = subString.format(*mixed)
+            saveString += subString
+
+        saveString += "\n"
+        return saveString
 
 
 

@@ -33,7 +33,7 @@ class Sources(object):
             nosey.Log.error(e)
 
 
-    def _read_scan(self, img_path, log_file):
+    def _read_scan(self, img_path, log_file, include = True):
 
         rows = self.tableSources.rowCount()
         self.tableSources.insertRow(rows)
@@ -85,8 +85,13 @@ class Sources(object):
 
         self.updateSourceComboBoxes()
 
+        if include is False:
+            btn_active.toggle()
+            s.toggle()
+
         # Convenience task: Set ComboBox to currently selected group
         selectedGroups = self.tableGroups.selectedItems()
+
         if len(selectedGroups):
             r = self.tableGroups.row(selectedGroups[0])
             dd_plotGroup.setCurrentIndex(r)
@@ -94,7 +99,7 @@ class Sources(object):
         return s
 
 
-    def getScans(self, group = None):
+    def getScans(self, group = None, filter_active = True):
         scans = []
         for row in range(self.tableSources.rowCount()):
             item = self.tableSources.item(row, 4)
@@ -102,8 +107,14 @@ class Sources(object):
             comboBox = self.tableSources.cellWidget(row, 2)
             groupItem = comboBox.itemData(comboBox.currentIndex())
             groupFilter = True if group is None else groupItem == group
-            if scan.active and groupFilter:
-                scans.append(scan)
+            if groupFilter:
+                if filter_active:
+                    if scan.active:
+                        scans.append(scan)
+                else:
+                    scans.append(scan)
+
+
         return scans
 
 
@@ -141,6 +152,30 @@ class Sources(object):
                 r = self.tableSources.row(i)
                 comboBox = self.tableSources.cellWidget(r, 2)
                 comboBox.setCurrentIndex(selectedItemIndex)
+
+
+    def getSaveString(self):
+        saveString = "! SCANS\n"
+        for srow in range(self.tableSources.rowCount()):
+            item = self.tableSources.item(srow, 4)
+            scan = item.data(pg.QtCore.Qt.UserRole)
+            comboBox = self.tableSources.cellWidget(srow, 2)
+            group = comboBox.itemData(comboBox.currentIndex())
+            p  = {
+                "path":     '"{}"'.format(scan.files),
+                "include":  scan.active,
+                "group":    '"{}"'.format(group.text())
+            }
+
+            subString = "scan(\n"
+            subString +="\t{}={},\n" * (len(p.keys()) - 1)
+            subString +="\t{}={}\n)\n"
+            mixed = [v for sublist in zip(p.keys(), p.values()) for v in sublist]
+            subString = subString.format(*mixed)
+            saveString += subString
+
+        saveString += "\n"
+        return saveString
 
 
 class QThread_Loader(QtCore.QThread):
