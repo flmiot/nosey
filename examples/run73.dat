@@ -1,0 +1,419 @@
+#--------------------------------------------------------------#
+| NOSEY project file (v0.1), saved: 2019-10-06 15:45:07.585096 |
+#--------------------------------------------------------------#
+
+!AUTO
+!NORMALIZE
+!SUBTRACT_BACKGROUND
+
+! GROUPS
+group(
+	include=True,
+	reference=True,
+	name="1"
+)
+group(
+	include=True,
+	reference=False,
+	name="2"
+)
+group(
+	include=True,
+	reference=False,
+	name="3"
+)
+
+! SCANS
+scan(
+	path="C:/Users/hambu/Google Drive/BL9_DELTA_SEP19 -Co Kalpha XES/run12_19_xes_inhouse/run12_19_00073_00001.tif",
+	include=True,
+	group="1"
+)
+scan(
+	path="C:/Users/hambu/Google Drive/BL9_DELTA_SEP19 -Co Kalpha XES/run12_19_xes_inhouse/run12_19_00073_00002.tif",
+	include=True,
+	group="1"
+)
+scan(
+	path="C:/Users/hambu/Google Drive/BL9_DELTA_SEP19 -Co Kalpha XES/run12_19_xes_inhouse/run12_19_00073_00003.tif",
+	include=True,
+	group="1"
+)
+scan(
+	path="C:/Users/hambu/Google Drive/BL9_DELTA_SEP19 -Co Kalpha XES/run12_19_xes_inhouse/run12_19_00073_00004.tif",
+	include=True,
+	group="1"
+)
+scan(
+	path="C:/Users/hambu/Google Drive/BL9_DELTA_SEP19 -Co Kalpha XES/run12_19_xes_inhouse/run12_19_00073_00005.tif",
+	include=True,
+	group="1"
+)
+scan(
+	path="C:/Users/hambu/Google Drive/BL9_DELTA_SEP19 -Co Kalpha XES/run12_19_xes_inhouse/run12_19_00073_00006.tif",
+	include=True,
+	group="1"
+)
+scan(
+	path="C:/Users/hambu/Google Drive/BL9_DELTA_SEP19 -Co Kalpha XES/run12_19_xes_inhouse/run12_19_00073_00007.tif",
+	include=True,
+	group="1"
+)
+scan(
+	path="C:/Users/hambu/Google Drive/BL9_DELTA_SEP19 -Co Kalpha XES/run12_19_xes_inhouse/run12_19_00073_00008.tif",
+	include=True,
+	group="1"
+)
+scan(
+	path="C:/Users/hambu/Google Drive/BL9_DELTA_SEP19 -Co Kalpha XES/run12_19_xes_inhouse/run12_19_00073_00009.tif",
+	include=True,
+	group="1"
+)
+scan(
+	path="C:/Users/hambu/Google Drive/BL9_DELTA_SEP19 -Co Kalpha XES/run12_19_xes_inhouse/run12_19_00073_00010.tif",
+	include=True,
+	group="1"
+)
+scan(
+	path="C:/Users/hambu/Google Drive/BL9_DELTA_SEP19 -Co Kalpha XES/run12_19_xes_inhouse/run12_19_00073_00011.tif",
+	include=True,
+	group="1"
+)
+scan(
+	path="C:/Users/hambu/Google Drive/BL9_DELTA_SEP19 -Co Kalpha XES/run12_19_xes_inhouse/run12_19_00073_00012.tif",
+	include=True,
+	group="1"
+)
+scan(
+	path="C:/Users/hambu/Google Drive/BL9_DELTA_SEP19 -Co Kalpha XES/run12_19_xes_inhouse/run12_19_00073_00013.tif",
+	include=True,
+	group="3"
+)
+scan(
+	path="C:/Users/hambu/Google Drive/BL9_DELTA_SEP19 -Co Kalpha XES/run12_19_xes_inhouse/run12_19_00073_00014.tif",
+	include=True,
+	group="3"
+)
+scan(
+	path="C:/Users/hambu/Google Drive/BL9_DELTA_SEP19 -Co Kalpha XES/run12_19_xes_inhouse/run12_19_00073_00015.tif",
+	include=True,
+	group="3"
+)
+scan(
+	path="C:/Users/hambu/Google Drive/BL9_DELTA_SEP19 -Co Kalpha XES/run12_19_xes_inhouse/run12_19_00073_00016.tif",
+	include=True,
+	group="3"
+)
+scan(
+	path="C:/Users/hambu/Google Drive/BL9_DELTA_SEP19 -Co Kalpha XES/run12_19_xes_inhouse/run12_19_00073_00017.tif",
+	include=True,
+	group="3"
+)
+scan(
+	path="C:/Users/hambu/Google Drive/BL9_DELTA_SEP19 -Co Kalpha XES/run12_19_xes_inhouse/run12_19_00073_00018.tif",
+	include=True,
+	group="3"
+)
+scan(
+	path="C:/Users/hambu/Google Drive/BL9_DELTA_SEP19 -Co Kalpha XES/run12_19_xes_inhouse/run12_19_00073_00019.tif",
+	include=True,
+	group="3"
+)
+scan(
+	path="C:/Users/hambu/Google Drive/BL9_DELTA_SEP19 -Co Kalpha XES/run12_19_xes_inhouse/run12_19_00073_00020.tif",
+	include=True,
+	group="3"
+)
+scan(
+	path="C:/Users/hambu/Google Drive/BL9_DELTA_SEP19 -Co Kalpha XES/run12_19_xes_inhouse/run12_19_00073_00021.tif",
+	include=True,
+	group="3"
+)
+scan(
+	path="C:/Users/hambu/Google Drive/BL9_DELTA_SEP19 -Co Kalpha XES/run12_19_xes_inhouse/run12_19_00073_00022.tif",
+	include=True,
+	group="3"
+)
+scan(
+	path="C:/Users/hambu/Google Drive/BL9_DELTA_SEP19 -Co Kalpha XES/run12_19_xes_inhouse/run12_19_00073_00023.tif",
+	include=True,
+	group="3"
+)
+scan(
+	path="C:/Users/hambu/Google Drive/BL9_DELTA_SEP19 -Co Kalpha XES/run12_19_xes_inhouse/run12_19_00073_00024.tif",
+	include=True,
+	group="3"
+)
+scan(
+	path="C:/Users/hambu/Google Drive/BL9_DELTA_SEP19 -Co Kalpha XES/run12_19_xes_inhouse/run12_19_00073_00025.tif",
+	include=True,
+	group="3"
+)
+scan(
+	path="C:/Users/hambu/Google Drive/BL9_DELTA_SEP19 -Co Kalpha XES/run12_19_xes_inhouse/run12_19_00073_00026.tif",
+	include=True,
+	group="3"
+)
+scan(
+	path="C:/Users/hambu/Google Drive/BL9_DELTA_SEP19 -Co Kalpha XES/run12_19_xes_inhouse/run12_19_00073_00027.tif",
+	include=True,
+	group="3"
+)
+scan(
+	path="C:/Users/hambu/Google Drive/BL9_DELTA_SEP19 -Co Kalpha XES/run12_19_xes_inhouse/run12_19_00073_00028.tif",
+	include=True,
+	group="3"
+)
+scan(
+	path="C:/Users/hambu/Google Drive/BL9_DELTA_SEP19 -Co Kalpha XES/run12_19_xes_inhouse/run12_19_00073_00029.tif",
+	include=True,
+	group="3"
+)
+scan(
+	path="C:/Users/hambu/Google Drive/BL9_DELTA_SEP19 -Co Kalpha XES/run12_19_xes_inhouse/run12_19_00073_00030.tif",
+	include=True,
+	group="3"
+)
+scan(
+	path="C:/Users/hambu/Google Drive/BL9_DELTA_SEP19 -Co Kalpha XES/run12_19_xes_inhouse/run12_19_00073_00031.tif",
+	include=True,
+	group="3"
+)
+scan(
+	path="C:/Users/hambu/Google Drive/BL9_DELTA_SEP19 -Co Kalpha XES/run12_19_xes_inhouse/run12_19_00073_00032.tif",
+	include=True,
+	group="3"
+)
+scan(
+	path="C:/Users/hambu/Google Drive/BL9_DELTA_SEP19 -Co Kalpha XES/run12_19_xes_inhouse/run12_19_00073_00033.tif",
+	include=True,
+	group="3"
+)
+scan(
+	path="C:/Users/hambu/Google Drive/BL9_DELTA_SEP19 -Co Kalpha XES/run12_19_xes_inhouse/run12_19_00073_00034.tif",
+	include=True,
+	group="3"
+)
+scan(
+	path="C:/Users/hambu/Google Drive/BL9_DELTA_SEP19 -Co Kalpha XES/run12_19_xes_inhouse/run12_19_00073_00035.tif",
+	include=True,
+	group="3"
+)
+scan(
+	path="C:/Users/hambu/Google Drive/BL9_DELTA_SEP19 -Co Kalpha XES/run12_19_xes_inhouse/run12_19_00073_00036.tif",
+	include=True,
+	group="3"
+)
+scan(
+	path="C:/Users/hambu/Google Drive/BL9_DELTA_SEP19 -Co Kalpha XES/run12_19_xes_inhouse/run12_19_00073_00037.tif",
+	include=True,
+	group="3"
+)
+scan(
+	path="C:/Users/hambu/Google Drive/BL9_DELTA_SEP19 -Co Kalpha XES/run12_19_xes_inhouse/run12_19_00073_00038.tif",
+	include=True,
+	group="3"
+)
+scan(
+	path="C:/Users/hambu/Google Drive/BL9_DELTA_SEP19 -Co Kalpha XES/run12_19_xes_inhouse/run12_19_00073_00039.tif",
+	include=True,
+	group="3"
+)
+scan(
+	path="C:/Users/hambu/Google Drive/BL9_DELTA_SEP19 -Co Kalpha XES/run12_19_xes_inhouse/run12_19_00073_00040.tif",
+	include=True,
+	group="3"
+)
+scan(
+	path="C:/Users/hambu/Google Drive/BL9_DELTA_SEP19 -Co Kalpha XES/run12_19_xes_inhouse/run12_19_00073_00041.tif",
+	include=True,
+	group="3"
+)
+scan(
+	path="C:/Users/hambu/Google Drive/BL9_DELTA_SEP19 -Co Kalpha XES/run12_19_xes_inhouse/run12_19_00073_00042.tif",
+	include=True,
+	group="3"
+)
+scan(
+	path="C:/Users/hambu/Google Drive/BL9_DELTA_SEP19 -Co Kalpha XES/run12_19_xes_inhouse/run12_19_00073_00043.tif",
+	include=True,
+	group="3"
+)
+scan(
+	path="C:/Users/hambu/Google Drive/BL9_DELTA_SEP19 -Co Kalpha XES/run12_19_xes_inhouse/run12_19_00073_00044.tif",
+	include=True,
+	group="3"
+)
+scan(
+	path="C:/Users/hambu/Google Drive/BL9_DELTA_SEP19 -Co Kalpha XES/run12_19_xes_inhouse/run12_19_00073_00045.tif",
+	include=True,
+	group="3"
+)
+scan(
+	path="C:/Users/hambu/Google Drive/BL9_DELTA_SEP19 -Co Kalpha XES/run12_19_xes_inhouse/run12_19_00073_00046.tif",
+	include=True,
+	group="3"
+)
+scan(
+	path="C:/Users/hambu/Google Drive/BL9_DELTA_SEP19 -Co Kalpha XES/run12_19_xes_inhouse/run12_19_00073_00047.tif",
+	include=True,
+	group="3"
+)
+scan(
+	path="C:/Users/hambu/Google Drive/BL9_DELTA_SEP19 -Co Kalpha XES/run12_19_xes_inhouse/run12_19_00073_00048.tif",
+	include=True,
+	group="3"
+)
+scan(
+	path="C:/Users/hambu/Google Drive/BL9_DELTA_SEP19 -Co Kalpha XES/run12_19_xes_inhouse/run12_19_00073_00049.tif",
+	include=True,
+	group="3"
+)
+scan(
+	path="C:/Users/hambu/Google Drive/BL9_DELTA_SEP19 -Co Kalpha XES/run12_19_xes_inhouse/run12_19_00073_00050.tif",
+	include=True,
+	group="3"
+)
+scan(
+	path="C:/Users/hambu/Google Drive/BL9_DELTA_SEP19 -Co Kalpha XES/run12_19_xes_inhouse/run12_19_00073_00051.tif",
+	include=True,
+	group="3"
+)
+scan(
+	path="C:/Users/hambu/Google Drive/BL9_DELTA_SEP19 -Co Kalpha XES/run12_19_xes_inhouse/run12_19_00073_00052.tif",
+	include=True,
+	group="3"
+)
+scan(
+	path="C:/Users/hambu/Google Drive/BL9_DELTA_SEP19 -Co Kalpha XES/run12_19_xes_inhouse/run12_19_00073_00053.tif",
+	include=True,
+	group="3"
+)
+scan(
+	path="C:/Users/hambu/Google Drive/BL9_DELTA_SEP19 -Co Kalpha XES/run12_19_xes_inhouse/run12_19_00073_00054.tif",
+	include=True,
+	group="3"
+)
+scan(
+	path="C:/Users/hambu/Google Drive/BL9_DELTA_SEP19 -Co Kalpha XES/run12_19_xes_inhouse/run12_19_00073_00055.tif",
+	include=True,
+	group="3"
+)
+scan(
+	path="C:/Users/hambu/Google Drive/BL9_DELTA_SEP19 -Co Kalpha XES/run12_19_xes_inhouse/run12_19_00073_00056.tif",
+	include=True,
+	group="3"
+)
+scan(
+	path="C:/Users/hambu/Google Drive/BL9_DELTA_SEP19 -Co Kalpha XES/run12_19_xes_inhouse/run12_19_00073_00057.tif",
+	include=True,
+	group="3"
+)
+scan(
+	path="C:/Users/hambu/Google Drive/BL9_DELTA_SEP19 -Co Kalpha XES/run12_19_xes_inhouse/run12_19_00073_00058.tif",
+	include=True,
+	group="3"
+)
+scan(
+	path="C:/Users/hambu/Google Drive/BL9_DELTA_SEP19 -Co Kalpha XES/run12_19_xes_inhouse/run12_19_00073_00059.tif",
+	include=True,
+	group="3"
+)
+scan(
+	path="C:/Users/hambu/Google Drive/BL9_DELTA_SEP19 -Co Kalpha XES/run12_19_xes_inhouse/run12_19_00073_00060.tif",
+	include=True,
+	group="2"
+)
+
+! CALIBRATIONS
+energy(
+	position= 6915.30
+)
+energy(
+	position= 6930.32
+)
+! ANALYZERS
+analyzer(
+	include=True,
+	position-x=0.0,
+	position-y=1.1395535392670055,
+	width=487.0,
+	height=29.962334807451796,
+	bg01-distance=0,
+	bg01-height=5.0,
+	bg02-distance=5.234932520082069,
+	bg02-height=16.516851544180547,
+	energy-points=[114.90244084540006 173.83974566546001 ]
+)
+analyzer(
+	include=True,
+	position-x=-0.5725324924468396,
+	position-y=58.73471671371301,
+	width=487.0,
+	height=26.436083147900035,
+	bg01-distance=2.6174662600410343,
+	bg01-height=15.64436279083354,
+	bg02-distance=1.8788079818778272,
+	bg02-height=10.871274943368164,
+	energy-points=[123.31822560794465 182.854275629814 ]
+)
+analyzer(
+	include=True,
+	position-x=1.1450649848936507,
+	position-y=100.55587719855384,
+	width=487.0,
+	height=31.136589796125378,
+	bg01-distance=1.6439569841431023,
+	bg01-height=10.401572947898714,
+	bg02-distance=3.05306297055148,
+	bg02-height=11.340976938837628,
+	energy-points=[98.2378404816792 157.92938817322107 ]
+)
+analyzer(
+	include=True,
+	position-x=0.0,
+	position-y=149.01547806257886,
+	width=487.0,
+	height=29.962334807451754,
+	bg01-distance=4.697019954694497,
+	bg01-height=8.99246696149035,
+	bg02-distance=1.8788079818778556,
+	bg02-height=9.697019954694554,
+	energy-points=[84.20410169047307 145.07438978359335 ]
+)
+
+! REFERENCES
+reference(
+	path="C:/Users/hambu/Google Drive/BL9_DELTA_SEP19 -Co Kalpha XES/analysis/ref_co3bpy3_after.dat",
+	include=False,
+	r1=False,
+	r2=False,
+	name=ref_co3bpy3_after.dat
+)
+
+! SETTINGS
+settings(
+	import-module=<class 'nosey.analysis.recipes.DELTARecipe'>,
+	sum-before-calibration=False,
+	search-radius=10,
+	iad=False,
+	normalization-start=6900,
+	normalization-end=7000,
+	fraction-fitting=False,
+	difference=False,
+	com-start=0,
+	com-end=487,
+	fit-bg=False,
+	title-fontsize=16,
+	x-label-size=14,
+	y-label-size=14,
+	tick-label-size=12,
+	title=Unnamed plot,
+	xlabel=x,
+	ylabel=y,
+	xlabel-units=1,
+	ylabel-units=1,
+	tick-text-offset=35,
+	line-thickness=1
+)
+
