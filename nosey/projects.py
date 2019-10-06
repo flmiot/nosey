@@ -175,6 +175,24 @@ class Projects(object):
                     msgBox.setText('Loading settings')
                     QtGui.QApplication.processEvents()
 
+                elif 'REFERENCES' in b:
+                    references   = re.findall(kw_pattern.format('reference'), b)
+
+                    for ind, r in enumerate(references):
+                        path = str(re.findall(kp.format('path'),r)[0])
+                        b1 = str(re.findall(kp.format('r1'),r)[0])
+                        r1 = True if b1 == '1' or b1 == 'True' else False
+                        b1 = str(re.findall(kp.format('r2'),r)[0])
+                        r2 = True if b1 == '1' or b1 == 'True' else False
+                        name = str(re.findall(kp.format('name'),r)[0])
+
+                        References.addExternalReference(self, event = None,
+                            paths = [path], include = include,
+                            setAsRef1 = r1, setAsRef2 = r2)
+
+                    msgBox.setText('Loading references')
+                    QtGui.QApplication.processEvents()
+
                 else:
                     # Not a recognized keyword
                     fmt = "Warning! Unrecognized block in the input-file: {}"
@@ -238,6 +256,7 @@ class Projects(object):
         saveString += Groups.getSaveString(self)
         saveString += Sources.getSaveString(self)
         saveString += Monitor.getSaveString(self)
+        saveString += References.getSaveString(self)
         saveString += Settings.getSaveString(self)
 
         with open(filename, 'w+') as file:
@@ -262,6 +281,9 @@ class Projects(object):
 
         while self.tableEnergy.rowCount() > 0:
             self.tableEnergy.removeRow(0)
+
+        while self.tableExternalReferences.rowCount() > 0:
+            self.tableExternalReferences.removeRow(0)
 
         self.actionUpdatePlot.setChecked(True)
         self.actionNormalize.setChecked(False)
