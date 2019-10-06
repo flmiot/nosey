@@ -8,6 +8,35 @@ class Settings(object):
         super().__init__(*args, **kwargs)
 
 
+    def getKeywordMap(self):
+        keywordMap = {
+        "import-module":['Data import', 'Module'],
+        "sum-before-calibration":['Energy calibration', 'Sum runs before search'],
+        "search-radius":['Energy calibration', 'Search radius'],
+        "iad":['IAD analysis', 'Enabled'],
+        "normalization-start":['Normalization', 'Window', 'Start'],
+        "normalization-end":['Normalization', 'Window', 'End'],
+        "fraction-fitting":['Fraction fitting', 'Enabled'],
+        "difference":['Difference', 'Enabled'],
+        "com-start":['Center-of-mass shift', 'Window', 'Start'],
+        "com-end":['Center-of-mass shift', 'Window', 'End'],
+        "fit-bg":['Background subtraction', 'Polynomial fitting','Enabled'],
+        "title-fontsize":['Plot settings', 'Title', 'Font size'],
+        "x-label-size":['Plot settings', 'Axis labels', 'Font size'],
+        "y-label-size":['Plot settings', 'Axis labels', 'Font size'],
+        "tick-label-size":['Plot settings', 'Tick labels', 'Font size'],
+        "title":['Plot settings', 'Title', 'Text'],
+        "xlabel":['Plot settings', 'Axis labels', 'X axis', 'Text'],
+        "ylabel":['Plot settings', 'Axis labels', 'Y axis', 'Text'],
+        "xlabel-units":['Plot settings', 'Axis labels', 'X axis', 'Units'],
+        "ylabel-units":['Plot settings', 'Axis labels', 'Y axis', 'Units'],
+        "tick-text-offset":['Plot settings', 'Tick labels', 'Offset'],
+        "line-thickness":['Plot settings', 'Line thickness']
+        }
+
+        return keywordMap
+
+
     def setupSettingTree(self):
             self.treeWidget.header().setResizeMode(QtGui.QHeaderView.ResizeToContents)
 
@@ -148,16 +177,16 @@ class Settings(object):
 
         if widget is None:
             if bool(QtCore.Qt.ItemIsUserCheckable & item.flags()):
-                item.setCheckState(1, value)
+                item.setCheckState(1, bool(value))
             else:
                 item.setText(1, value)
         else:
             if isinstance(widget, QtGui.QSpinBox):
-                widget.setValue(value)
+                widget.setValue(float(value))
             elif isinstance(widget, QtGui.QLineEdit):
-                widget.setText(value)
+                widget.setText(str(value))
             elif isinstance(widget, QtGui.QComboBox):
-                widget.setCurrentText(value)
+                widget.setCurrentText(str(value))
             else:
                 Exception("Unknown setting type requested.")
 
@@ -176,3 +205,19 @@ class Settings(object):
         else:
 
             return self.findItem(strings[1::], matches)
+
+
+    def getSaveString(self):
+        saveString = "! SETTINGS\n"
+        p = {}
+        for key, value in self.getKeywordMap().items():
+            p[key] = self.getSetting(value)
+
+        subString = "settings(\n"
+        subString +="\t{}={},\n" * (len(p.keys()) - 1)
+        subString +="\t{}={}\n)\n"
+        mixed = [v for sublist in zip(p.keys(), p.values()) for v in sublist]
+        subString = subString.format(*mixed)
+        saveString += subString
+        saveString += "\n"
+        return saveString

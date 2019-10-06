@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>NoseyXES</string>
+   <string>Nosey</string>
   </property>
   <property name="windowIcon">
    <iconset>
@@ -5014,7 +5014,7 @@ QMainWindow::separator:vertical {
    <sender>pushButton</sender>
    <signal>clicked()</signal>
    <receiver>MainWindow</receiver>
-   <slot>addPlottingGroup()</slot>
+   <slot>addGroup()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>743</x>
@@ -5050,7 +5050,7 @@ QMainWindow::separator:vertical {
   <slot>updatePlot()</slot>
   <slot>togglePolynomialBackground()</slot>
   <slot>addIADPoint()</slot>
-  <slot>addPlottingGroup()</slot>
+  <slot>addGroup()</slot>
   <slot>settingsChangedHandler(QTreeWidgetItem*,int)</slot>
   <slot>addExternalReference()</slot>
  </slots>

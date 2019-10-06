@@ -59,7 +59,7 @@ class Monitor(object):
             self.addRoi(roi)
 
 
-    def addRoi(self, roi = None):
+    def addRoi(self, roi = None, energy_point_positions = None):
         rows = self.tableRoi.rowCount()
         self.tableRoi.insertRow(rows)
 
@@ -71,11 +71,14 @@ class Monitor(object):
         roi.connectUpdateSlotProxy(self.updatePlot)
 
         energies = self.getEnergies()
-        positions = []
 
-        step = self.image.shape[1] / max(1, len(energies)-1)
-        for ind in range(0, len(energies)):
-            positions.append((ind) * step)
+        if energy_point_positions is None:
+            positions = []
+            step = self.image.shape[1] / max(1, len(energies)-1)
+            for ind in range(0, len(energies)):
+                positions.append((ind) * step)
+        else:
+            positions = energy_point_positions
 
 
         for pos in positions:
@@ -108,22 +111,23 @@ class Monitor(object):
         btn_active.clicked.connect(lambda : self.showHideRoi(item01))
 
 
-    def addEnergyPoint(self):
+    def addEnergyPoint(self, energy = None, touch_roi = True):
         energies = self.getEnergies()
         rows = self.tableEnergy.rowCount()
-        positions = [0]
         self.tableEnergy.insertRow(rows)
 
-        step = self.image.shape[1] / max(1, len(energies))
-        for ind in range(len(energies)):
-            positions.append((ind + 1) * step)
+        if touch_roi:
+            positions = [0]
+            step = self.image.shape[1] / max(1, len(energies))
+            for ind in range(len(energies)):
+                positions.append((ind + 1) * step)
 
-        for roi in self.getROI():
-            roi.clearEnergyPoints(self)
-            for pos in positions:
-                roi.addEnergyPoint(pos, self)
+            for roi in self.getROI():
+                roi.clearEnergyPoints(self)
+                for pos in positions:
+                    roi.addEnergyPoint(pos, self)
 
-            roi.connectUpdateSlotProxy(self.updatePlot)
+                roi.connectUpdateSlotProxy(self.updatePlot)
 
 
 
@@ -133,12 +137,19 @@ class Monitor(object):
 
         # Remaining items
         item01 = QtGui.QTableWidgetItem()
-        item01.setText("0")
+
+        if energy is None:
+            item01.setText("0")
+        else:
+            item01.setText(energy)
+
         self.tableEnergy.setItem(rows, 1, item01)
         self.tableEnergy.resizeColumnsToContents()
 
         # Connect button events
         btn_remove.clicked.connect(lambda : self.removeEnergyPoint(item01))
+
+
 
 
 
@@ -235,3 +246,49 @@ class Monitor(object):
                     button.toggle()
 
         self.updatePlot()
+
+
+    def getSaveString(self):
+        """ Combined save string for !ANALYZERS and !CALIBRATIONS"""
+        calibrationsString = "! CALIBRATIONS\n"
+
+        for crow in range(self.tableEnergy.rowCount()):
+            energy = self.tableEnergy.item(crow, 1).text()
+            subString = "energy(\n\tposition= {}\n)\n"
+            subString = subString.format(energy)
+            calibrationsString += subString
+
+        analyzersString = "! ANALYZERS\n"
+
+        for arow in range(self.tableRoi.rowCount()):
+            item = self.tableRoi.item(arow, 2)
+            roi = item.data(pg.QtCore.Qt.UserRole)
+            points = [ep.pos()[0] for ep in roi.energyPoints]
+            li = '[' + '{} '*len(points) +']'
+            p  = {
+                "include":      roi.active,
+                "position-x":    roi.objects[0].pos()[0],
+                "position-y":   roi.objects[0].pos()[1],
+                "width":        roi.objects[0].size()[0],
+                "height":       roi.objects[0].size()[1],
+                "bg01-distance":roi.b1_distance,
+                "bg01-height":  roi.objects[1].size()[1],
+                "bg02-distance":roi.b2_distance,
+                "bg02-height":  roi.objects[2].size()[1],
+                "energy-points":li.format(*points)
+            }
+
+            subString = "analyzer(\n"
+            subString +="\t{}={},\n" * (len(p.keys()) - 1)
+            subString +="\t{}={}\n)\n"
+            mixed = [v for sublist in zip(p.keys(), p.values()) for v in sublist]
+            subString = subString.format(*mixed)
+            analyzersString += subString
+
+        saveString = ""
+        if len(calibrationsString) > 0:
+            saveString += calibrationsString
+        if len(analyzersString) > 0:
+            saveString += analyzersString
+        saveString += "\n"
+        return saveString

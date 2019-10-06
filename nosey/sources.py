@@ -87,6 +87,7 @@ class Sources(object):
 
         if include is False:
             btn_active.toggle()
+            s.toggle()
 
         # Convenience task: Set ComboBox to currently selected group
         selectedGroups = self.tableGroups.selectedItems()
@@ -151,6 +152,30 @@ class Sources(object):
                 r = self.tableSources.row(i)
                 comboBox = self.tableSources.cellWidget(r, 2)
                 comboBox.setCurrentIndex(selectedItemIndex)
+
+
+    def getSaveString(self):
+        saveString = "! SCANS\n"
+        for srow in range(self.tableSources.rowCount()):
+            item = self.tableSources.item(srow, 4)
+            scan = item.data(pg.QtCore.Qt.UserRole)
+            comboBox = self.tableSources.cellWidget(srow, 2)
+            group = comboBox.itemData(comboBox.currentIndex())
+            p  = {
+                "path":     '"{}"'.format(scan.files),
+                "include":  scan.active,
+                "group":    '"{}"'.format(group.text())
+            }
+
+            subString = "scan(\n"
+            subString +="\t{}={},\n" * (len(p.keys()) - 1)
+            subString +="\t{}={}\n)\n"
+            mixed = [v for sublist in zip(p.keys(), p.values()) for v in sublist]
+            subString = subString.format(*mixed)
+            saveString += subString
+
+        saveString += "\n"
+        return saveString
 
 
 class QThread_Loader(QtCore.QThread):
