@@ -9,15 +9,15 @@ import nosey.analysis.math as nmath
 
 import matplotlib.pyplot as plt
 
+
 class AnalysisResult(object):
     def __init__(self):
-        self.in_e           = []
-        self.out_e          = []
-        self.intensities    = []
-        self.background     = []
-        self.fits           = []
-        self.labels         = Label()
-
+        self.in_e = []
+        self.out_e = []
+        self.intensities = []
+        self.background = []
+        self.fits = []
+        self.labels = Label()
 
     def add_data(self, in_e, out_e, intensity, background, fit, label_dict):
         self.in_e.append(in_e)
@@ -27,17 +27,16 @@ class AnalysisResult(object):
         self.fits.append(fit)
         self.labels.add_scan_labels(label_dict)
 
-
     def get_curves(
         self,
         single_scans, single_analyzers,
-        scanning_type = False,
-        single_image = None,
-        slices = 1,
-        normalize_scans_before_sum = False,
-        normalize_analyzers_before_sum = False,
-        poly_order = None
-        ):
+        scanning_type=False,
+        single_image=None,
+        slices=1,
+        normalize_scans_before_sum=False,
+        normalize_analyzers_before_sum=False,
+        poly_order=None
+    ):
         """
         Specify *referenceResult* if difference should be calculated.
         """
@@ -90,15 +89,16 @@ class AnalysisResult(object):
             #         bi.append(np.sum(bl[:, i0:i1], axis = 1))
             # else:
 
-            ii.append(np.sum(il, axis = 1))
-            bi.append(np.sum(bl, axis = 1))
+            ii.append(np.sum(il, axis=1))
+            bi.append(np.sum(bl, axis=1))
 
         ii = np.array(ii)
         bi = np.array(bi)
         ei = np.array(out_e)
 
         if not single_analyzers:
-            ei, ii, bi = self.sum_analyzers(ei, ii, bi, normalize_analyzers_before_sum)
+            ei, ii, bi = self.sum_analyzers(
+                ei, ii, bi, normalize_analyzers_before_sum)
 
         if not single_scans:
             ei, ii, bi = self.sum_scans(ei, ii, bi, normalize_scans_before_sum)
@@ -107,33 +107,37 @@ class AnalysisResult(object):
             for scan_index in range(bi.shape[0]):
                 for analyzer_index in range(bi[scan_index].shape[0]):
                     curve = bi[scan_index, analyzer_index]
-                    bi[scan_index, analyzer_index] = nmath.fit_curve(curve, poly_order)
+                    bi[scan_index, analyzer_index] = nmath.fit_curve(
+                        curve, poly_order)
 
         return ei, ii, bi, l
 
+    def getIAD(self, r, windowNorm=None, windowCOM=None):
 
-    def getIAD(self, r, windowNorm = None, windowCOM = None):
-
-        er, ir, br, _       = r.get_curves(False, False)
-        e, i, b, _          = self.get_curves(False, False)
-        er, ir, br          = er[0,0], ir[0,0], br[0,0]
-        e, i, b             = e[0,0], i[0,0], b[0,0]
-        com_shift           = nmath.calculateCOM(er, ir-br) - nmath.calculateCOM(e, i-b)
-        e                  += com_shift
-        e, i, b             = nmath.interpolate_and_sum([e, er], [i, -1 * ir], [b, br], True, windowNorm)
+        er, ir, br, _ = r.get_curves(False, False)
+        e, i, b, _ = self.get_curves(False, False)
+        er, ir, br = er[0, 0], ir[0, 0], br[0, 0]
+        e, i, b = e[0, 0], i[0, 0], b[0, 0]
+        com_shift = nmath.calculateCOM(
+            er, ir - br) - nmath.calculateCOM(e, i - b)
+        e += com_shift
+        e, i, b = nmath.interpolate_and_sum(
+            [e, er], [i, -1 * ir], [b, br], True, windowNorm)
 
         if windowCOM is None:
-            iad             = np.sum(np.abs(i))
+            iad = np.sum(np.abs(i))
         else:
-            ind0            = np.argmin(np.abs(e - windowCOM[0]))
-            ind1            = np.argmin(np.abs(e - windowCOM[1]))
-            iad             = np.sum(np.abs(i[ind0:ind1]))
+            ind0 = np.argmin(np.abs(e - windowCOM[0]))
+            ind1 = np.argmin(np.abs(e - windowCOM[1]))
+            iad = np.sum(np.abs(i[ind0:ind1]))
         return iad
 
-
-
-
-    def sum_analyzers(self, energies, intensities, backgrounds, normalize_before_sum = False):
+    def sum_analyzers(
+            self,
+            energies,
+            intensities,
+            backgrounds,
+            normalize_before_sum=False):
         """
         Interpolate spectra for multiple analyzers linearly and sum them
         scan-wise.
@@ -147,16 +151,16 @@ class AnalysisResult(object):
         backgrounds     Array (S x A x P)
         """
 
-        energies_summed = np.empty((len(energies),1), dtype = list)
-        intensities_summed = np.empty((len(energies),1), dtype = list)
-        backgrounds_summed = np.empty((len(energies),1), dtype = list)
-
+        energies_summed = np.empty((len(energies), 1), dtype=list)
+        intensities_summed = np.empty((len(energies), 1), dtype=list)
+        backgrounds_summed = np.empty((len(energies), 1), dtype=list)
 
         # Iterate over scans
         z = zip(range(len(energies)), energies, intensities, backgrounds)
         for ind, energy, intensity, background in z:
 
-            ce, ii, b = nmath.interpolate_and_sum(energy, intensity, background, normalize_before_sum)
+            ce, ii, b = nmath.interpolate_and_sum(
+                energy, intensity, background, normalize_before_sum)
 
             energies_summed[ind] = [ce]
             intensities_summed[ind] = [ii]
@@ -164,8 +168,12 @@ class AnalysisResult(object):
 
         return energies_summed, intensities_summed, backgrounds_summed
 
-
-    def sum_scans(self, energies, intensities, backgrounds, normalize_before_sum = False):
+    def sum_scans(
+            self,
+            energies,
+            intensities,
+            backgrounds,
+            normalize_before_sum=False):
         """
         Interpolate spectra for multiple scans linearly and sum them
         analyzer-wise.
@@ -180,21 +188,21 @@ class AnalysisResult(object):
         """
 
         n_analyzers = len(energies[0])
-        energies_summed = np.empty((1, n_analyzers), dtype = list)
-        intensities_summed = np.empty((1, n_analyzers), dtype = list)
-        backgrounds_summed = np.empty((1, n_analyzers), dtype = list)
+        energies_summed = np.empty((1, n_analyzers), dtype=list)
+        intensities_summed = np.empty((1, n_analyzers), dtype=list)
+        backgrounds_summed = np.empty((1, n_analyzers), dtype=list)
 
         # Iterate over analyzers
         z = zip(range(n_analyzers), energies.T, intensities.T, backgrounds.T)
         for ind, energy, intensity, background in z:
-            ce, ii, b = nmath.interpolate_and_sum(energy, intensity, background, normalize_before_sum)
+            ce, ii, b = nmath.interpolate_and_sum(
+                energy, intensity, background, normalize_before_sum)
 
-            energies_summed.T[ind]      = [ce]
-            intensities_summed.T[ind]   = [ii]
-            backgrounds_summed.T[ind]   = [b]
+            energies_summed.T[ind] = [ce]
+            intensities_summed.T[ind] = [ii]
+            backgrounds_summed.T[ind] = [b]
 
         return energies_summed, intensities_summed, backgrounds_summed
-
 
     # def _interpolate_and_sum(self, energy, intensity, background, normalize_before_sum = False, window = None):
     #

@@ -1,6 +1,7 @@
 import numpy as np
 import nosey
 
+
 class Label(object):
     def __init__(self):
         self.labels = {}        # Dict of type {ScanName: [Analyzer1, ...], }
@@ -8,7 +9,7 @@ class Label(object):
     def add_scan_labels(self, label_dict):
         self.labels.update(label_dict)
 
-    def get_labels(self, single_scans = True, single_analyzers = True):
+    def get_labels(self, single_scans=True, single_analyzers=True):
         """
         S           Number of scans
         A           Number of analyzers
@@ -43,7 +44,8 @@ class Label(object):
             s_str = self.make_comma_separated_list(scan_names)
             first_key = list(self.labels.keys())[0]
             fmt = "{} - Summed: {}"
-            lret.append(list([fmt.format(a, s_str) for a in self.labels[first_key]]))
+            lret.append(list([fmt.format(a, s_str)
+                              for a in self.labels[first_key]]))
 
         else:
             scan_names = list(self.labels.keys())
@@ -54,7 +56,6 @@ class Label(object):
             lret.append(["Summed: {} - Summed: {}".format(s_str, a_str)])
 
         return np.array(lret)
-
 
     def make_comma_separated_list(self, labels):
         li = ""

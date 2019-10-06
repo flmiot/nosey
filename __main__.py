@@ -8,8 +8,6 @@ if __name__ == '__main__':
     if len(sys.argv) > 1:
         input_file = sys.argv[1]
 
-
-
     if input_file:
         nosey.gui.loadProject(input_file)
 

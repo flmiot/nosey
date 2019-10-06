@@ -7,16 +7,15 @@ from nosey.roi import ROI
 import nosey.guard
 from nosey.templates import HideButton, RemoveButton, RefButton
 
+
 class Groups(object):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-
     def setupGroupsFrame(self):
         self.tableGroups.cellChanged.connect(self.updateSourceComboBoxes)
 
-
-    def addGroup(self, e = None, name = None, active = True, reference = False):
+    def addGroup(self, e=None, name=None, active=True, reference=False):
 
         if name is None:
             name = "Unnamed group"
@@ -25,10 +24,10 @@ class Groups(object):
         self.tableGroups.insertRow(rows)
 
         # Button items
-        btn_active      = HideButton()
+        btn_active = HideButton()
         btn_active.toggle()
-        btn_remove      = RemoveButton()
-        btn_reference   = RefButton()
+        btn_remove = RemoveButton()
+        btn_reference = RefButton()
 
         self.tableGroups.setCellWidget(rows, 0, btn_active)
         self.tableGroups.setCellWidget(rows, 1, btn_remove)
@@ -40,17 +39,16 @@ class Groups(object):
         self.updateSourceComboBoxes()
 
         # Events
-        btn_active.clicked.connect(lambda : self.toggleGroup(item01))
-        btn_remove.clicked.connect(lambda : self.removeGroup(item01))
-        btn_reference.clicked.connect(lambda : self.setRefGroup(item01))
+        btn_active.clicked.connect(lambda: self.toggleGroup(item01))
+        btn_remove.clicked.connect(lambda: self.removeGroup(item01))
+        btn_reference.clicked.connect(lambda: self.setRefGroup(item01))
 
         if active is False:
             btn_active.toggle()
 
         if reference is True:
             btn_reference.toggle()
-            self.setRefGroup(item01, update = False)
-
+            self.setRefGroup(item01, update=False)
 
     def updateSourceComboBoxes(self):
         for srow in range(self.tableSources.rowCount()):
@@ -64,11 +62,9 @@ class Groups(object):
                 if item == currentlySelectedItem:
                     comboBox.setCurrentIndex(grow)
 
-
-    def toggleGroup(self, item, update = True):
+    def toggleGroup(self, item, update=True):
         if update:
             self.updatePlot()
-
 
     def removeGroup(self, item):
         if self.tableGroups.rowCount() > 1:
@@ -77,8 +73,7 @@ class Groups(object):
             self.updateSourceComboBoxes()
             self.updatePlot()
 
-
-    def setRefGroup(self, item, update = True):
+    def setRefGroup(self, item, update=True):
         if self.getReferenceGroupIndex() is None:
             row = self.tableGroups.row(item)
             self.tableGroups.cellWidget(row, 2).setChecked(True)
@@ -91,28 +86,29 @@ class Groups(object):
         if update:
             self.updatePlot()
 
-
     def getReferenceGroupIndex(self):
         for grow in range(self.tableGroups.rowCount()):
             if self.tableGroups.cellWidget(grow, 2).isChecked():
                 return grow
         return None
 
-
     def getSaveString(self):
         saveString = "! GROUPS\n"
         for grow in range(self.tableGroups.rowCount()):
             name = '"{}"'.format(self.tableGroups.item(grow, 3).text())
-            p  = {
-                "include":      self.tableGroups.cellWidget(grow, 0).isChecked(),
-                "reference":    grow == self.getReferenceGroupIndex(),
-                "name":         name
+            p = {
+                "include": self.tableGroups.cellWidget(grow, 0).isChecked(),
+                "reference": grow == self.getReferenceGroupIndex(),
+                "name": name
             }
 
             subString = "group(\n"
-            subString +="\t{}={},\n" * (len(p.keys()) - 1)
-            subString +="\t{}={}\n)\n"
-            mixed = [v for sublist in zip(p.keys(), p.values()) for v in sublist]
+            subString += "\t{}={},\n" * (len(p.keys()) - 1)
+            subString += "\t{}={}\n)\n"
+            mixed = [
+                v for sublist in zip(
+                    p.keys(),
+                    p.values()) for v in sublist]
             subString = subString.format(*mixed)
             saveString += subString
 
