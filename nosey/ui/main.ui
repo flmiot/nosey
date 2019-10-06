@@ -4666,7 +4666,7 @@ QMainWindow::separator:vertical {
            <string>Text</string>
           </property>
           <property name="text">
-           <string>&lt;b&gt;&lt;font color=black&gt;Unnamed plot&lt;/font&gt;&lt;/b&gt;</string>
+           <string>Unnamed plot</string>
           </property>
           <property name="flags">
            <set>ItemIsSelectable|ItemIsEditable|ItemIsDragEnabled|ItemIsEnabled</set>
@@ -5017,8 +5017,8 @@ QMainWindow::separator:vertical {
    <slot>addGroup()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>743</x>
-     <y>278</y>
+     <x>757</x>
+     <y>277</y>
     </hint>
     <hint type="destinationlabel">
      <x>296</x>
