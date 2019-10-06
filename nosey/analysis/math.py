@@ -100,6 +100,5 @@ def fractionFit(data, ref_a, ref_b):
 
     # Compute sum of squared residuals (SQR)
     sqr = np.sum((f(ce) - f_data(ce))**2)
-    print(sqr, pcov)
 
     return popt[0], ce, lambda e : modelFunction(e, popt[0])
