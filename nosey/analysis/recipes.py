@@ -33,7 +33,8 @@ class Recipe(object):
 
 
 class DELTARecipe(Recipe):
-    """DELTA: Recipe for PILATUS detector at BL8, DELTA storage ring, Dortmund."""
+    """ DELTA: Recipe for PILATUS detector at BL8, DELTA storage ring,
+        Dortmund."""
 
     def getImages(self, filename, roi=None, indizes=None):
         if roi:
@@ -112,7 +113,8 @@ class SACLARecipe(Recipe):
 
 
 class SOLEILRecipe(Recipe):
-    """SOLEIL: Recipe for PILATUS detector at GALAXIES, SOLEIL storage ring, France."""
+    """ SOLEIL: Recipe for PILATUS detector at GALAXIES, SOLEIL storage ring,
+        France."""
 
     def getImages(self, filename, roi=None, indizes=None):
         if roi:
@@ -172,3 +174,32 @@ class SOLEILRecipe(Recipe):
             energy[indizes.index(index)] = value
 
         return energy
+
+
+class ALBARecipe(Recipe):
+    """ ALBA: Recipe for MYTHEN detector at CLAESS BL22,
+        ALBA storage ring, Spain."""
+
+    def getImages(self, filename, roi=None, indizes=None):
+
+        file_arr    = np.loadtxt(filename, skiprows = 5).T
+        images      = np.reshape(file_arr[1], (1, 1, len(file_arr[1])))
+
+        if roi:
+            x0, y0, x1, y1 = roi
+        else:
+            x0, y0, x1, y1 = 0, 0, len(images[0,0]), 1
+
+
+        if not indizes:
+            indizes = range(images.shape[0])
+
+        dtype = '({},{})i4'.format(y1 - y0, x1 - x0)
+        images_filtered = np.empty(len(indizes), dtype=dtype)
+
+        for index, img in enumerate(images):
+            if index not in indizes:
+                continue
+
+            images_filtered[indizes.index(index)] = img
+        return images
