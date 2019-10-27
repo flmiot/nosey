@@ -101,7 +101,18 @@ class DELTARecipe(Recipe):
 
 
 class XFELRecipe(Recipe):
-    pass
+    """ XFEL: Recipe for JUNGFRAU detector at FXE, Euroepan XFEL,
+        Germany."""
+
+    def getImages(self, filename):
+        path = '/INSTRUMENT/FXE_XAD_JF1M/DET/RECEIVER-2:daqOutput/data/adc'
+        with h5py.File(filename, 'r') as file:
+            t = file['/INSTRUMENT/FXE_XAD_JF1M/DET/RECEIVER-2:daqOutput/data/trainId'][:]
+            images = file[path][:]
+            # images = images[np.where(t > 0)[0], 0, :, :]
+
+            print(images.shape)
+        return images
 
 
 class PETRARecipe(Recipe):

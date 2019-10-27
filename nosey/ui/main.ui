@@ -4316,7 +4316,7 @@ QMainWindow::separator:vertical {
        </property>
        <widget class="QWidget" name="detector">
         <attribute name="title">
-         <string>Non-resonant XES</string>
+         <string>Detector</string>
         </attribute>
         <layout class="QVBoxLayout" name="verticalLayout_14">
          <property name="leftMargin">
@@ -4334,7 +4334,7 @@ QMainWindow::separator:vertical {
          <item>
           <layout class="QHBoxLayout" name="horizontalLayout_4">
            <item>
-            <widget class="QPushButton" name="btn_addEnergyPoint_2">
+            <widget class="QPushButton" name="btn_addEnergyPoint">
              <property name="minimumSize">
               <size>
                <width>0</width>
@@ -4357,7 +4357,13 @@ QMainWindow::separator:vertical {
             </widget>
            </item>
            <item>
-            <widget class="QPushButton" name="btn_autoCalibration_2">
+            <widget class="QPushButton" name="btn_autoCalibration">
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>30</height>
+              </size>
+             </property>
              <property name="text">
               <string>Auto</string>
              </property>
@@ -4401,7 +4407,7 @@ QMainWindow::separator:vertical {
        </widget>
        <widget class="QWidget" name="tab_3">
         <attribute name="title">
-         <string>HERFD</string>
+         <string>Excitation energy</string>
         </attribute>
         <layout class="QVBoxLayout" name="verticalLayout_15">
          <property name="leftMargin">
@@ -4418,6 +4424,12 @@ QMainWindow::separator:vertical {
          </property>
          <item>
           <widget class="QPushButton" name="pushButton_3">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>30</height>
+            </size>
+           </property>
            <property name="text">
             <string>Paste values from clipboard</string>
            </property>
