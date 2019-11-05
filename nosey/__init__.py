@@ -3,11 +3,11 @@ from pyqtgraph.Qt import QtGui
 from nosey.mainframe import MainFrame
 from nosey.analysis.experiment import Experiment
 from nosey.logbar import StatusBarHandler
-from nosey.analysis.recipes import DELTARecipe, SOLEILRecipe
+from nosey.analysis.policy import PETRA
 
-__version__ = '0.1'                     #
-lastComputationTime = 0.1               #
-recipes = [DELTARecipe, SOLEILRecipe]   # Import modules
+__version__ = '0.1'                      #
+lastComputationTime = 0.01               #
+recipes = [PETRA]   # Import modules
 
 # GUI
 app = QtGui.QApplication([])

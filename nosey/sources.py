@@ -6,9 +6,10 @@ from pyqtgraph.Qt import QtCore, QtGui
 
 import nosey
 from nosey.analysis.scan import Scan
-from nosey.analysis.recipes import SOLEILRecipe
 from nosey.templates import HideButton, RemoveButton, ViewButton, PlotGroupComboBox
 
+
+import matplotlib.pyplot as plt
 
 class Sources(object):
     def __init__(self, *args, **kwargs):
@@ -21,18 +22,15 @@ class Sources(object):
 
     def addSource(self):
         try:
-            #log_path = str(QtGui.QFileDialog.getOpenFileName(self, 'Select logfile')[0])
-            paths = QtGui.QFileDialog.getOpenFileNames(
-                self, 'Select images')[0]
-
-            for ind, file_path in enumerate(paths):
-                self.statusBar.setProgressBarFraction((ind + 1) / len(paths))
-                self._read_scan(file_path, log_file=None)
+            files = QtGui.QFileDialog.getOpenFileNames(self, 'Select files')[0]
+            recipe = self.getSetting(['Data import', 'Module'])()
+            for scan_data in recipe.read(files):
+                self._add_scan(scan_data)
 
         except Exception as e:
             nosey.Log.error(e)
 
-    def _read_scan(self, img_path, log_file, include=True):
+    def _add_scan(self, scan_data, include=True):
 
         rows = self.tableSources.rowCount()
         self.tableSources.insertRow(rows)
@@ -51,37 +49,18 @@ class Sources(object):
 
         # Remaining items
         item01 = QtGui.QTableWidgetItem()
-
         self.tableSources.setItem(rows, 4, item01)
-
-        # matches = re.findall(r'.?\_(\d{5})\.FIO', os.path.split(path)[1])
-        # scan_no = matches[0]
-        # scan_no = '_' + scan_no + '_'   # add underscores to avoid moxing up image and scan numbers
-        # #img_path = os.path.join(path, 'pilatus_100k')
-        scan_name = os.path.split(img_path)[1]
-        # file_names = os.listdir(img_path)
-        # file_names = [f for f in file_names if scan_no in f and "tif" in f]
-        # files = sorted(list([os.path.join(img_path,f) for f in file_names]))
-        # files = [f for f in files if scan_no in f]
-
-        nosey.Log.debug("Reading {} ...".format(scan_name))
-        recipe = self.getSetting(['Data import', 'Module'])
-
-        s = Scan(log_file=scan_name, image_files=img_path)
-        loader = QThread_Loader(s, recipe())
-        self.threads.append(loader)
-        loader.start()
-        nosey.Log.debug("Scan {} loaded.".format(s))
+        nosey.Log.debug("Reading {} ...".format(scan_data['name']))
+        s = Scan(scan_data)
         item01.setData(pg.QtCore.Qt.UserRole, s)
-        item01.setText(scan_name)
+        item01.setText(scan_data['name'])
         self.tableSources.resizeColumnsToContents()
 
         # Events
         btn_view.clicked.connect(lambda: self.display(s))
         btn_active.clicked.connect(lambda: self.showHideScans(item01))
         btn_remove.clicked.connect(lambda: self.removeSource(item01))
-        dd_plotGroup.currentIndexChanged.connect(
-            lambda: self.changeGroup(item01))
+        dd_plotGroup.currentIndexChanged.connect(lambda: self.changeGroup(item01))
 
         self.updateSourceComboBoxes()
 
@@ -97,6 +76,7 @@ class Sources(object):
             dd_plotGroup.setCurrentIndex(r)
 
         return s
+
 
     def getScans(self, group=None, filter_active=True):
         scans = []

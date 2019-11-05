@@ -8,21 +8,19 @@ import nosey
 
 
 class Scan(object):
-    def __init__(self, log_file, image_files):
+    def __init__(self, scan_data):
         """ Specify *logfile* as namestring and list of *image_files*.
         Assumes that logfile holds energy for each image.
         """
-        self.name = log_file
-        self.log_file = log_file
-        self.files = image_files
-        self.images = None
-        self.energies = None
-        self.monitor = None
+        self.name = scan_data['name']
+        self.images = scan_data['images']
+        self.energies = scan_data['energies']
+        self.monitor = scan_data['i0']
         self.active = True
         # self.bg_model     = None
-        self.loaded = False
+        self.loaded = True
         self.offset = [0, 0]
-        self.range = [0, len(image_files)]
+        self.range = [0, len(scan_data['images'])]
 
     @property
     def images(self):
@@ -48,33 +46,33 @@ class Scan(object):
     def monitor(self, monitor):
         self.__monitor = monitor
 
-    def read_logfile(self, recipe):
-
-        self.energies = recipe.getEnergy(self.log_file)
-        self.monitor = recipe.getI0(self.log_file)
-
-        # plt.plot(pin2)
-        # plt.show()
-
-    def read_files(self, recipe, callback=None):
-
-        self.images = recipe.getImages(self.files)
-        self.loaded = True
-
-        # arr = np.array(self.images)
-        # arr = np.sum(arr, axis = 0)
-        # plt.imshow(np.log(arr))
-        # plt.show()
-
-    def save_scan(self, path, analyzers):
-        """Save energy loss spectra of this scan object into a textfile."""
-        arr = np.array(self.get_energy_loss_spectrum(analyzers))
-        arr = np.reshape(arr, (2 * len(analyzers), -1))
-
-        header = ''
-        for ind in range(len(analyzers)):
-            header += 'ene_{0} ana_{0} '.format(ind)
-        np.savetxt(path, arr.T, header=header, comments='')
+    # def read_logfile(self, recipe):
+    #
+    #     self.energies = recipe.getEnergy(self.log_file)
+    #     self.monitor = recipe.getI0(self.log_file)
+    #
+    #     # plt.plot(pin2)
+    #     # plt.show()
+    #
+    # def read_files(self, recipe, callback=None):
+    #
+    #     self.images = recipe.getImages(self.files)
+    #     self.loaded = True
+    #
+    #     # arr = np.array(self.images)
+    #     # arr = np.sum(arr, axis = 0)
+    #     # plt.imshow(np.log(arr))
+    #     # plt.show()
+    #
+    # def save_scan(self, path, analyzers):
+    #     """Save energy loss spectra of this scan object into a textfile."""
+    #     arr = np.array(self.get_energy_loss_spectrum(analyzers))
+    #     arr = np.reshape(arr, (2 * len(analyzers), -1))
+    #
+    #     header = ''
+    #     for ind in range(len(analyzers)):
+    #         header += 'ene_{0} ana_{0} '.format(ind)
+    #     np.savetxt(path, arr.T, header=header, comments='')
 
     def toggle(self):
         self.active = not self.active
@@ -86,7 +84,6 @@ class Scan(object):
                                         pixel_wise=pixel_wise)
 
     def get_energy_spectrum(self, analyzers, bg_roi):
-
         in_e = np.arange(self.images.shape[0])
         out_e = np.empty((len(analyzers)), dtype=list)
         intensity = np.empty((len(analyzers), len(in_e)), dtype=list)

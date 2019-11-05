@@ -45,6 +45,8 @@ class AnalysisResult(object):
         i, b = self.intensities, self.background
         l = self.labels.get_labels(single_scans, single_analyzers)
 
+
+
         no_scans = len(i)
         no_analyzers = len(i[0])
         no_points_in_e = len(i[0][0])

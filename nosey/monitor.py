@@ -13,6 +13,8 @@ class Monitor(object):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.image = np.zeros((4, 487, 195))
+        self.scan = None
+        self.levels = [0, 1]
 
     def setupMonitor(self):
         # Setup frame region slider
@@ -27,20 +29,27 @@ class Monitor(object):
 
     def display(self, scan):
         # Log.debug("Display scan {}. Summed: {}".format(scan, sum))
+        self.scan = scan
         if scan.loaded:
             self.image = np.transpose(scan.images, axes=[0, 2, 1])
-            self.frameSelector.setXRange(1, self.image.shape[0], padding=0.1)
+            x0, x1 = scan.range
+            self.frameSelector.setXRange(x0, x1, padding=0.1)
             self.lr.setRegion([1, self.image.shape[0]])
             self.updateImage()
             self.label_scanName.setText(scan.name)
 
+
     def updateImage(self):
-        x0, x1 = self.lr.getRegion()
-        x0 -= 1
-        x0, x1 = int(x0), int(x1)
-        self.imageView.setImage(np.sum(self.image[x0:x1], axis=0))
-        hmin, hmax = self.imageView.ui.histogram.getLevels()
-        self.imageView.ui.histogram.setLevels(hmin, hmax * 0.05)
+        try:
+            self.levels = self.imageView.ui.histogram.getLevels()
+            x0, x1 = self.lr.getRegion()
+            # x0 -= 1
+            x0, x1 = int(x0), int(x1)
+            self.imageView.setImage(np.sum(self.image[x0:x1], axis=0))
+            # hmin, hmax = self.imageView.ui.histogram.getLevels()
+            # self.imageView.ui.histogram.setLevels(*self.levels)
+        except Exception as e:
+            Log.error("Could not update monitor image: {}".format(e))
 
     def getROI(self):
         rois = []
@@ -190,10 +199,14 @@ class Monitor(object):
         self.lr.sigRegionChanged.disconnect(self.frameSelectorChanged)
         self.lr.sigRegionChangeFinished.disconnect(self.updateImage)
         x0, x1 = self.lr.getRegion()
-        x0, x1 = max(1, round(x0)), min(round(x1), self.image.shape[0])
+        if x1 <= x0:
+            x1 = x0 + 1
+        x0, x1 = max(0, round(x0)), min(round(x1), self.image.shape[0] - 1)
         self.lr.setRegion([x0, x1])
         self.lr.sigRegionChanged.connect(self.frameSelectorChanged)
         self.lr.sigRegionChangeFinished.connect(self.updateImage)
+        self.scan.range = [x0, x1]
+        self.updatePlot()
 
     def updateCursorMonitor(self, event):
         pos = event[0]
