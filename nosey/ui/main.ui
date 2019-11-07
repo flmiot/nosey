@@ -2617,6 +2617,7 @@ QMainWindow::separator:vertical {
    <addaction name="actionCOMShift"/>
    <addaction name="actionSingleAnalyzers"/>
    <addaction name="actionSingleScans"/>
+   <addaction name="actionSwitch_to_scanning_mode"/>
   </widget>
   <widget class="QDockWidget" name="dockWidget">
    <property name="toolTip">
@@ -5033,6 +5034,18 @@ QMainWindow::separator:vertical {
    </property>
    <property name="toolTip">
     <string>Load project</string>
+   </property>
+  </action>
+  <action name="actionSwitch_to_scanning_mode">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset>
+     <normaloff>../icons/scanning_type.png</normaloff>../icons/scanning_type.png</iconset>
+   </property>
+   <property name="text">
+    <string>Switch to scanning mode</string>
    </property>
   </action>
  </widget>
