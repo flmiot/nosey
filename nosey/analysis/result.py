@@ -50,51 +50,61 @@ class AnalysisResult(object):
         no_points_in_e = len(i[0][0])
 
         # Scanning type does not work at the moment
-        # if scanning_type:
-        #     ii = np.empty((no_scans, no_analyzers), dtype = list)
-        #     bi = np.empty((no_scans, no_analyzers), dtype = list)
-        #     ei = np.empty((no_scans, no_analyzers), dtype = list)
-        #
-        #     # Iterate scans
-        #     z = zip(range(len(i)), i, b)
-        #     for ind_s, il, bl in z:
-        #         # Iterate analyzers
-        #         for ind_a in range(no_analyzers):
-        #             g1 = [np.sum(img) for img in il[ind_a]]
-        #             g2 = [np.sum(img) for img in bl[ind_a]]
-        #             ii[ind_s, ind_a] = np.array(g1)
-        #             bi[ind_s, ind_a] = np.array(g2)
-        #             ei[ind_s, ind_a] = np.array(in_e[ind_s])
-        #
-        # else:
+        if scanning_type:
 
-        ii = []
-        bi = []
-
-        # Iterate scans
-        z = zip(range(len(i)), i, b)
-        for ind, il, bl in z:
-            # if not single_image is None: # Single image does not work at the moment
-            #     if slices == 1:
-            #         ii.append(il[:, single_image])
-            #         bi.append(bl[:, single_image])
-            #     else:
-            #         i0 = single_image - int(slices / 2)
-            #         i1 = i0 + slices
-            #         if i0 < 0:
-            #             i0 = 0
+            ii = np.empty((len(i), len(i[0])), dtype = list)
+            bi = np.empty((len(i), len(i[0])), dtype = list)
             #
-            #         nosey.Log.debug("Plotting slices from {} - {}".format(i0, i1))
-            #         ii.append(np.sum(il[:, i0:i1], axis = 1))
-            #         bi.append(np.sum(bl[:, i0:i1], axis = 1))
-            # else:
+            # ii = np.empty((no_scans, no_analyzers), dtype = list)
+            # bi = np.empty((no_scans, no_analyzers), dtype = list)
+            # ei = np.empty((no_scans, no_analyzers), dtype = list)
 
-            ii.append(np.sum(il, axis=1))
-            bi.append(np.sum(bl, axis=1))
+            # Iterate scans
+            z = zip(range(len(i)), i, b)
+            for ind_s, il, bl in z:
+                # Iterate analyzers
+                for ind_a in range(no_analyzers):
+                    g1 = [np.sum(roi) for roi in il[ind_a]]
+                    g2 = [np.sum(roi) for roi in bl[ind_a]]
+                    ii[ind_s, ind_a] = g1
+                    bi[ind_s, ind_a] = g2
 
-        ii = np.array(ii)
-        bi = np.array(bi)
-        ei = np.array(out_e)
+            # ii = np.array(ii)
+            # bi = np.array(bi)
+            ei = np.array(in_e)
+
+        else:
+
+            ii = []
+            bi = []
+
+            # Iterate scans
+            z = zip(range(len(i)), i, b)
+            for ind, il, bl in z:
+                # if not single_image is None: # Single image does not work at the moment
+                #     if slices == 1:
+                #         ii.append(il[:, single_image])
+                #         bi.append(bl[:, single_image])
+                #     else:
+                #         i0 = single_image - int(slices / 2)
+                #         i1 = i0 + slices
+                #         if i0 < 0:
+                #             i0 = 0
+                #
+                #         nosey.Log.debug("Plotting slices from {} - {}".format(i0, i1))
+                #         ii.append(np.sum(il[:, i0:i1], axis = 1))
+                #         bi.append(np.sum(bl[:, i0:i1], axis = 1))
+                # else:
+
+                ii.append(np.sum(il, axis=1))
+                bi.append(np.sum(bl, axis=1))
+
+            ii = np.array(ii)
+            bi = np.array(bi)
+            ei = np.array(out_e)
+
+        print(ii.shape, bi.shape, ei.shape)
+
 
         if not single_analyzers:
             ei, ii, bi = self.sum_analyzers(
@@ -158,6 +168,8 @@ class AnalysisResult(object):
         # Iterate over scans
         z = zip(range(len(energies)), energies, intensities, backgrounds)
         for ind, energy, intensity, background in z:
+
+            print(intensity.shape)
 
             ce, ii, b = nmath.interpolate_and_sum(
                 energy, intensity, background, normalize_before_sum)

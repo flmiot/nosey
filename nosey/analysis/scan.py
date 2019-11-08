@@ -8,6 +8,7 @@ import nosey
 
 
 class Scan(object):
+
     def __init__(self, log_file, image_files):
         """ Specify *logfile* as namestring and list of *image_files*.
         Assumes that logfile holds energy for each image.
@@ -87,19 +88,22 @@ class Scan(object):
 
     def get_energy_spectrum(self, analyzers, bg_roi):
 
-        in_e = np.arange(self.images.shape[0])
+        in_e = np.empty((len(analyzers)), dtype=list)
+        for idx in range(len(in_e)):
+            in_e[idx] = np.arange(self.images.shape[0])
+
         out_e = np.empty((len(analyzers)), dtype=list)
-        intensity = np.empty((len(analyzers), len(in_e)), dtype=list)
-        background = np.empty((len(analyzers), len(in_e)), dtype=list)
+        intensity = np.empty((len(analyzers), len(in_e[0])), dtype=list)
+        background = np.empty((len(analyzers), len(in_e[0])), dtype=list)
         fits = np.empty((len(analyzers)), dtype=list)
 
         for ind, an in enumerate(analyzers):
             b, s, bg, fit = an.get_signal_series(self.images, *bg_roi[ind])
 
-            out_e[ind] = b
-            intensity[ind] = s
+            out_e[ind]      = b
+            intensity[ind]  = s
             background[ind] = bg
-            fits[ind] = fit
+            fits[ind]       = fit
 
             # I0
             # intensity[ind] /= self.monitor
