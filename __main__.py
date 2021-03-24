@@ -12,6 +12,7 @@ if __name__ == '__main__':
         nosey.gui.loadProject(input_file)
 
     else:
+        print("adding group")
         nosey.gui.addGroup()
         nosey.gui.tableGroups.cellWidget(0, 2).toggle()
 

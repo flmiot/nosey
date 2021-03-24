@@ -74,10 +74,14 @@ class Plot(object):
             refIndex = self.getReferenceGroupIndex()
             refResult = None
 
+            # print(refIndex)
+
             groupIndex = 0
             run = 0
             groups = self.tableGroups.rowCount()
             while groupIndex < groups:
+
+
 
                 # Calculate and plot reference first
                 if refResult is None and groupIndex != refIndex:
@@ -93,6 +97,7 @@ class Plot(object):
                     if groupIndex == refIndex:
                         raise Exception("Reference group is hidden!")
                     groupIndex += 1
+                    # print("hi")
                     continue
 
                 self.statusBar.setProgressBarFraction((run + 1) / groups)
@@ -109,9 +114,14 @@ class Plot(object):
                     continue
 
                 roi = self.getROI()
+
+
                 for r in roi:
                     if not r.active:
+
                         continue
+
+
 
                     sig = Analyzer.make_signal_from_QtRoi(
                         r, [195, 487], self.imageView, 0)
@@ -130,6 +140,27 @@ class Plot(object):
                     experiment.bg_roi.append((bg01, bg02))
 
                 result = experiment.get_spectrum()
+
+                # s = "{}\t" * 12 * 4 + "\n"
+                # values = []
+                # for my_analyzer, my_bg_rois in zip(experiment.analyzers, experiment.bg_roi):
+                #     print("")
+                #     print("ANALYZERS: ------------ ")
+                #     arr = np.empty(12)
+                #     arr[:4] = my_analyzer.roi
+                #     arr[4:8] = my_bg_rois[0].roi
+                #     arr[8:12] = my_bg_rois[1].roi
+                #     arr[np.array([0, 4, 8])] = 0
+                #     arr[np.array([2, 6, 10])] = 486
+                #
+                #     values.extend(list(arr))
+                #
+                # with open('deleteme.dat', 'w+') as f:
+                #     f.write(s.format(*values))
+
+
+                # print(s.format(*values))
+
 
                 if calcIAD and groupIndex != refIndex:
 
